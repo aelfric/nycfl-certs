@@ -55,4 +55,36 @@ public class Result {
     public void setEvent(Event event) {
         this.event = event;
     }
+
+
+    private static final transient String[] numNames = {
+            "",
+            "First",
+            "Second",
+            "Third",
+            "Fourth",
+            "Fifth",
+            "Sixth",
+            "Seventh",
+            "Eighth",
+            "Ninth",
+            "Tenth",
+            "Eleventh",
+            "Twelfth",
+            "Thirteenth",
+            "Fourteenth",
+            "Fifteenth",
+            "Sixteenth",
+            "Seventeenth",
+            "Eighteenth",
+            "Nineteenth"
+    };
+
+    public String getPlaceString(){
+        if(place<7){
+            return numNames[place] + " Place";
+        } else {
+            return "Finalist";
+        }
+    }
 }

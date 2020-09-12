@@ -1,8 +1,10 @@
 package org.nycfl.certificates;
 
+import io.quarkus.qute.Template;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
 import javax.inject.Inject;
@@ -84,5 +86,27 @@ public class CertificatesResource {
     @Path("/tournaments/{id}/schools")
     public List<School> list(@PathParam("id") long tournamentId){
         return tournamentService.getSchools(tournamentId);
+    }
+
+    @Inject
+    Template certificate;
+
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/tournaments/{id}/certificates")
+    public String generateCertificates(@PathParam("id") long tournamentId){
+        StringBuilder output = new StringBuilder();
+        Tournament tournament = tournamentService.getTournament(tournamentId);
+        for (Event event : tournament.events) {
+            for (Result result : event.getResults()) {
+                output.append(
+                        certificate
+                                .data("tournament", tournament)
+                                .data("event", event)
+                                .data("result", result)
+                                .render());
+            }
+        }
+        return output.toString();
     }
 }

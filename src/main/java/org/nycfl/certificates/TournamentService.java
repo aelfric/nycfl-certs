@@ -54,7 +54,7 @@ public class TournamentService {
         return getTournament(event.getTournament().getId());
     }
 
-    private Tournament getTournament(Long tournamentId) {
+    public Tournament getTournament(Long tournamentId) {
         Tournament tournament = em.createQuery(
                 "SELECT DISTINCT t FROM Tournament t LEFT JOIN FETCH t.events e " +
                         "WHERE t.id=?1",

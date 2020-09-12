@@ -4,7 +4,6 @@ import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 public class Event {
@@ -22,6 +21,7 @@ public class Event {
                fetch = FetchType.LAZY,
                cascade = CascadeType.ALL,
                orphanRemoval = true)
+    @OrderBy("place desc ")
     private List<Result> results = new ArrayList<>();
 
     @ManyToOne
