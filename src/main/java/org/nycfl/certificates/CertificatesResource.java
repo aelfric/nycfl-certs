@@ -10,8 +10,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Path("/certs")
 public class CertificatesResource {
@@ -43,10 +44,14 @@ public class CertificatesResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/results")
-    public Tournament addResults(@MultipartForm MultipartBody body, @QueryParam("eventId") int eventId){
+    public Tournament addResults(@MultipartForm MultipartBody body,
+                                 @QueryParam("eventId") int eventId,
+                                 @QueryParam("tournamentId") long tournamentId){
         System.out.println("Received " + body.fileName);
-        StringBuilder buf = new StringBuilder();
         List<Result> results = new ArrayList<>();
+        Map<String, School> map =
+                tournamentService.getSchools(tournamentId).stream().collect(
+                        Collectors.toMap(School::getName, Function.identity()));
         try {
             CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
             for (CSVRecord record : parse.getRecords()) {
@@ -55,13 +60,16 @@ public class CertificatesResource {
                 result.code = record.get("Code");
                 result.count = Integer.parseInt(record.get("Count"));
                 result.place = Integer.parseInt(record.get("Place"));
+                result.school = map.computeIfAbsent(
+                        record.get("School"),
+                        School::fromName);
                 results.add(result);
             }
         } catch (IOException e){
             throw new BadRequestException("");
         }
-        Tournament tournament = tournamentService.addResults(eventId, results);
-        return tournament;
+        tournamentService.addSchools(map.values(), tournamentId);
+        return tournamentService.addResults(eventId, results);
     }
 
     @GET
@@ -69,5 +77,12 @@ public class CertificatesResource {
     @Path("/tournaments")
     public List<Tournament> listAllTournaments(){
         return tournamentService.all();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tournaments/{id}/schools")
+    public List<School> list(@PathParam("id") long tournamentId){
+        return tournamentService.getSchools(tournamentId);
     }
 }

@@ -18,7 +18,10 @@ public class Event {
         return results;
     }
 
-    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "event",
+               fetch = FetchType.LAZY,
+               cascade = CascadeType.ALL,
+               orphanRemoval = true)
     private List<Result> results = new ArrayList<>();
 
     @ManyToOne

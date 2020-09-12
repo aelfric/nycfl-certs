@@ -12,6 +12,31 @@ public class Result {
     int place;
     String code;
     String name;
+
+    public int getCount() {
+        return count;
+    }
+
+    public int getPlace() {
+        return place;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public School getSchool() {
+        return school;
+    }
+
     @JsonbTransient
     @ManyToOne
     Event event;

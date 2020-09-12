@@ -4,6 +4,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.List;
 
 @ApplicationScoped
@@ -64,5 +65,18 @@ public class TournamentService {
                         "FETCH e.results WHERE e.tournament=?1",
                 Event.class).setParameter(1, tournament).getResultList();
         return tournament;
+    }
+
+    @Transactional
+    public void addSchools(Collection<School> schools, long tournamentId) {
+        Tournament tournament = em.find(Tournament.class, tournamentId);
+        tournament.addSchools(schools);
+        em.persist(tournament);
+    }
+
+    public List<School> getSchools(long tournamentId) {
+        return em.createQuery("SELECT s FROM School s WHERE s.tournament" +
+                ".id=?1", School.class).setParameter(1, tournamentId)
+                .getResultList();
     }
 }

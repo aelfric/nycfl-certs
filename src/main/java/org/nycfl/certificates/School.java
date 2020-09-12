@@ -1,22 +1,31 @@
 package org.nycfl.certificates;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.json.bind.annotation.JsonbTransient;
+import javax.persistence.*;
 
 @Entity
 public class School {
-    private Long id;
-    private String name;
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private long id;
+    private String name;
+    private String displayName;
+    @ManyToOne
+    @JsonbTransient
+    private Tournament tournament;
+
+    public static School fromName(String name) {
+        School school = new School();
+        school.name = name;
+        school.displayName = name;
+        return school;
+    }
+
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -26,5 +35,17 @@ public class School {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
+
+    public void setTournament(Tournament tournament) {
+        this.tournament = tournament;
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 }
