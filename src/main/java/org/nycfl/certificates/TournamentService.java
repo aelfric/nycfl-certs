@@ -5,7 +5,9 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class TournamentService {
@@ -44,6 +46,7 @@ public class TournamentService {
 
     @Transactional
     public Tournament addResults(long eventId, List<Result> results) {
+        Collections.reverse(results);
         Event event = em.createQuery(
                 "SELECT e FROM Event e LEFT JOIN FETCH e.tournament LEFT JOIN FETCH e.results WHERE e.id=?1",
                 Event.class)
@@ -70,7 +73,11 @@ public class TournamentService {
     @Transactional
     public void addSchools(Collection<School> schools, long tournamentId) {
         Tournament tournament = em.find(Tournament.class, tournamentId);
-        tournament.addSchools(schools);
+        tournament.addSchools(schools
+                .stream()
+                .filter(school -> school.getTournament()==null)
+                .collect(
+                Collectors.toList()));
         em.persist(tournament);
     }
 
@@ -78,5 +85,21 @@ public class TournamentService {
         return em.createQuery("SELECT s FROM School s WHERE s.tournament" +
                 ".id=?1", School.class).setParameter(1, tournamentId)
                 .getResultList();
+    }
+
+    @Transactional
+    public Tournament updatePlacementCutoff(long eventId, int cutoff) {
+        Event event = em.find(Event.class, eventId);
+        event.setPlacementCutoff(cutoff);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
+    }
+
+    @Transactional
+    public Tournament updateCertificateCutoff(long eventId, int cutoff) {
+        Event event = em.find(Event.class, eventId);
+        event.setCertificateCutoff(cutoff);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
     }
 }

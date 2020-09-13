@@ -87,6 +87,28 @@ public class CertificatesResource {
     public List<School> list(@PathParam("id") long tournamentId){
         return tournamentService.getSchools(tournamentId);
     }
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/tournaments/{id}/events/{evtId}/placement")
+    public Tournament setPlacementCutoff(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            CutoffRequest cutoffRequest
+            ){
+        return tournamentService.updatePlacementCutoff(eventId, cutoffRequest.cutoff);
+    }
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/tournaments/{id}/events/{evtId}/cutoff")
+    public Tournament setCertificateCutoff(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            CutoffRequest cutoffRequest
+            ){
+        return tournamentService.updateCertificateCutoff(eventId, cutoffRequest.cutoff);
+    }
 
     @Inject
     Template certificate;
@@ -98,7 +120,7 @@ public class CertificatesResource {
         StringBuilder output = new StringBuilder();
         Tournament tournament = tournamentService.getTournament(tournamentId);
         for (Event event : tournament.events) {
-            for (Result result : event.getResults()) {
+            for (Result result : event.getCertificateResults()) {
                 output.append(
                         certificate
                                 .data("tournament", tournament)

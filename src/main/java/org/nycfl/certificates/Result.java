@@ -81,10 +81,12 @@ public class Result {
     };
 
     public String getPlaceString(){
-        if(place<7){
+        if(place<this.event.getPlacementCutoff()){
             return numNames[place] + " Place";
-        } else {
+        } else if (place < this.event.getCertificateCutoff()){
             return "Finalist";
+        } else {
+            return "";
         }
     }
 }

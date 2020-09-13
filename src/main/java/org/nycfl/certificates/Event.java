@@ -4,6 +4,7 @@ import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 public class Event {
@@ -28,6 +29,8 @@ public class Event {
     @JsonbTransient
     private Tournament tournament;
 
+    private int placementCutoff;
+    private int certificateCutoff;
 
     public Long getId() {
         return id;
@@ -63,5 +66,28 @@ public class Event {
         this.results.clear();
         this.results.addAll(results);
         results.forEach(r->r.setEvent(this));
+    }
+
+    public int getPlacementCutoff() {
+        return placementCutoff;
+    }
+
+    public void setPlacementCutoff(int placementCutoff) {
+        this.placementCutoff = placementCutoff;
+    }
+
+    public int getCertificateCutoff() {
+        return certificateCutoff;
+    }
+
+    public void setCertificateCutoff(int certificateCutoff) {
+        this.certificateCutoff = certificateCutoff;
+    }
+
+    public List<Result> getCertificateResults() {
+        return results
+                .stream()
+                .filter(r->r.place < certificateCutoff)
+                .collect(Collectors.toList());
     }
 }

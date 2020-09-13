@@ -11,6 +11,7 @@ public class Tournament {
                fetch = FetchType.LAZY,
                cascade = CascadeType.ALL,
                orphanRemoval = true)
+            @OrderBy("name asc")
     List<Event> events = new ArrayList<>();
 
     @Id
@@ -65,7 +66,6 @@ public class Tournament {
     }
 
     public void addSchools(Collection<School> schools) {
-        this.schools.clear();
         this.schools.addAll(schools);
         schools.forEach(s -> s.setTournament(this));
     }

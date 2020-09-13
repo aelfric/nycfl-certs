@@ -21,6 +21,7 @@ public class EventList {
     public List<Event> getEvents() {
         return Arrays
                 .stream(events.split("\n"))
+                .sorted()
                 .map(Event::fromName)
                 .collect(Collectors.toList());
     }
