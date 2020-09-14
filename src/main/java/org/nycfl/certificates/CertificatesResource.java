@@ -110,6 +110,18 @@ public class CertificatesResource {
         return tournamentService.updateCertificateCutoff(eventId, cutoffRequest.cutoff);
     }
 
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/tournaments/{id}/events/{evtId}/medal")
+    public Tournament setMedalCutoff(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            CutoffRequest cutoffRequest
+            ){
+        return tournamentService.updateMedalCutoff(eventId, cutoffRequest.cutoff);
+    }
+
     @Inject
     Template certificate;
 

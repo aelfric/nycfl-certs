@@ -31,6 +31,7 @@ public class Event {
 
     private int placementCutoff;
     private int certificateCutoff;
+    private int medalCutoff;
 
     public Long getId() {
         return id;
@@ -82,6 +83,14 @@ public class Event {
 
     public void setCertificateCutoff(int certificateCutoff) {
         this.certificateCutoff = certificateCutoff;
+    }
+
+    public int getMedalCutoff() {
+        return medalCutoff;
+    }
+
+    public void setMedalCutoff(int medalCutoff) {
+        this.medalCutoff = medalCutoff;
     }
 
     public List<Result> getCertificateResults() {

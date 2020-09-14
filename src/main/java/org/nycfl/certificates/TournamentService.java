@@ -102,4 +102,12 @@ public class TournamentService {
         em.persist(event);
         return getTournament(event.getTournament().getId());
     }
+
+    @Transactional
+    public Tournament updateMedalCutoff(long eventId, int cutoff) {
+        Event event = em.find(Event.class, eventId);
+        event.setMedalCutoff(cutoff);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
+    }
 }
