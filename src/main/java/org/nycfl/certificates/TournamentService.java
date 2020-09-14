@@ -110,4 +110,16 @@ public class TournamentService {
         em.persist(event);
         return getTournament(event.getTournament().getId());
     }
+
+    public List<MedalCount> getMedalCount(long tournamentId) {
+        return em.createQuery("SELECT new org.nycfl.certificates.MedalCount(r.school.name, count(r)) " +
+            "FROM Event e " +
+            "LEFT JOIN e.results r " +
+            "WHERE e.tournament.id = ?1 " +
+            "AND r.place < e.medalCutoff " +
+            "GROUP BY r.school " +
+            "ORDER BY r.school.name", MedalCount.class)
+            .setParameter(1, tournamentId)
+            .getResultList();
+    }
 }

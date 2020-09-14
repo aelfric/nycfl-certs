@@ -143,4 +143,11 @@ public class CertificatesResource {
         }
         return output.toString();
     }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tournaments/{id}/medals")
+    public List<MedalCount> getMedalCount(@PathParam("id") long tournamentId){
+        return tournamentService.getMedalCount(tournamentId);
+    }
 }
