@@ -1,14 +1,22 @@
-<div style="border: 2px solid blue; text-align: center; page-break-after: always">
-    <p>New York Catholic Forensic League</p>
+<style>
+    body \{
+        margin: 0;
+    }
 
-    <p>All proceeds from this contest
-        will be donated to the
-        NYCFL Scholarship Fund</p>
+    * \{
+    box-sizing: border-box;
+    }
+</style>
+<div style="overflow: hidden; height: 8.5in; width: 11in; padding: 0.5in">
+
+<div style="text-align: center; height: 100%; width: 100%; background-image: url('/cert.svg'); background-repeat: no-repeat; background-size: 100% 100%;;">
+    <div style="padding: 1in;">
+    <p>New York Catholic Forensic League</p>
     <p>Award Certificate</p>
-    <p>Xavier High School</p>
+    <p>{tournament.host}</p>
 
     <p>{tournament.name}</p>
-    <p>October 26, 2019</p>
+    <p>{tournament.date}</p>
     <p style="border-bottom: 1px solid black; width: 90%; margin: 0 auto;">{result.placeString}</p>
 
     <p>This certificate is given to</p>
@@ -17,6 +25,9 @@
 
     <p><b>{event.name}</b></p>
 
-    <p>Thomas Beck 10/26/19</p>
-    <p>NYCFL President Date</p>
+        <p><span>Thomas Beck</span><span>{tournament.date}</span></p>
+        <p><span>NYCFL President</span><span>Date</span></p>
+    </div>
 </div>
+</div>
+<div style="page-break-after: always; visibility: hidden"></div>

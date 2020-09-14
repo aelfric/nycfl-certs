@@ -1,6 +1,7 @@
 package org.nycfl.certificates;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +20,9 @@ public class Tournament {
     private long id;
 
     private String name;
+
+    private String host;
+    private LocalDate tournamentDate;
 
     @OneToMany(mappedBy = "tournament",
                fetch = FetchType.LAZY,
@@ -50,6 +54,22 @@ public class Tournament {
         this.events.clear();
         this.events.addAll(events);
         events.forEach(e -> e.setTournament(this));
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public LocalDate getDate() {
+        return tournamentDate;
+    }
+
+    public void setDate(LocalDate tournamentDate) {
+        this.tournamentDate = tournamentDate;
     }
 
     @Override
