@@ -132,6 +132,16 @@ public class CertificatesResource {
         StringBuilder output = new StringBuilder();
         output.append("<link rel='stylesheet' href='/certs.css' />");
         Tournament tournament = tournamentService.getTournament(tournamentId);
+        String css = "    <style>\n" +
+                      "        body \\{\n" +
+                      "            margin: 0;\n" +
+                      "        }\n" +
+                      "\n" +
+                      "        * \\{\n" +
+                      "        box-sizing: border-box;\n" +
+                      "        }\n" +
+                      "    </style>\n";
+        output.append(css);
         for (Event event : tournament.events) {
             for (Result result : event.getCertificateResults()) {
                 output.append(
