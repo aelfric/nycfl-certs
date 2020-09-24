@@ -58,10 +58,10 @@ public class CertificatesResource {
             CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
             for (CSVRecord record : parse.getRecords()) {
                 Result result = new Result();
-                result.name = record.get("Name");
+                result.name = record.get("Name 1");
                 result.code = record.get("Code");
-                result.count = Integer.parseInt(record.get("Count"));
-                result.place = Integer.parseInt(record.get("Place"));
+//                result.count = Integer.parseInt(record.get("Count"));
+                result.place = Integer.parseInt(record.get("Ranking"));
                 result.school = map.computeIfAbsent(
                         record.get("School"),
                         School::fromName);
