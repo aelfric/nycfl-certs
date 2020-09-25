@@ -1,33 +1,31 @@
-<style>
-    body \{
-        margin: 0;
-    }
-
-    * \{
-    box-sizing: border-box;
-    }
-</style>
 <div style="overflow: hidden; height: 8.5in; width: 11in; padding: 0.5in">
+    <div class="certificate_border">
+        <div class="certificate_body">
+            <img src="/nycfl-logo.svg" height="100px"/>
+            <p class="nycfl">New York Catholic Forensic League</p>
+            <p class="award_certificate">Award Certificate</p>
+            <div class="tournament_details">
+                <p class="host">{tournament.host}</p>
+                <p class="tournament_name">{tournament.name}</p>
+                <p class="tournament_date">{tournament.date}</p>
+            </div>
+            <p class="place">{result.placeString}</p>
+            <p class="before_text">This certificate is given to</p>
+            <p class="name">{result.name}</p>
+            </p>
+            <p class="before_text">to recognize outstanding performance in the category of</p>
 
-<div style="text-align: center; height: 100%; width: 100%; background-image: url('/cert.svg'); background-repeat: no-repeat; background-size: 100% 100%;;">
-    <div style="padding: 1in;">
-    <p>New York Catholic Forensic League</p>
-    <p>Award Certificate</p>
-    <p>{tournament.host}</p>
+            <p class="event_name">{event.name}</p>
 
-    <p>{tournament.name}</p>
-    <p>{tournament.date}</p>
-    <p style="border-bottom: 1px solid black; width: 90%; margin: 0 auto;">{result.placeString}</p>
-
-    <p>This certificate is given to</p>
-    <p style="border-bottom: 1px solid black; width: 90%; margin: 0 auto;">{result.name}</p>
-    </p>to recognize outstanding performance in the category of</p>
-
-    <p><b>{event.name}</b></p>
-
-        <p><span>Thomas Beck</span><span>{tournament.date}</span></p>
-        <p><span>NYCFL President</span><span>Date</span></p>
+            <p class="signature_block">
+                <span class="signature">Thomas Beck</span>
+                <span class="position">NYCFL President</span>
+            </p>
+            <p class="date_block">
+                <span class="signature-date">{tournament.date}</span>
+                <span class="date-label">Date</span>
+            </p>
+        </div>
     </div>
-</div>
 </div>
 <div style="page-break-after: always; visibility: hidden"></div>

@@ -1,0 +1,107 @@
+@font-face {
+    font-family: "Olde English";
+    src: url("/OldeEnglish/OldeEnglish.woff2") format('woff2')
+}
+@font-face {
+    font-family: "League Script";
+    src: url("/league-script/LeagueScript.woff2") format('woff2')
+}
+
+body {
+    margin: 0;
+    font-family: "Olde English", serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+p {
+    margin: 0;
+}
+
+.place {
+    border-bottom: 1px solid black;
+    width: 90%;
+    margin: 0 auto;
+}
+
+.nycfl {
+    font-size: 3em;
+    color: #17365d;
+}
+
+.award_certificate {
+    font-size: 2em;
+    color: #800000;
+}
+
+.name {
+    border-bottom: 1px solid black;
+    width: 90%;
+    margin: 0 auto;
+}
+
+.tournament_details {
+    font-family: "Impact", sans-serif;
+}
+
+.name {
+    font-size: 3em;
+}
+
+.event_name, .place {
+    font-size: 3em;
+    color: #000080;
+}
+
+.signature_block {
+    position: absolute;
+    width: 50%;
+    float: left;
+    bottom: 0.25in;
+    left: 0.5in;
+}
+
+.date_block {
+    position: absolute;
+    width: 50%;
+    float: left;
+    bottom: 0.25in;
+    right: 0.5in;
+}
+
+.signature, .signature-date {
+    display: inline-block;
+    padding: 0 5rem;
+    border-bottom: 2px solid black;
+    font-family: "League Script", sans-serif;
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+.position, .date-label {
+    display: inline-block;
+    width: 100%;
+    font-family: "Times New Roman", serif;
+    font-size: 1em;
+}
+
+.before_text {
+    font-size: 1.5em;
+}
+
+.certificate_border {
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    background-image: url('/cert.svg');
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+
+.certificate_body {
+    padding: 1in;
+    position: relative;
+    overflow: hidden;
+}

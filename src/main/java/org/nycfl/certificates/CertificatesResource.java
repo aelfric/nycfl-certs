@@ -130,6 +130,7 @@ public class CertificatesResource {
     @Path("/tournaments/{id}/certificates")
     public String generateCertificates(@PathParam("id") long tournamentId){
         StringBuilder output = new StringBuilder();
+        output.append("<link rel='stylesheet' href='/certs.css' />");
         Tournament tournament = tournamentService.getTournament(tournamentId);
         for (Event event : tournament.events) {
             for (Result result : event.getCertificateResults()) {
