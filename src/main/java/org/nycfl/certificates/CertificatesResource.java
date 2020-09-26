@@ -74,6 +74,32 @@ public class CertificatesResource {
         return tournamentService.addResults(eventId, results);
     }
 
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tournaments/{id}/sweeps")
+    public Tournament addResults(@MultipartForm MultipartBody body,
+                                 @PathParam("id") long tournamentId){
+        Map<String, School> map =
+                tournamentService.getSchools(tournamentId).stream().collect(
+                        Collectors.toMap(School::getName, Function.identity()));
+        try {
+            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+            for (CSVRecord record : parse.getRecords()) {
+                School school = map.computeIfAbsent(
+                    record.get("School"),
+                    School::fromName);
+                school.setSweepsPoints(
+                    Integer.parseInt(
+                        record.get("Total")));
+                tournamentService.updateSchool(school, tournamentId);
+            }
+        } catch (IOException e){
+            throw new BadRequestException("");
+        }
+        return tournamentService.getTournament(tournamentId);
+    }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments")

@@ -112,7 +112,7 @@ public class TournamentService {
     }
 
     public List<MedalCount> getMedalCount(long tournamentId) {
-        return em.createQuery("SELECT new org.nycfl.certificates.MedalCount(r.school.name, count(r)) " +
+        return em.createQuery("SELECT new org.nycfl.certificates.MedalCount(r.school.name, count(r), r.school.sweepsPoints) " +
             "FROM Event e " +
             "LEFT JOIN e.results r " +
             "WHERE e.tournament.id = ?1 " +
@@ -121,5 +121,13 @@ public class TournamentService {
             "ORDER BY r.school.name", MedalCount.class)
             .setParameter(1, tournamentId)
             .getResultList();
+    }
+
+    @Transactional
+    public void updateSchool(School school, long tournamentId) {
+        if(school.getTournament()==null){
+            school.setTournament(em.find(Tournament.class, tournamentId));
+        }
+        em.persist(school);
     }
 }
