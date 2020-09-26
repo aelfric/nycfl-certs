@@ -1,5 +1,5 @@
 <div style="overflow: hidden; height: 8.5in; width: 11in; padding: 0.5in">
-    <div class="certificate_border">
+    <div class="certificate_border {result.certColor}">
         <div class="certificate_body">
             <img src="/nycfl-logo.svg" height="100px"/>
             <p class="nycfl">New York Catholic Forensic League</p>
@@ -7,7 +7,7 @@
             <div class="tournament_details">
                 <p class="host">{tournament.host}</p>
                 <p class="tournament_name">{tournament.name}</p>
-                <p class="tournament_date">{tournament.date}</p>
+                <p class="tournament_date">{tournament.longDate}</p>
             </div>
             <p class="place">{result.placeString}</p>
             <p class="before_text">This certificate is given to</p>
@@ -22,7 +22,7 @@
                 <span class="position">NYCFL President</span>
             </p>
             <p class="date_block">
-                <span class="signature-date">{tournament.date}</span>
+                <span class="signature-date">{tournament.shortDate}</span>
                 <span class="date-label">Date</span>
             </p>
         </div>

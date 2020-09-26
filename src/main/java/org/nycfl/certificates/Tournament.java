@@ -1,7 +1,9 @@
 package org.nycfl.certificates;
 
 import javax.persistence.*;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -88,5 +90,12 @@ public class Tournament {
     public void addSchools(Collection<School> schools) {
         this.schools.addAll(schools);
         schools.forEach(s -> s.setTournament(this));
+    }
+
+    public String getLongDate(){
+        return tournamentDate.format(DateTimeFormatter.ofPattern("MMMM dd, yyyy"));
+    }
+    public String getShortDate(){
+        return tournamentDate.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
     }
 }

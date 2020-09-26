@@ -89,4 +89,18 @@ public class Result {
             return "";
         }
     }
+
+    public String getCertColor(){
+        if(place==1){
+            return "gold";
+        } if (place==2){
+            return "silver";
+        } if (place == 3){
+            return "bronze";
+        } if(place<this.event.getPlacementCutoff()){
+            return "red";
+        } else {
+            return "black";
+        }
+    }
 }

@@ -6,6 +6,10 @@
     font-family: "League Script";
     src: url("/league-script/LeagueScript.woff2") format('woff2')
 }
+@font-face {
+    font-family: "Alike Angular";
+    src: url("/AlikeAngular/AlikeAngular-Regular.woff2") format('woff2')
+}
 
 body {
     margin: 0;
@@ -43,15 +47,21 @@ p {
 }
 
 .tournament_details {
-    font-family: "Impact", sans-serif;
+    font-family: "Alike Angular", sans-serif;
+    margin: 0.5rem 0;
+    font-size: 18px;
 }
 
 .name {
     font-size: 3em;
 }
 
-.event_name, .place {
-    font-size: 3em;
+.place {
+    font-size: 2.5em;
+}
+
+.event_name {
+    font-size: 2.5em;
     color: #000080;
 }
 
@@ -74,7 +84,7 @@ p {
 .signature, .signature-date {
     display: inline-block;
     padding: 0 5rem;
-    border-bottom: 2px solid black;
+    border-bottom: 1px solid black;
     font-family: "League Script", sans-serif;
     font-weight: bold;
     font-size: 1.5em;
@@ -83,7 +93,7 @@ p {
 .position, .date-label {
     display: inline-block;
     width: 100%;
-    font-family: "Times New Roman", serif;
+    font-family: "Alike Angular", serif;
     font-size: 1em;
 }
 
@@ -95,9 +105,27 @@ p {
     text-align: center;
     height: 100%;
     width: 100%;
-    background-image: url('/cert.svg');
     background-repeat: no-repeat;
     background-size: 100% 100%;
+}
+
+.certificate_border.black {
+    background-image: url('/cert.svg');
+}
+.certificate_border.gold {
+    background-image: url('/cert-gold.svg');
+}
+.certificate_border.silver {
+    background-image: url('/cert-silver.svg');
+}
+.certificate_border.bronze {
+    background-image: url('/cert-bronze.svg');
+}
+.certificate_border.red {
+    background-image: url('/cert-red.svg');
+}
+.place{
+    color: #8f3935;
 }
 
 .certificate_body {
