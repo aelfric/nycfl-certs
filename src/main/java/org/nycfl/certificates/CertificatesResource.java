@@ -56,11 +56,15 @@ public class CertificatesResource {
                         Collectors.toMap(School::getName, Function.identity()));
         try {
             CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+            List<String> headerNames = parse.getHeaderNames();
             for (CSVRecord record : parse.getRecords()) {
                 Result result = new Result();
-                result.name = record.get("Name 1");
+                if(headerNames.contains("Name 2")){
+                    result.name = record.get("Name 1") + " & " + record.get("Name 2");
+                } else {
+                    result.name = record.get("Name 1");
+                }
                 result.code = record.get("Code");
-//                result.count = Integer.parseInt(record.get("Count"));
                 result.place = Integer.parseInt(record.get("Ranking"));
                 result.school = map.computeIfAbsent(
                         record.get("School"),
