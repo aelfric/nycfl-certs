@@ -21,12 +21,6 @@ public class CertificatesResource {
     @Inject
     TournamentService tournamentService;
 
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String hello() {
-        return "hello";
-    }
-
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -39,7 +33,7 @@ public class CertificatesResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/events")
-    public Tournament createTournament(EventList eventList){
+    public Tournament createEvents(EventList eventList){
         return tournamentService.addEvents(eventList);
     }
     @POST
@@ -82,8 +76,8 @@ public class CertificatesResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/sweeps")
-    public Tournament addResults(@MultipartForm MultipartBody body,
-                                 @PathParam("id") long tournamentId){
+    public Tournament addSweepsResults(@MultipartForm MultipartBody body,
+                                       @PathParam("id") long tournamentId){
         Map<String, School> map =
                 tournamentService.getSchools(tournamentId).stream().collect(
                         Collectors.toMap(School::getName, Function.identity()));
@@ -114,7 +108,7 @@ public class CertificatesResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/schools")
-    public List<School> list(@PathParam("id") long tournamentId){
+    public List<School> listSchools(@PathParam("id") long tournamentId){
         return tournamentService.getSchools(tournamentId);
     }
     @POST
