@@ -13,7 +13,7 @@ public class School {
     @ManyToOne
     @JsonbTransient
     private Tournament tournament;
-    private int sweepsPoints;
+    private Integer sweepsPoints;
 
     public static School fromName(String name) {
         School school = new School();
@@ -54,7 +54,7 @@ public class School {
         this.displayName = displayName;
     }
 
-    public int getSweepsPoints() {
+    public Integer getSweepsPoints() {
         return sweepsPoints;
     }
 
