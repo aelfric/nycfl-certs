@@ -1,7 +1,7 @@
 package org.nycfl.certificates;
 
+import javax.json.bind.annotation.JsonbDateFormat;
 import javax.persistence.*;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -24,6 +24,8 @@ public class Tournament {
     private String name;
 
     private String host;
+
+    @JsonbDateFormat(value = "yyyy-MM-dd")
     private LocalDate tournamentDate;
 
     @OneToMany(mappedBy = "tournament",

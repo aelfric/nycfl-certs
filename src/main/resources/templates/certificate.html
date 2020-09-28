@@ -1,3 +1,7 @@
+<link rel='stylesheet' href='/certs.css' />
+{#for event in tournament.events}
+{#for result in event.results}
+{#if result.place < event.certificateCutoff }
 <div style="overflow: hidden; height: 8.5in; width: 11in; padding: 0.5in">
     <div class="certificate_border {result.certColor}">
         <div class="certificate_body">
@@ -29,3 +33,6 @@
     </div>
 </div>
 <div style="page-break-after: always; visibility: hidden"></div>
+{/if}
+{/for}
+{/for}

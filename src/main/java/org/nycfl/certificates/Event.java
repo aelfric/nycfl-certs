@@ -4,7 +4,6 @@ import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 public class Event {
@@ -91,12 +90,5 @@ public class Event {
 
     public void setMedalCutoff(int medalCutoff) {
         this.medalCutoff = medalCutoff;
-    }
-
-    public List<Result> getCertificateResults() {
-        return results
-                .stream()
-                .filter(r->r.place < certificateCutoff)
-                .collect(Collectors.toList());
     }
 }
