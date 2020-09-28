@@ -144,7 +144,31 @@ class CertificatesResourceTest {
   }
 
   @Test
-  void testAddResults() {
+  void testAddSweeps() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Jsonb jsonb = JsonbBuilder.create();
+    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+        .pathParam("id", tournament.getId())
+        .multiPart(new File("src/test/resources/schools.csv"))
+        .post("/tournaments/{id}/schools")
+        .body();
+    given()
+        .pathParam("id", tournament.getId())
+        .multiPart(new File("src/test/resources/sweeps.csv"))
+        .post("/tournaments/{id}/sweeps")
+        .body();
+
+    Integer regisSweeps = entityManager
+        .createQuery("select s.sweepsPoints FROM School s WHERE s.name = ?1 and s.tournament.id = ?2",
+            Integer.class)
+        .setParameter(1, "Regis")
+        .setParameter(2, tournament.getId())
+        .getSingleResult();
+    assertThat(regisSweeps, CoreMatchers.is(89));
   }
 
   @Test
@@ -156,8 +180,9 @@ class CertificatesResourceTest {
     List<Tournament> tournaments = given()
         .get("/tournaments")
         .body()
-        .as(        new ArrayList<Tournament>() {
-        }.getClass().getGenericSuperclass());
+        .as(
+            new ArrayList<Tournament>() {
+            }.getClass().getGenericSuperclass());
 
     assertThat(tournaments, hasSize(Math.toIntExact(numTourneys)));
   }
@@ -183,9 +208,35 @@ class CertificatesResourceTest {
         .when()
         .post("/results");
 
-    String schoolsJson = given()
+    List<School> schools = given()
         .pathParam("id", tournament.getId())
         .get("/tournaments/{id}/schools")
+        .body().as(
+            new ArrayList<School>() {
+            }.getClass().getGenericSuperclass());
+    assertThat(
+        schools.stream().map(School::getName).collect(Collectors.toList()),
+        CoreMatchers.hasItems(
+            "Convent of the Sacred Heart",
+            "Bronx Science",
+            "Regis",
+            "Democracy Prep Harlem Prep"
+        )
+    );
+  }
+
+  @Test
+  void addSchools() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Jsonb jsonb = JsonbBuilder.create();
+    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    String schoolsJson = given()
+        .pathParam("id", tournament.getId())
+        .multiPart(new File("src/test/resources/schools.csv"))
+        .post("/tournaments/{id}/schools")
         .body().print();
 
     List<School> schools = jsonb.fromJson(
@@ -195,10 +246,19 @@ class CertificatesResourceTest {
     assertThat(
         schools.stream().map(School::getName).collect(Collectors.toList()),
         CoreMatchers.hasItems(
-            "Convent of the Sacred Heart",
-            "Bronx Science",
+            "Byram Hills",
+            "Convent of the Sacred Heart, NYC",
+            "Democracy Prep Endurance",
+            "Democracy Prep Harlem",
+            "Democracy Prep Harlem Prep",
+            "Iona Prep",
+            "Monsignor Farrell",
+            "Pelham Memorial",
             "Regis",
-            "Democracy Prep Harlem Prep"
+            "Scarsdale",
+            "Stuyvesant",
+            "Bronx Science",
+            "Xavier"
         )
     );
   }
@@ -360,13 +420,13 @@ class CertificatesResourceTest {
         .asString();
 
 
-        assertThat(certificateHtml, containsString("Finalist"));
-        assertThat(certificateHtml, containsString("Fifth Place"));
-        assertThat(certificateHtml, containsString("First Place"));
-        assertThat(certificateHtml, containsString("Leticia Irving"));
-        assertThat(certificateHtml, not(containsString("River Weaver")));
-        assertThat(certificateHtml, MultiStringMatcher.containsStringNTimes("Junior Varsity Oral Interpretation", 8));
-        assertThat(certificateHtml, MultiStringMatcher.containsStringNTimes("Duo Interpretation", 2));
+    assertThat(certificateHtml, containsString("Finalist"));
+    assertThat(certificateHtml, containsString("Fifth Place"));
+    assertThat(certificateHtml, containsString("First Place"));
+    assertThat(certificateHtml, containsString("Leticia Irving"));
+    assertThat(certificateHtml, not(containsString("River Weaver")));
+    assertThat(certificateHtml, MultiStringMatcher.containsStringNTimes("Junior Varsity Oral Interpretation", 8));
+    assertThat(certificateHtml, MultiStringMatcher.containsStringNTimes("Duo Interpretation", 2));
   }
 
   @Test
@@ -413,13 +473,14 @@ class CertificatesResourceTest {
         .get("/tournaments/{id}/medals")
         .body()
         .as(
-            new ArrayList<MedalCount>(){}.getClass().getGenericSuperclass()
+            new ArrayList<MedalCount>() {
+            }.getClass().getGenericSuperclass()
         );
 
     assertThat(medalCounts, hasItems(
-        new MedalCount("Regis",3,0),
-        new MedalCount("Bronx Science",1,0),
-        new MedalCount("Convent of the Sacred Heart",1,0)
+        new MedalCount("Regis", 3, 0),
+        new MedalCount("Bronx Science", 1, 0),
+        new MedalCount("Convent of the Sacred Heart", 1, 0)
     ));
   }
 }

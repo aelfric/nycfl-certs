@@ -80,7 +80,7 @@ public class CertificatesResource {
                                        @PathParam("id") long tournamentId){
         Map<String, School> map =
                 tournamentService.getSchools(tournamentId).stream().collect(
-                        Collectors.toMap(School::getName, Function.identity()));
+                        Collectors.toMap(School::getDisplayName, Function.identity()));
         try {
             CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
             for (CSVRecord record : parse.getRecords()) {
@@ -110,6 +110,31 @@ public class CertificatesResource {
     @Path("/tournaments/{id}/schools")
     public List<School> listSchools(@PathParam("id") long tournamentId){
         return tournamentService.getSchools(tournamentId);
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("/tournaments/{id}/schools")
+    public List<School> addSchools(
+        @PathParam("id") long tournamentId,
+        @MultipartForm MultipartBody body){
+        Map<String, School> map =
+            tournamentService.getSchools(tournamentId).stream().collect(
+                Collectors.toMap(School::getName, Function.identity()));
+        try {
+            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+            for (CSVRecord record : parse.getRecords()) {
+                School school = map.computeIfAbsent(
+                    record.get("Short Name"),
+                    School::fromName);
+                school.setDisplayName(record.get("Full Name"));;
+                tournamentService.updateSchool(school, tournamentId);
+            }
+        } catch (IOException e){
+            throw new BadRequestException("");
+        }
+        return new ArrayList<>(map.values());
     }
     @POST
     @Produces(MediaType.APPLICATION_JSON)
