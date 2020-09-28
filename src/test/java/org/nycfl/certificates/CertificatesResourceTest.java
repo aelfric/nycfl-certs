@@ -34,7 +34,7 @@ class CertificatesResourceTest {
       {
         "name": "NYCFL First Regis",
         "host": "Regis High School",
-        "tournamentDate": "2020-09-26"
+        "date": "2020-09-26"
       }""";
 
   @Inject
