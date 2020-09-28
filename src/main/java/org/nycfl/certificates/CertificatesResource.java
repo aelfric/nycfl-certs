@@ -17,32 +17,31 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Path("/certs")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class CertificatesResource {
     @Inject
     TournamentService tournamentService;
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments")
     public Tournament createTournament(Tournament tournament){
 
         return tournamentService.createTournament(tournament);
     }
+
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/events")
     public Tournament createEvents(EventList eventList){
         return tournamentService.addEvents(eventList);
     }
+
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/results")
+    @Path("/tournaments/{tournamentId}/events/{eventId}/results")
     public Tournament addResults(@MultipartForm MultipartBody body,
-                                 @QueryParam("eventId") int eventId,
-                                 @QueryParam("tournamentId") long tournamentId){
+                                 @PathParam("eventId") int eventId,
+                                 @PathParam("tournamentId") long tournamentId){
         System.out.println("Received " + body.fileName);
         List<Result> results = new ArrayList<>();
         Map<String, School> map =
@@ -74,7 +73,6 @@ public class CertificatesResource {
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/sweeps")
     public Tournament addSweepsResults(@MultipartForm MultipartBody body,
                                        @PathParam("id") long tournamentId){
@@ -99,21 +97,18 @@ public class CertificatesResource {
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments")
     public List<Tournament> listAllTournaments(){
         return tournamentService.all();
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/schools")
     public List<School> listSchools(@PathParam("id") long tournamentId){
         return tournamentService.getSchools(tournamentId);
     }
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{id}/schools")
     public List<School> addSchools(
@@ -136,9 +131,8 @@ public class CertificatesResource {
         }
         return new ArrayList<>(map.values());
     }
+
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/events/{evtId}/placement")
     public Tournament setPlacementCutoff(
             @PathParam("id") long tournamentId,
@@ -147,9 +141,8 @@ public class CertificatesResource {
             ){
         return tournamentService.updatePlacementCutoff(eventId, cutoffRequest.cutoff);
     }
+
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/events/{evtId}/cutoff")
     public Tournament setCertificateCutoff(
             @PathParam("id") long tournamentId,
@@ -160,8 +153,6 @@ public class CertificatesResource {
     }
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/events/{evtId}/medal")
     public Tournament setMedalCutoff(
             @PathParam("id") long tournamentId,
@@ -178,8 +169,6 @@ public class CertificatesResource {
     @Produces(MediaType.TEXT_HTML)
     @Path("/tournaments/{id}/certificates")
     public String generateCertificates(@PathParam("id") long tournamentId){
-        StringBuilder output = new StringBuilder();
-        output.append("<link rel='stylesheet' href='/certs.css' />");
         Tournament tournament = tournamentService.getTournament(tournamentId);
         return certificate
             .data("tournament", tournament)
@@ -187,7 +176,6 @@ public class CertificatesResource {
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/medals")
     public List<MedalCount> getMedalCount(@PathParam("id") long tournamentId){
         return tournamentService.getMedalCount(tournamentId);

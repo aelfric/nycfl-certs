@@ -109,11 +109,11 @@ class CertificatesResourceTest {
     transaction.commit();
 
     given()
-        .queryParam("eventId", jvOI.getId())
-        .queryParam("tournamentId", tournament.getId())
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .when()
-        .post("/results")
+        .post("/tournaments/{tournamentId}/events/{eventId}/results")
         .then()
         .statusCode(200);
 
@@ -126,11 +126,11 @@ class CertificatesResourceTest {
     assertThat(numResults, CoreMatchers.is(12L));
 
     given()
-        .queryParam("eventId", duo.getId())
-        .queryParam("tournamentId", tournament.getId())
+        .pathParam("eventId", duo.getId())
+        .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/duo.csv"))
         .when()
-        .post("/results")
+        .post("/tournaments/{tournamentId}/events/{eventId}/results")
         .then()
         .statusCode(200);
 
@@ -202,11 +202,11 @@ class CertificatesResourceTest {
     transaction.commit();
 
     given()
-        .queryParam("eventId", jvOI.getId())
-        .queryParam("tournamentId", tournament.getId())
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .when()
-        .post("/results");
+        .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
     List<School> schools = given()
         .pathParam("id", tournament.getId())
@@ -278,11 +278,11 @@ class CertificatesResourceTest {
     transaction.commit();
 
     given()
-        .queryParam("eventId", jvOI.getId())
-        .queryParam("tournamentId", tournament.getId())
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .when()
-        .post("/results")
+        .post("/tournaments/{tournamentId}/events/{eventId}/results")
         .then()
         .statusCode(200);
 
@@ -315,11 +315,11 @@ class CertificatesResourceTest {
     transaction.commit();
 
     given()
-        .queryParam("eventId", jvOI.getId())
-        .queryParam("tournamentId", tournament.getId())
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .when()
-        .post("/results")
+        .post("/tournaments/{tournamentId}/events/{eventId}/results")
         .then()
         .statusCode(200);
 
@@ -353,11 +353,11 @@ class CertificatesResourceTest {
     transaction.commit();
 
     given()
-        .queryParam("eventId", jvOI.getId())
-        .queryParam("tournamentId", tournament.getId())
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .when()
-        .post("/results")
+        .post("/tournaments/{tournamentId}/events/{eventId}/results")
         .then()
         .statusCode(200);
 
@@ -400,18 +400,18 @@ class CertificatesResourceTest {
     transaction.commit();
 
     given()
-        .queryParam("eventId", jvOI.getId())
-        .queryParam("tournamentId", tournament.getId())
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .when()
-        .post("/results");
+        .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
     given()
-        .queryParam("eventId", duo.getId())
-        .queryParam("tournamentId", tournament.getId())
+        .pathParam("eventId", duo.getId())
+        .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/duo.csv"))
         .when()
-        .post("/results");
+        .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
     String certificateHtml = given()
         .pathParam("id", tournament.getId())
@@ -455,18 +455,18 @@ class CertificatesResourceTest {
     transaction.commit();
 
     given()
-        .queryParam("eventId", jvOI.getId())
-        .queryParam("tournamentId", tournament.getId())
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .when()
-        .post("/results");
+        .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
     given()
-        .queryParam("eventId", duo.getId())
-        .queryParam("tournamentId", tournament.getId())
+        .pathParam("eventId", duo.getId())
+        .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/duo.csv"))
         .when()
-        .post("/results");
+        .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
     List<MedalCount> medalCounts = given()
         .pathParam("id", tournament.getId())
