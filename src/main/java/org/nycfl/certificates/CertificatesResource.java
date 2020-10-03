@@ -54,8 +54,10 @@ public class CertificatesResource {
                 Result result = new Result();
                 if(headerNames.contains("Name 2")){
                     result.name = record.get("Name 1") + " & " + record.get("Name 2");
+                    result.count = 2;
                 } else {
                     result.name = record.get("Name 1");
+                    result.count = 1;
                 }
                 result.code = record.get("Code");
                 result.place =

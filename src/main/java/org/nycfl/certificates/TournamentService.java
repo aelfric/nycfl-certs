@@ -113,7 +113,7 @@ public class TournamentService {
 
     public List<MedalCount> getMedalCount(long tournamentId) {
         return em.createQuery("SELECT new org.nycfl.certificates.MedalCount(r" +
-                ".school.name, count(r)) " +
+                ".school.name, sum(r.count)) " +
             "FROM Event e " +
             "LEFT JOIN e.results r " +
             "WHERE e.tournament.id = ?1 " +

@@ -627,7 +627,7 @@ class CertificatesResourceTest {
         );
 
     assertThat(medalCounts, hasItems(
-        new MedalCount("Regis", 3),
+        new MedalCount("Regis", 5),
         new MedalCount("Bronx Science", 1),
         new MedalCount("Convent of the Sacred Heart", 1)
     ));
