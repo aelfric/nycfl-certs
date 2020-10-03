@@ -2,7 +2,9 @@ package org.nycfl.certificates;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.response.ResponseBody;
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
@@ -12,15 +14,11 @@ import javax.persistence.EntityManager;
 import javax.transaction.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
@@ -30,17 +28,22 @@ import static org.hamcrest.Matchers.hasSize;
 class CertificatesResourceTest {
   @Inject
   EntityManager entityManager;
-  private final String tournamentJson = """
-      {
-        "name": "NYCFL First Regis",
-        "host": "Regis High School",
-        "date": "2020-09-26"
-      }""";
 
   @Inject
   UserTransaction transaction;
 
   private final String events = "Junior Varsity Oral Interpretation\nDuo Interpretation";
+
+  @AfterEach
+  void cleanUp() throws SystemException, NotSupportedException,
+          HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    List<Tournament> tournaments = entityManager
+            .createQuery("SELECT t FROM Tournament t ", Tournament.class)
+            .getResultList();
+    tournaments.forEach(t->entityManager.remove(t));
+    transaction.commit();
+  }
 
   @Test
   void createTournament() {
@@ -50,7 +53,12 @@ class CertificatesResourceTest {
         .getSingleResult();
 
     given()
-        .body(tournamentJson)
+        .body("""
+            {
+              "name": "NYCFL First Regis",
+              "host": "Regis High School",
+              "date": "2020-09-26"
+            }""")
         .contentType(MediaType.APPLICATION_JSON)
         .when()
         .post("/tournaments")
@@ -68,7 +76,12 @@ class CertificatesResourceTest {
   void testCreateEvents() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
     transaction.begin();
     Jsonb jsonb = JsonbBuilder.create();
-    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
     entityManager.persist(tournament);
     transaction.commit();
 
@@ -94,7 +107,12 @@ class CertificatesResourceTest {
   void addResults() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Jsonb jsonb = JsonbBuilder.create();
-    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
     Event jvOI = new Event();
     jvOI.setName("Junior Varsity Oral Interpretation");
     jvOI.setTournament(tournament);
@@ -147,7 +165,12 @@ class CertificatesResourceTest {
   void testAddSweeps() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Jsonb jsonb = JsonbBuilder.create();
-    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
     entityManager.persist(tournament);
     transaction.commit();
 
@@ -172,6 +195,97 @@ class CertificatesResourceTest {
   }
 
   @Test
+  void testGetOneTournamentSweeps() throws SystemException,
+          NotSupportedException,
+          HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Jsonb jsonb = JsonbBuilder.create();
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+        .pathParam("id", tournament.getId())
+        .multiPart(new File("src/test/resources/schools.csv"))
+        .post("/tournaments/{id}/schools")
+        .body();
+    given()
+        .pathParam("id", tournament.getId())
+        .multiPart(new File("src/test/resources/sweeps.csv"))
+        .post("/tournaments/{id}/sweeps")
+        .body();
+
+    List<SweepsResult> sweepsResults = given()
+            .pathParam("id", tournament.getId())
+            .get("/tournaments/{id}/sweeps")
+            .body()
+            .as(new ArrayList<SweepsResult>() {
+                    }.getClass().getGenericSuperclass()
+            );
+
+    assertThat(sweepsResults, hasSize(13));
+  }
+  @Test
+  void testGetTwoTournamentSweeps() throws SystemException,
+          NotSupportedException,
+          HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Jsonb jsonb = JsonbBuilder.create();
+    Tournament tournament1 = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
+    Tournament tournament2 = jsonb.fromJson("""
+        {
+          "name": "NYCFL Hugh McEvoy",
+          "host": "Stuyvesant High School",
+          "date": "2020-10-03"
+        }""", Tournament.class);
+    entityManager.persist(tournament1);
+    entityManager.persist(tournament2);
+    transaction.commit();
+
+    given()
+        .pathParam("id", tournament1.getId())
+        .multiPart(new File("src/test/resources/schools.csv"))
+        .post("/tournaments/{id}/schools")
+        .body();
+    given()
+        .pathParam("id", tournament1.getId())
+        .multiPart(new File("src/test/resources/sweeps.csv"))
+        .post("/tournaments/{id}/sweeps")
+        .body();
+    given()
+        .pathParam("id", tournament2.getId())
+        .multiPart(new File("src/test/resources/schools.csv"))
+        .post("/tournaments/{id}/schools")
+        .body();
+    given()
+        .pathParam("id", tournament2.getId())
+        .multiPart(new File("src/test/resources/sweeps2.csv"))
+        .post("/tournaments/{id}/sweeps")
+        .body();
+
+    AggregateSweeps sweepsResults = given()
+            .get("/tournaments/sweeps")
+            .body()
+            .as(AggregateSweeps.class);
+
+    assertThat(sweepsResults.totals.get("Regis"), is(82+89));
+    assertThat(sweepsResults.totals.get("Convent of the Sacred Heart, NYC"),
+            is(97+79));
+    assertThat(sweepsResults.totals.get("Democracy Prep Harlem Prep"),
+            is(39+13));
+  }
+
+  @Test
   void listAllTournaments() {
     Long numTourneys = entityManager
         .createQuery("SELECT COUNT(t.id) FROM Tournament t", Long.class)
@@ -191,7 +305,12 @@ class CertificatesResourceTest {
   void listSchools() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Jsonb jsonb = JsonbBuilder.create();
-    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
     Event jvOI = new Event();
     jvOI.setName("Junior Varsity Oral Interpretation");
     jvOI.setTournament(tournament);
@@ -229,7 +348,12 @@ class CertificatesResourceTest {
   void addSchools() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Jsonb jsonb = JsonbBuilder.create();
-    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
     entityManager.persist(tournament);
     transaction.commit();
 
@@ -267,7 +391,12 @@ class CertificatesResourceTest {
   void setPlacementCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Jsonb jsonb = JsonbBuilder.create();
-    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
     Event jvOI = new Event();
     jvOI.setName("Junior Varsity Oral Interpretation");
     jvOI.setTournament(tournament);
@@ -304,7 +433,12 @@ class CertificatesResourceTest {
   void setCertificateCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Jsonb jsonb = JsonbBuilder.create();
-    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
     Event jvOI = new Event();
     jvOI.setName("Junior Varsity Oral Interpretation");
     jvOI.setTournament(tournament);
@@ -342,7 +476,12 @@ class CertificatesResourceTest {
   void setMedalCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Jsonb jsonb = JsonbBuilder.create();
-    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
     Event jvOI = new Event();
     jvOI.setName("Junior Varsity Oral Interpretation");
     jvOI.setTournament(tournament);
@@ -380,7 +519,12 @@ class CertificatesResourceTest {
   void generateCertificates() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Jsonb jsonb = JsonbBuilder.create();
-    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
     Event jvOI = new Event();
     jvOI.setName("Junior Varsity Oral Interpretation");
     jvOI.setTournament(tournament);
@@ -433,7 +577,12 @@ class CertificatesResourceTest {
   void getMedalCount() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Jsonb jsonb = JsonbBuilder.create();
-    Tournament tournament = jsonb.fromJson(tournamentJson, Tournament.class);
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
     Event jvOI = new Event();
     jvOI.setName("Junior Varsity Oral Interpretation");
     jvOI.setTournament(tournament);
@@ -478,9 +627,9 @@ class CertificatesResourceTest {
         );
 
     assertThat(medalCounts, hasItems(
-        new MedalCount("Regis", 3, 0),
-        new MedalCount("Bronx Science", 1, 0),
-        new MedalCount("Convent of the Sacred Heart", 1, 0)
+        new MedalCount("Regis", 3),
+        new MedalCount("Bronx Science", 1),
+        new MedalCount("Convent of the Sacred Heart", 1)
     ));
   }
 }

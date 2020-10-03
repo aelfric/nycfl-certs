@@ -10,7 +10,7 @@ public class School {
     private long id;
     private String name;
     private String displayName;
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JsonbTransient
     private Tournament tournament;
     private int sweepsPoints = 0;

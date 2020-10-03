@@ -113,7 +113,7 @@ public class TournamentService {
 
     public List<MedalCount> getMedalCount(long tournamentId) {
         return em.createQuery("SELECT new org.nycfl.certificates.MedalCount(r" +
-                ".school.name, count(r), coalesce(r.school.sweepsPoints,0)) " +
+                ".school.name, count(r)) " +
             "FROM Event e " +
             "LEFT JOIN e.results r " +
             "WHERE e.tournament.id = ?1 " +
@@ -132,5 +132,26 @@ public class TournamentService {
         } else {
             em.merge(school);
         }
+    }
+
+    public AggregateSweeps getSweeps() {
+        return new AggregateSweeps(em.createQuery("SELECT new org.nycfl.certificates" +
+                ".SweepsResult" +
+                "(s.name, coalesce(s.sweepsPoints, 0),  t.name, t.id) " +
+                "FROM School s " +
+                "LEFT JOIN s.tournament t " +
+                "ORDER BY s.name", SweepsResult.class)
+                .getResultList());
+    }
+    public List<SweepsResult> getSweeps(long tournamentId) {
+        return em.createQuery("SELECT new org.nycfl.certificates" +
+                ".SweepsResult" +
+                "(s.name, coalesce(s.sweepsPoints, 0),  t.name, t.id) " +
+                "FROM School s " +
+                "LEFT JOIN s.tournament t " +
+                "WHERE t.id = ?1" +
+                "ORDER BY s.name", SweepsResult.class)
+                .setParameter(1, tournamentId)
+                .getResultList();
     }
 }

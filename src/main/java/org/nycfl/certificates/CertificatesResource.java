@@ -181,4 +181,16 @@ public class CertificatesResource {
     public List<MedalCount> getMedalCount(@PathParam("id") long tournamentId){
         return tournamentService.getMedalCount(tournamentId);
     }
+
+    @GET
+    @Path("/tournaments/sweeps")
+    public AggregateSweeps getSweeps(){
+        return tournamentService.getSweeps();
+    }
+
+    @GET
+    @Path("/tournaments/{id}/sweeps")
+    public List<SweepsResult> getSweeps(@PathParam("id") long tournamentId){
+        return tournamentService.getSweeps(tournamentId);
+    }
 }

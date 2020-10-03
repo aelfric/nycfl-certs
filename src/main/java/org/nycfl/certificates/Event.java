@@ -24,7 +24,7 @@ public class Event {
     @OrderBy("place desc ")
     private List<Result> results = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JsonbTransient
     private Tournament tournament;
 

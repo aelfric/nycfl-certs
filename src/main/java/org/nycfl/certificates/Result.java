@@ -38,9 +38,9 @@ public class Result {
     }
 
     @JsonbTransient
-    @ManyToOne
+    @ManyToOne(optional = false)
     Event event;
-    @ManyToOne
+    @ManyToOne(optional = false)
     School school;
 
 
