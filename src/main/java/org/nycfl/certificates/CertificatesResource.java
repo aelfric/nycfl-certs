@@ -58,7 +58,8 @@ public class CertificatesResource {
                     result.name = record.get("Name 1");
                 }
                 result.code = record.get("Code");
-                result.place = Integer.parseInt(record.get("Ranking"));
+                result.place =
+                        Integer.parseInt(record.get("Ranking").replace("T-",""));
                 result.school = map.computeIfAbsent(
                         record.get("School"),
                         School::fromName);
