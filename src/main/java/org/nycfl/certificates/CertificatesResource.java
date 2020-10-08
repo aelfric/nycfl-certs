@@ -8,6 +8,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
@@ -28,6 +29,14 @@ public class CertificatesResource {
     public Tournament createTournament(Tournament tournament){
 
         return tournamentService.createTournament(tournament);
+    }
+    @POST
+    @Path("/tournaments/{id}")
+    @Transactional
+    public Tournament updateTournament(
+            @PathParam("id") long tournamentId,
+            Tournament tournament){
+        return tournamentService.updateTournament(tournamentId, tournament);
     }
 
     @POST

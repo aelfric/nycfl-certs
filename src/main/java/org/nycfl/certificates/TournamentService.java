@@ -22,7 +22,8 @@ public class TournamentService {
 
     public List<Tournament> all() {
         List<Tournament> tournaments = em.createQuery(
-                "SELECT DISTINCT t FROM Tournament t LEFT JOIN FETCH t.events e",
+                "SELECT DISTINCT t FROM Tournament t LEFT JOIN FETCH t.events" +
+                        " e ORDER BY t.tournamentDate desc ",
                 Tournament.class).getResultList();
         if (!tournaments.isEmpty()){
             em.createQuery(
@@ -153,5 +154,14 @@ public class TournamentService {
                 "ORDER BY s.name", SweepsResult.class)
                 .setParameter(1, tournamentId)
                 .getResultList();
+    }
+
+    public Tournament updateTournament(
+            long tournamentId,
+            Tournament updatedTournament) {
+        Tournament persistedTournament = getTournament(tournamentId );
+        persistedTournament.merge(updatedTournament);
+        em.persist(persistedTournament);
+        return persistedTournament;
     }
 }
