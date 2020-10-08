@@ -2,9 +2,15 @@ package org.nycfl.certificates;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.response.ResponseBody;
+import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.mapper.ObjectMapper;
+import io.restassured.mapper.ObjectMapperDeserializationContext;
+import io.restassured.mapper.ObjectMapperSerializationContext;
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
@@ -14,7 +20,10 @@ import javax.persistence.EntityManager;
 import javax.transaction.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
@@ -32,7 +41,29 @@ class CertificatesResourceTest {
   @Inject
   UserTransaction transaction;
 
-  private final String events = "Junior Varsity Oral Interpretation\nDuo Interpretation";
+  static Jsonb jsonb;
+
+  @BeforeAll
+  public static void giveMeAMapper() {
+    jsonb = JsonbBuilder.create();
+    ObjectMapper mapper = new ObjectMapper() {
+      public Object deserialize(ObjectMapperDeserializationContext context) {
+        return jsonb.fromJson(context.getDataToDeserialize().asString(), context.getType());
+      }
+
+      public Object serialize(ObjectMapperSerializationContext context) {
+        return jsonb.toJson(context.getObjectToSerialize());
+      }
+    };
+    RestAssured.config = RestAssured.config().objectMapperConfig(
+            ObjectMapperConfig.objectMapperConfig().defaultObjectMapper(mapper)
+    );
+  }
+
+  @AfterAll
+  public static void releaseMapper() throws Exception {
+    jsonb.close();
+  }
 
   @AfterEach
   void cleanUp() throws SystemException, NotSupportedException,
@@ -73,9 +104,44 @@ class CertificatesResourceTest {
   }
 
   @Test
+  void testUpdateTournament() throws HeuristicRollbackException,
+          RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    transaction.begin();
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+            .body("{\n" +
+                    "  \"name\": \"Byram Hills Invitational\",\n" +
+                    "  \"host\": \"Byram Hills " +
+                    "High School\",\n" +
+                    "  \"date\": \"2020-10-10\",\n" +
+                    "  \"logoUrl\": \"https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG\",\n" +
+                    "  \"certificateHeadline\": \"Byram Hills Invitational Tournament\",\n" +
+                    "  \"signature\": \"Someone Else\"\n" +
+                    "}")
+            .contentType(MediaType.APPLICATION_JSON)
+            .pathParam("id", tournament.getId())
+            .when()
+            .post("/tournaments/{id}")
+            .then()
+            .statusCode(200);
+
+    Tournament tournamentAfterTest = entityManager.find(Tournament.class,
+            tournament.getId());
+
+    assertThat(tournamentAfterTest.getLogoUrl(), CoreMatchers.is("https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG"));
+
+  }
+  @Test
   void testCreateEvents() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -106,7 +172,6 @@ class CertificatesResourceTest {
   @Test
   void addResults() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -164,7 +229,6 @@ class CertificatesResourceTest {
   @Test
   void testAddSweeps() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -199,7 +263,6 @@ class CertificatesResourceTest {
           NotSupportedException,
           HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -235,7 +298,6 @@ class CertificatesResourceTest {
           NotSupportedException,
           HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament1 = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -304,7 +366,6 @@ class CertificatesResourceTest {
   @Test
   void listSchools() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -347,7 +408,6 @@ class CertificatesResourceTest {
   @Test
   void addSchools() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -390,7 +450,6 @@ class CertificatesResourceTest {
   @Test
   void setPlacementCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -432,7 +491,6 @@ class CertificatesResourceTest {
   @Test
   void setCertificateCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -475,7 +533,6 @@ class CertificatesResourceTest {
   @Test
   void setMedalCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -518,7 +575,6 @@ class CertificatesResourceTest {
   @Test
   void generateCertificates() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",
@@ -576,7 +632,6 @@ class CertificatesResourceTest {
   @Test
   void getMedalCount() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
-    Jsonb jsonb = JsonbBuilder.create();
     Tournament tournament = jsonb.fromJson("""
         {
           "name": "NYCFL First Regis",

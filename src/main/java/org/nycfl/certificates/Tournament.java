@@ -24,6 +24,9 @@ public class Tournament {
     private String name;
 
     private String host;
+    private String logoUrl;
+    private String certificateHeadline;
+    private String signature;
 
     @JsonbDateFormat(value = "yyyy-MM-dd")
     private LocalDate tournamentDate;
@@ -40,10 +43,6 @@ public class Tournament {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -99,5 +98,38 @@ public class Tournament {
     }
     public String getShortDate(){
         return tournamentDate.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
+    }
+
+    public String getCertificateHeadline() {
+        return certificateHeadline;
+    }
+
+    public void setCertificateHeadline(String certificateHeadline) {
+        this.certificateHeadline = certificateHeadline;
+    }
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
+
+    public void merge(Tournament updatedTournament) {
+        this.host = updatedTournament.host;
+        this.tournamentDate = updatedTournament.tournamentDate;
+        this.name = updatedTournament.name;
+        this.logoUrl = updatedTournament.logoUrl;
+        this.signature = updatedTournament.signature;
+        this.certificateHeadline = updatedTournament.certificateHeadline;
     }
 }
