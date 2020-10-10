@@ -27,6 +27,7 @@ public class Tournament {
     private String logoUrl;
     private String certificateHeadline;
     private String signature;
+    private String signatureTitle;
 
     @JsonbDateFormat(value = "yyyy-MM-dd")
     private LocalDate tournamentDate;
@@ -124,12 +125,21 @@ public class Tournament {
         this.signature = signature;
     }
 
+    public String getSignatureTitle() {
+        return signatureTitle;
+    }
+
+    public void setSignatureTitle(String signatureTitle) {
+        this.signatureTitle = signatureTitle;
+    }
+
     public void merge(Tournament updatedTournament) {
         this.host = updatedTournament.host;
         this.tournamentDate = updatedTournament.tournamentDate;
         this.name = updatedTournament.name;
         this.logoUrl = updatedTournament.logoUrl;
         this.signature = updatedTournament.signature;
+        this.signatureTitle = updatedTournament.signatureTitle;
         this.certificateHeadline = updatedTournament.certificateHeadline;
     }
 }

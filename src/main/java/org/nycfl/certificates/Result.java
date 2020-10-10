@@ -73,7 +73,9 @@ public class Result {
             "Sixteenth",
             "Seventeenth",
             "Eighteenth",
-            "Nineteenth"
+            "Nineteenth",
+            "Twentieth",
+            "Twenty-First"
     };
 
     public String getPlaceString(){
