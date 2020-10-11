@@ -4,9 +4,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.io.InputStream;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -46,14 +48,25 @@ public class TournamentService {
     }
 
     @Transactional
-    public Tournament addResults(long eventId, List<Result> results) {
-        Collections.reverse(results);
+    public Tournament addResults(
+            long eventId,
+            long tournamentId,
+            EliminationRound eliminationRound,
+            InputStream csvInputStream) {
         Event event = em.createQuery(
                 "SELECT e FROM Event e LEFT JOIN FETCH e.tournament LEFT JOIN FETCH e.results WHERE e.id=?1",
                 Event.class)
                 .setParameter(1, eventId)
                 .getSingleResult();
-        event.addResults(results);
+
+        Map<String, School> schoolsMap = getSchools(tournamentId)
+                .stream()
+                .collect(
+                        Collectors.toMap(School::getName,
+                                Function.identity()));
+
+        event.parseResults(eliminationRound, csvInputStream, schoolsMap);
+        addSchools(schoolsMap.values(), tournamentId);
         em.persist(event);
         return getTournament(event.getTournament().getId());
     }
@@ -156,6 +169,7 @@ public class TournamentService {
                 .getResultList();
     }
 
+    @Transactional
     public Tournament updateTournament(
             long tournamentId,
             Tournament updatedTournament) {
@@ -163,5 +177,13 @@ public class TournamentService {
         persistedTournament.merge(updatedTournament);
         em.persist(persistedTournament);
         return persistedTournament;
+    }
+
+    @Transactional
+    public Tournament updateEventType(long eventId, EventType eventType) {
+        Event event = em.find(Event.class, eventId);
+        event.setEventType(eventType);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
     }
 }

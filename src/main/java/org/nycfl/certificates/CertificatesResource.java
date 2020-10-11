@@ -26,83 +26,64 @@ public class CertificatesResource {
 
     @POST
     @Path("/tournaments")
-    public Tournament createTournament(Tournament tournament){
+    public Tournament createTournament(Tournament tournament) {
 
         return tournamentService.createTournament(tournament);
     }
+
     @POST
     @Path("/tournaments/{id}")
     @Transactional
     public Tournament updateTournament(
             @PathParam("id") long tournamentId,
-            Tournament tournament){
+            Tournament tournament) {
         return tournamentService.updateTournament(tournamentId, tournament);
     }
 
     @POST
     @Path("/events")
-    public Tournament createEvents(EventList eventList){
+    public Tournament createEvents(EventList eventList) {
         return tournamentService.addEvents(eventList);
     }
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{tournamentId}/events/{eventId}/results")
-    public Tournament addResults(@MultipartForm MultipartBody body,
-                                 @PathParam("eventId") int eventId,
-                                 @PathParam("tournamentId") long tournamentId){
-        System.out.println("Received " + body.fileName);
-        List<Result> results = new ArrayList<>();
-        Map<String, School> map =
-                tournamentService.getSchools(tournamentId).stream().collect(
-                        Collectors.toMap(School::getName, Function.identity()));
-        try {
-            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
-            List<String> headerNames = parse.getHeaderNames();
-            for (CSVRecord record : parse.getRecords()) {
-                Result result = new Result();
-                if(headerNames.contains("Name 2")){
-                    result.name = record.get("Name 1") + " & " + record.get("Name 2");
-                    result.count = 2;
-                } else {
-                    result.name = record.get("Name 1");
-                    result.count = 1;
-                }
-                result.code = record.get("Code");
-                result.place =
-                        Integer.parseInt(record.get("Ranking").replace("T-",""));
-                result.school = map.computeIfAbsent(
-                        record.get("School"),
-                        School::fromName);
-                results.add(result);
-            }
-        } catch (IOException e){
-            throw new BadRequestException("");
-        }
-        tournamentService.addSchools(map.values(), tournamentId);
-        return tournamentService.addResults(eventId, results);
+    public Tournament addElimResults(@MultipartForm MultipartBody body,
+                                     @PathParam("eventId") int eventId,
+                                     @PathParam("tournamentId") long tournamentId,
+                                     @QueryParam("type") @DefaultValue(
+                                             "FINALIST") EliminationRound eliminationRound) {
+
+        return tournamentService.addResults(
+                eventId,
+                tournamentId,
+                eliminationRound,
+                body.file);
     }
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{id}/sweeps")
     public Tournament addSweepsResults(@MultipartForm MultipartBody body,
-                                       @PathParam("id") long tournamentId){
+                                       @PathParam("id") long tournamentId) {
         Map<String, School> map =
                 tournamentService.getSchools(tournamentId).stream().collect(
-                        Collectors.toMap(School::getDisplayName, Function.identity()));
+                        Collectors.toMap(School::getDisplayName,
+                                Function.identity()));
         try {
-            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8,
+                    CSVFormat.DEFAULT.withFirstRecordAsHeader());
             for (CSVRecord record : parse.getRecords()) {
                 School school = map.computeIfAbsent(
-                    record.get("School"),
-                    School::fromName);
+                        record.get("School"),
+                        School::fromName);
                 school.setSweepsPoints(
-                    Integer.parseInt(
-                        record.get("Total")));
+                        Integer.parseInt(
+                                record.get("Total")));
                 tournamentService.updateSchool(school, tournamentId);
             }
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new BadRequestException("");
         }
         return tournamentService.getTournament(tournamentId);
@@ -110,13 +91,13 @@ public class CertificatesResource {
 
     @GET
     @Path("/tournaments")
-    public List<Tournament> listAllTournaments(){
+    public List<Tournament> listAllTournaments() {
         return tournamentService.all();
     }
 
     @GET
     @Path("/tournaments/{id}/schools")
-    public List<School> listSchools(@PathParam("id") long tournamentId){
+    public List<School> listSchools(@PathParam("id") long tournamentId) {
         return tournamentService.getSchools(tournamentId);
     }
 
@@ -124,24 +105,37 @@ public class CertificatesResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{id}/schools")
     public List<School> addSchools(
-        @PathParam("id") long tournamentId,
-        @MultipartForm MultipartBody body){
+            @PathParam("id") long tournamentId,
+            @MultipartForm MultipartBody body) {
         Map<String, School> map =
-            tournamentService.getSchools(tournamentId).stream().collect(
-                Collectors.toMap(School::getName, Function.identity()));
+                tournamentService.getSchools(tournamentId).stream().collect(
+                        Collectors.toMap(School::getName, Function.identity()));
         try {
-            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8,
+                    CSVFormat.DEFAULT.withFirstRecordAsHeader());
             for (CSVRecord record : parse.getRecords()) {
                 School school = map.computeIfAbsent(
-                    record.get("Short Name"),
-                    School::fromName);
-                school.setDisplayName(record.get("Full Name"));;
+                        record.get("Short Name"),
+                        School::fromName);
+                school.setDisplayName(record.get("Full Name"));
+                ;
                 tournamentService.updateSchool(school, tournamentId);
             }
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new BadRequestException("");
         }
         return new ArrayList<>(map.values());
+    }
+
+    @POST
+    @Path("/tournaments/{id}/events/{evtId}/type")
+    public Tournament setEventType(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            @QueryParam("type") EventType eventType
+    ) {
+        return tournamentService
+                .updateEventType(eventId, eventType);
     }
 
     @POST
@@ -150,8 +144,9 @@ public class CertificatesResource {
             @PathParam("id") long tournamentId,
             @PathParam("evtId") long eventId,
             CutoffRequest cutoffRequest
-            ){
-        return tournamentService.updatePlacementCutoff(eventId, cutoffRequest.cutoff);
+    ) {
+        return tournamentService
+                .updatePlacementCutoff(eventId, cutoffRequest.cutoff);
     }
 
     @POST
@@ -160,8 +155,9 @@ public class CertificatesResource {
             @PathParam("id") long tournamentId,
             @PathParam("evtId") long eventId,
             CutoffRequest cutoffRequest
-            ){
-        return tournamentService.updateCertificateCutoff(eventId, cutoffRequest.cutoff);
+    ) {
+        return tournamentService
+                .updateCertificateCutoff(eventId, cutoffRequest.cutoff);
     }
 
     @POST
@@ -170,8 +166,9 @@ public class CertificatesResource {
             @PathParam("id") long tournamentId,
             @PathParam("evtId") long eventId,
             CutoffRequest cutoffRequest
-            ){
-        return tournamentService.updateMedalCutoff(eventId, cutoffRequest.cutoff);
+    ) {
+        return tournamentService
+                .updateMedalCutoff(eventId, cutoffRequest.cutoff);
     }
 
     @Inject
@@ -180,28 +177,28 @@ public class CertificatesResource {
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("/tournaments/{id}/certificates")
-    public String generateCertificates(@PathParam("id") long tournamentId){
+    public String generateCertificates(@PathParam("id") long tournamentId) {
         Tournament tournament = tournamentService.getTournament(tournamentId);
         return certificate
-            .data("tournament", tournament)
-            .render();
+                .data("tournament", tournament)
+                .render();
     }
 
     @GET
     @Path("/tournaments/{id}/medals")
-    public List<MedalCount> getMedalCount(@PathParam("id") long tournamentId){
+    public List<MedalCount> getMedalCount(@PathParam("id") long tournamentId) {
         return tournamentService.getMedalCount(tournamentId);
     }
 
     @GET
     @Path("/tournaments/sweeps")
-    public AggregateSweeps getSweeps(){
+    public AggregateSweeps getSweeps() {
         return tournamentService.getSweeps();
     }
 
     @GET
     @Path("/tournaments/{id}/sweeps")
-    public List<SweepsResult> getSweeps(@PathParam("id") long tournamentId){
+    public List<SweepsResult> getSweeps(@PathParam("id") long tournamentId) {
         return tournamentService.getSweeps(tournamentId);
     }
 }

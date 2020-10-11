@@ -43,6 +43,9 @@ public class Result {
     @ManyToOne(optional = false)
     School school;
 
+    @Enumerated(EnumType.STRING)
+    EliminationRound eliminationRound = EliminationRound.FINALIST;
+
 
     public Long getId() {
         return id;
@@ -82,7 +85,7 @@ public class Result {
         if(place<this.event.getPlacementCutoff()){
             return numNames[place] + " Place";
         } else if (place < this.event.getCertificateCutoff()){
-            return "Finalist";
+            return eliminationRound.label;
         } else {
             return "";
         }

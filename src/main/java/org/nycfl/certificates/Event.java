@@ -2,8 +2,13 @@ package org.nycfl.certificates;
 
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Entity
 public class Event {
@@ -32,6 +37,9 @@ public class Event {
     private int certificateCutoff;
     private int medalCutoff;
 
+    @Enumerated(EnumType.STRING)
+    private EventType eventType = EventType.SPEECH;
+
     public Long getId() {
         return id;
     }
@@ -58,10 +66,29 @@ public class Event {
         return this.tournament;
     }
 
-    public void addResults(List<Result> results) {
-        this.results.clear();
-        this.results.addAll(results);
-        results.forEach(r->r.setEvent(this));
+    public void addResults(List<Result> newResults) {
+        Map<String, Result> resultsByCode = this.results.stream()
+                .collect(Collectors.toMap(
+                        r -> r.code,
+                        Function.identity()));
+        for (Result newResult : newResults) {
+            if(resultsByCode.containsKey(newResult.code)){
+                Result updatedResult = resultsByCode.get(newResult.code);
+                updatedResult.eliminationRound = newResult.eliminationRound;
+                updatedResult.place = newResult.place;
+                this.results.replaceAll(oldResult -> {
+                            if (oldResult.code.equals(newResult.code)) {
+                                return newResult;
+                            } else {
+                                return oldResult;
+                            }
+                        }
+                );
+            } else {
+                this.results.add(newResult);
+            }
+        }
+        newResults.forEach(r->r.setEvent(this));
     }
 
     public int getPlacementCutoff() {
@@ -86,5 +113,25 @@ public class Event {
 
     public void setMedalCutoff(int medalCutoff) {
         this.medalCutoff = medalCutoff;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
+
+    void parseResults(EliminationRound eliminationRound,
+                      InputStream csvInputStream,
+                      Map<String, School> schoolsMap) {
+        List<Result> results = eventType.parseResults(
+                schoolsMap,
+                eliminationRound,
+                csvInputStream
+        );
+        Collections.reverse(results);
+        addResults(results);
     }
 }
