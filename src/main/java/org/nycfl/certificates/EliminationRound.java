@@ -1,6 +1,6 @@
 package org.nycfl.certificates;
 
-public enum EliminationRound {
+public enum EliminationRound implements LabeledEnum{
     FINALIST("Finalist"),
     SEMIFINALIST("Semi-Finalist"),
     QUARTER_FINALIST("Quarter Finalist"),
@@ -11,5 +11,15 @@ public enum EliminationRound {
 
     EliminationRound(String label) {
         this.label = label;
+    }
+
+    @Override
+    public String getLabel() {
+        return this.label;
+    }
+
+    @Override
+    public String getValue() {
+        return name();
     }
 }

@@ -20,7 +20,7 @@ public class DebateLDResultParser implements ResultParser {
             result.name = record.get("Name");
             result.count = 1;
             result.code = record.get("Code");
-            result.place = Integer.parseInt(record.get("Place"));
+            result.place = Integer.parseInt(record.get("Place").replace("T-",""));
             result.eliminationRound = eliminationRound;
             result.school = schoolsMap.computeIfAbsent(
                     result.code.substring(0, result.code.length()-3),
