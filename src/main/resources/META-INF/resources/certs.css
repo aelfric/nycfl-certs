@@ -109,20 +109,20 @@ p {
     background-size: 100% 100%;
 }
 
-.certificate_border.black {
-    background-image: url('/cert.svg');
-}
 .certificate_border.gold {
-    background-image: url('/cert-gold.svg');
+    background-image: url('/certs/background.svg?color=D4AF37');
+}
+.certificate_border.black {
+    background-image: url('/certs/background.svg?color=D8D8FF');
 }
 .certificate_border.silver {
-    background-image: url('/cert-silver.svg');
+    background-image: url('/certs/background.svg?color=C0C0C0');
 }
 .certificate_border.bronze {
-    background-image: url('/cert-bronze.svg');
+    background-image: url('/certs/background.svg?color=CD7F32');
 }
 .certificate_border.red {
-    background-image: url('/cert-red.svg');
+    background-image: url('/certs/background.svg?color=C76C67');
 }
 .place{
     color: #8f3935;

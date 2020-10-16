@@ -4,7 +4,6 @@ import io.quarkus.qute.Template;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
 import javax.inject.Inject;
@@ -13,7 +12,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,19 @@ import java.util.stream.Collectors;
 public class CertificatesResource {
     @Inject
     TournamentService tournamentService;
+
+    @Inject
+    Template cert;
+
+    @GET
+    @Path("/background.svg")
+    @Produces("image/svg+xml")
+    public String getBackgroundImage(
+        @QueryParam("color") @DefaultValue("ffffff") String color
+    ) {
+        return cert.data("color", "#" + color).render();
+    }
+
 
     @POST
     @Path("/tournaments")
