@@ -6,17 +6,24 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public enum EventType implements LabeledEnum {
-    SPEECH(SpeechResultParser::new, "Speech"),
-    DEBATE_PF(DebatePFResultParser::new, "Public Forum Debate"),
-    DEBATE_LD(DebateLDResultParser::new, "Lincoln-Douglas Debate"),
-    DEBATE_CX(DebatePFResultParser::new, "Policy Debate");
+    SPEECH("Speech", SpeechResultParser::new, SpeechResultFormatter::new),
+    DEBATE_PF("Public Forum Debate", DebatePFResultParser::new,
+        DebateResultFormatter::new),
+    DEBATE_LD("Lincoln-Douglas Debate", DebateLDResultParser::new,
+        DebateResultFormatter::new),
+    DEBATE_CX("Policy Debate", DebatePFResultParser::new,
+        DebateResultFormatter::new);
 
     private final String label;
     private final Supplier<ResultParser> parserSupplier;
+    private final Supplier<ResultFormatter> formatterSupplier;
 
-    EventType(Supplier<ResultParser> parserSupplier, String debate) {
+    @SuppressWarnings("CdiInjectionPointsInspection")
+    EventType(String label, Supplier<ResultParser> parserSupplier,
+              Supplier<ResultFormatter> formatterSupplier) {
+        this.label = label;
         this.parserSupplier = parserSupplier;
-        label = debate;
+        this.formatterSupplier = formatterSupplier;
     }
 
     public List<Result> parseResults(Map<String, School> schoolsMap,
@@ -24,8 +31,18 @@ public enum EventType implements LabeledEnum {
                                      InputStream inputStream) {
         ResultParser resultParser = parserSupplier.get();
         return resultParser.parseResultsCSV(schoolsMap,
-                eliminationRound,
-                inputStream);
+            eliminationRound,
+            inputStream);
+    }
+
+    public String formatPlacementString(Result result) {
+        ResultFormatter resultFormatter = formatterSupplier.get();
+        return resultFormatter.getPlacementString(result);
+    }
+
+    public String getCertificateColor(Result result) {
+        ResultFormatter resultFormatter = formatterSupplier.get();
+        return resultFormatter.getCertificateColor(result);
     }
 
     @Override

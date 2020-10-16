@@ -56,52 +56,11 @@ public class Result {
     }
 
 
-    private static final transient String[] numNames = {
-            "",
-            "First",
-            "Second",
-            "Third",
-            "Fourth",
-            "Fifth",
-            "Sixth",
-            "Seventh",
-            "Eighth",
-            "Ninth",
-            "Tenth",
-            "Eleventh",
-            "Twelfth",
-            "Thirteenth",
-            "Fourteenth",
-            "Fifteenth",
-            "Sixteenth",
-            "Seventeenth",
-            "Eighteenth",
-            "Nineteenth",
-            "Twentieth",
-            "Twenty-First"
-    };
-
     public String getPlaceString(){
-        if(place<this.event.getPlacementCutoff()){
-            return numNames[place] + " Place";
-        } else if (place < this.event.getCertificateCutoff()){
-            return eliminationRound.label;
-        } else {
-            return "";
-        }
+        return this.event.getEventType().formatPlacementString(this);
     }
 
     public String getCertColor(){
-        if(place==1){
-            return "gold";
-        } if (place==2){
-            return "silver";
-        } if (place == 3){
-            return "bronze";
-        } if(place<this.event.getPlacementCutoff()){
-            return "red";
-        } else {
-            return "black";
-        }
+        return this.event.getEventType().getCertificateColor(this);
     }
 }

@@ -116,6 +116,7 @@ public class Event {
     }
 
     public EventType getEventType() {
+        if(eventType==null) return EventType.SPEECH;
         return eventType;
     }
 
@@ -134,4 +135,5 @@ public class Event {
         Collections.reverse(results);
         addResults(results);
     }
+
 }
