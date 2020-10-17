@@ -21,7 +21,7 @@ public class DebatePFResultParser implements ResultParser {
             result.eliminationRound = eliminationRound;
             result.school = schoolsMap.computeIfAbsent(
                     result.code.substring(0, result.code.length() - 3),
-                    School::fromName);
+                    School::fromCode);
 
             if(eliminationRound != EliminationRound.FINALIST) {
                 result.name = record.get("Name");

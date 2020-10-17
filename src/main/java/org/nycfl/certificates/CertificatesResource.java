@@ -75,6 +75,13 @@ public class CertificatesResource {
                 eliminationRound,
                 body.file);
     }
+    @DELETE
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/tournaments/{tournamentId}/events/{eventId}/results")
+    public Tournament clearResults(@PathParam("eventId") int eventId,
+                                   @PathParam("tournamentId") long tournamentId) {
+        return tournamentService.clearResults(eventId);
+    }
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -113,6 +120,13 @@ public class CertificatesResource {
     @Path("/tournaments/{id}/schools")
     public List<School> listSchools(@PathParam("id") long tournamentId) {
         return tournamentService.getSchools(tournamentId);
+    }
+
+    @DELETE
+    @Path("/tournaments/{id}/schools/{schoolId}")
+    public List<School> deleteSchool(@PathParam("id") long tournamentId,
+                                     @PathParam("schoolId") long schoolId) {
+        return tournamentService.deleteSchool(tournamentId, schoolId);
     }
 
     @POST

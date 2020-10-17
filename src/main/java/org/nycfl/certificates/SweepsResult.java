@@ -6,6 +6,7 @@ import java.util.Objects;
 
 public class SweepsResult {
   public final String school;
+  public final long schoolId;
   public final int points;
   public final String tournament;
   public final long tournamentId;
@@ -14,8 +15,10 @@ public class SweepsResult {
   public SweepsResult(@JsonbProperty("school") String school,
                       @JsonbProperty("points") int points,
                       @JsonbProperty("tournament") String tournament,
-                      @JsonbProperty("tournamentId") long tournamentId) {
+                      @JsonbProperty("tournamentId") long tournamentId,
+                      @JsonbProperty("schoolId") long schoolId) {
     this.school = school;
+    this.schoolId = schoolId;
     this.points = points;
     this.tournament = tournament;
     this.tournamentId = tournamentId;

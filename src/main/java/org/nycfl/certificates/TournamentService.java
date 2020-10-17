@@ -4,6 +4,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import javax.ws.rs.BadRequestException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
@@ -59,14 +60,27 @@ public class TournamentService {
                 .setParameter(1, eventId)
                 .getSingleResult();
 
-        Map<String, School> schoolsMap = getSchools(tournamentId)
+        Function<School, String> getName = event.getSchoolMappingFunction();
+        List<School> schools = getSchools(tournamentId);
+        Map<String, School> schoolsMap = schools
                 .stream()
                 .collect(
-                        Collectors.toMap(School::getName,
+                        Collectors.toMap(getName,
                                 Function.identity()));
 
         event.parseResults(eliminationRound, csvInputStream, schoolsMap);
         addSchools(schoolsMap.values(), tournamentId);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
+    }
+    @Transactional
+    public Tournament clearResults(long eventId) {
+        Event event = em.createQuery(
+                "SELECT e FROM Event e LEFT JOIN FETCH e.tournament LEFT JOIN FETCH e.results WHERE e.id=?1",
+                Event.class)
+                .setParameter(1, eventId)
+                .getSingleResult();
+        event.clearResults();
         em.persist(event);
         return getTournament(event.getTournament().getId());
     }
@@ -96,7 +110,8 @@ public class TournamentService {
     }
 
     public List<School> getSchools(long tournamentId) {
-        return em.createQuery("SELECT s FROM School s WHERE s.tournament" +
+        return em.createQuery("SELECT DISTINCT s FROM School s WHERE s" +
+            ".tournament" +
                 ".id=?1", School.class).setParameter(1, tournamentId)
                 .getResultList();
     }
@@ -160,7 +175,7 @@ public class TournamentService {
     public List<SweepsResult> getSweeps(long tournamentId) {
         return em.createQuery("SELECT new org.nycfl.certificates" +
                 ".SweepsResult" +
-                "(s.name, coalesce(s.sweepsPoints, 0),  t.name, t.id) " +
+                "(s.name, coalesce(s.sweepsPoints, 0),  t.name, t.id, s.id) " +
                 "FROM School s " +
                 "LEFT JOIN s.tournament t " +
                 "WHERE t.id = ?1" +
@@ -183,7 +198,34 @@ public class TournamentService {
     public Tournament updateEventType(long eventId, EventType eventType) {
         Event event = em.find(Event.class, eventId);
         event.setEventType(eventType);
+        if(eventType.hasSpeakerAwards()){
+            Event speakerEvent = new Event();
+            speakerEvent.setEventType(EventType.DEBATE_SPEAKS);
+            speakerEvent.setName(event.getName() +" Speaker Awards");
+            speakerEvent.setTournament(event.getTournament());
+            em.persist(speakerEvent);
+        }
         em.persist(event);
         return getTournament(event.getTournament().getId());
+    }
+
+    @Transactional
+    public List<School> deleteSchool(long tournamentId, long schoolId) {
+        int
+            updated =
+            em.createQuery(
+                "DELETE FROM School s WHERE s.id=?1 and s.tournament.id = ?2" +
+                    " and size(s.results) = 0")
+                .setParameter(1, schoolId)
+                .setParameter(2, tournamentId)
+                .executeUpdate();
+        if(updated != 1){
+            throw new BadRequestException("Could not delete school");
+        }
+        return em
+            .createQuery("SELECT s FROM School s WHERE s.tournament.id =" +
+            " ?1", School.class)
+            .setParameter(1, tournamentId)
+            .getResultList();
     }
 }

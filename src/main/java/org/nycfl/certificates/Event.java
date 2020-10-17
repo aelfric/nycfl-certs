@@ -136,4 +136,11 @@ public class Event {
         addResults(results);
     }
 
+    Function<School, String> getSchoolMappingFunction() {
+        return eventType.schoolMapper();
+    }
+
+    public void clearResults() {
+        results.clear();
+    }
 }

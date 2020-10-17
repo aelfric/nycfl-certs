@@ -26,8 +26,10 @@ public interface ResultParser {
 
     default CSVParser getParser(InputStream inputStream) {
         try {
-            return CSVParser.parse(inputStream, StandardCharsets.UTF_8,
-                    CSVFormat.DEFAULT.withFirstRecordAsHeader());
+            return CSVParser.parse(inputStream,
+                StandardCharsets.UTF_8,
+                CSVFormat.DEFAULT.withFirstRecordAsHeader()
+                    .withAllowMissingColumnNames(true));
         } catch (IOException ioException){
             throw new BadRequestException("Cannot parse CSV");
         }

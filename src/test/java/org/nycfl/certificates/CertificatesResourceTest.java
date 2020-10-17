@@ -7,6 +7,7 @@ import io.restassured.config.ObjectMapperConfig;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperDeserializationContext;
 import io.restassured.mapper.ObjectMapperSerializationContext;
+import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -17,6 +18,7 @@ import javax.inject.Inject;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.transaction.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -32,6 +34,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
 @TestHTTPEndpoint(CertificatesResource.class)
@@ -382,6 +385,97 @@ class CertificatesResourceTest {
   }
 
   @Test
+  void addDebateSpeaks() throws SystemException, NotSupportedException,
+          HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Tournament tournament = jsonb.fromJson("""
+                                           {
+                                             "name": "NYCFL First Regis",
+                                             "host": "Regis High School",
+                                             "date": "2020-09-26"
+                                           }""", Tournament.class);
+    Event lincolnDouglas = new Event();
+    lincolnDouglas.setName("Public Forum Debate Speaker Awards");
+    lincolnDouglas.setTournament(tournament);
+    lincolnDouglas.setEventType(EventType.DEBATE_SPEAKS);
+    tournament.events = Collections.singletonList(
+            lincolnDouglas
+    );
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+            .pathParam("eventId", lincolnDouglas.getId())
+            .pathParam("tournamentId", tournament.getId())
+            .multiPart(new File("src/test/resources/debate-speaks.csv"))
+            .when()
+            .post("/tournaments/{tournamentId}/events/{eventId}/results")
+            .then()
+            .statusCode(200);
+
+    Result topSpeaks = entityManager
+            .createQuery("SELECT r FROM Result r  where r.code=?1",
+                    Result.class)
+            .setParameter(1, "Brookline FE")
+            .getSingleResult();
+
+    assertThat(topSpeaks.place, is(1));
+  }
+  @Test
+  void canMapDebateSchools() throws SystemException, NotSupportedException,
+          HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Tournament tournament = jsonb.fromJson("""
+                                           {
+                                             "name": "NYCFL First Regis",
+                                             "host": "Regis High School",
+                                             "date": "2020-09-26"
+                                           }""", Tournament.class);
+    Event lincolnDouglasSpeaks = new Event();
+    lincolnDouglasSpeaks.setName("Lincoln-Douglas Debate Speaker Awards");
+    lincolnDouglasSpeaks.setTournament(tournament);
+    lincolnDouglasSpeaks.setEventType(EventType.DEBATE_SPEAKS);
+
+    Event lincolnDouglas = new Event();
+    lincolnDouglas.setName("Lincoln-Douglas Debate");
+    lincolnDouglas.setTournament(tournament);
+    lincolnDouglas.setEventType(EventType.DEBATE_LD);
+    tournament.events = Arrays.asList(
+        lincolnDouglasSpeaks,
+        lincolnDouglas
+    );
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+            .pathParam("eventId", lincolnDouglasSpeaks.getId())
+            .pathParam("tournamentId", tournament.getId())
+            .multiPart(new File("src/test/resources/debate-speaks.csv"))
+            .when()
+            .post("/tournaments/{tournamentId}/events/{eventId}/results")
+            .then()
+            .statusCode(200);
+    given()
+            .pathParam("eventId", lincolnDouglas.getId())
+            .pathParam("tournamentId", tournament.getId())
+            .multiPart(new File("src/test/resources/ld-finals-for-mapping.csv"))
+            .when()
+            .post("/tournaments/{tournamentId}/events/{eventId}/results")
+            .then()
+            .statusCode(200);
+
+    Result topSpeaks = entityManager
+            .createQuery("SELECT r FROM Result r  where r.code=?1 and r.event" +
+                    ".id=?2",
+                    Result.class)
+            .setParameter(1, "Byram Hills JL")
+            .setParameter(2, lincolnDouglas.getId())
+            .getSingleResult();
+
+    assertThat(topSpeaks.school.getName(), is("Byram Hills High School"));
+  }
+
+  @Test
   void testAddSweeps() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Tournament tournament = jsonb.fromJson("""
@@ -411,6 +505,110 @@ class CertificatesResourceTest {
         .setParameter(2, tournament.getId())
         .getSingleResult();
     assertThat(regisSweeps, CoreMatchers.is(89));
+  }
+  @Test
+  void testDeleteSchoolWithoutResults() throws SystemException,
+      NotSupportedException,
+      HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+        .pathParam("id", tournament.getId())
+        .multiPart(new File("src/test/resources/schools.csv"))
+        .post("/tournaments/{id}/schools")
+        .body();
+
+    Long regisId = entityManager
+        .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
+                ".tournament.id = ?2",
+            Long.class)
+        .setParameter(1, "Regis")
+        .setParameter(2, tournament.getId())
+        .getSingleResult();
+
+    given()
+        .pathParam("id", tournament.getId())
+        .pathParam("sid", regisId)
+        .when()
+        .delete("/tournaments/{id}/schools/{sid}")
+        .then().statusCode(200);
+
+    assertThrows(NoResultException.class, () ->
+        entityManager
+            .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
+                    ".tournament.id = ?2",
+                Long.class)
+            .setParameter(1, "Regis")
+            .setParameter(2, tournament.getId())
+            .getSingleResult());
+  }
+  @Test
+  void testCannotDeleteSchoolWithResults() throws SystemException,
+      NotSupportedException,
+      HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
+
+    Event jvOI = new Event();
+    jvOI.setName("Junior Varsity Oral Interpretation");
+    jvOI.setTournament(tournament);
+    jvOI.setCertificateCutoff(9);
+    jvOI.setPlacementCutoff(6);
+    jvOI.setMedalCutoff(4);
+
+    Event duo = new Event();
+    duo.setName("Duo Interpretation");
+    duo.setTournament(tournament);
+    duo.setCertificateCutoff(3);
+    duo.setPlacementCutoff(3);
+    duo.setMedalCutoff(4);
+    tournament.events = Arrays.asList(
+        jvOI,
+        duo
+    );
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+        .pathParam("id", tournament.getId())
+        .multiPart(new File("src/test/resources/schools.csv"))
+        .post("/tournaments/{id}/schools")
+        .body();
+
+    given()
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
+        .multiPart(new File("src/test/resources/JV-OI.csv"))
+        .when()
+        .post("/tournaments/{tournamentId}/events/{eventId}/results");
+
+    Long regisId = entityManager
+        .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
+                ".tournament.id = ?2",
+            Long.class)
+        .setParameter(1, "Regis")
+        .setParameter(2, tournament.getId())
+        .getSingleResult();
+
+    given()
+        .pathParam("id", tournament.getId())
+        .pathParam("sid", regisId)
+        .when()
+        .delete("/tournaments/{id}/schools/{sid}")
+        .then().statusCode(HttpStatus.SC_BAD_REQUEST);
   }
 
   @Test
@@ -603,6 +801,41 @@ class CertificatesResourceTest {
   }
 
   @Test
+  void clearResults() throws SystemException, NotSupportedException,
+      HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
+    Event jvOI = new Event();
+    jvOI.setName("Junior Varsity Oral Interpretation");
+    jvOI.setTournament(tournament);
+    tournament.events = Collections.singletonList(
+        jvOI
+    );
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
+        .multiPart(new File("src/test/resources/JV-OI.csv"))
+        .post("/tournaments/{tournamentId}/events/{eventId}/results");
+
+    given()
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
+        .multiPart(new File("src/test/resources/JV-OI.csv"))
+        .delete("/tournaments/{tournamentId}/events/{eventId}/results");
+
+    Event jvOIAfter = entityManager.find(Event.class, jvOI.getId());
+    assertThat(jvOIAfter.getResults(), hasSize(0));
+  }
+
+  @Test
   void setPlacementCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Tournament tournament = jsonb.fromJson("""
@@ -624,10 +857,7 @@ class CertificatesResourceTest {
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
-        .when()
-        .post("/tournaments/{tournamentId}/events/{eventId}/results")
-        .then()
-        .statusCode(200);
+        .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
     given()
         .pathParam("id", tournament.getId())
@@ -715,6 +945,39 @@ class CertificatesResourceTest {
 
     Event ldAfter = entityManager.find(Event.class, lincolnDouglas.getId());
     assertThat(ldAfter.getEventType(), CoreMatchers.is(EventType.DEBATE_LD));
+
+  }  @Test
+  void createSpeakerAwards() throws SystemException, NotSupportedException,
+          HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Tournament tournament = jsonb.fromJson("""
+        {
+          "name": "NYCFL First Regis",
+          "host": "Regis High School",
+          "date": "2020-09-26"
+        }""", Tournament.class);
+    Event lincolnDouglas = new Event();
+    lincolnDouglas.setName("Lincoln-Douglas Debate");
+    lincolnDouglas.setTournament(tournament);
+    tournament.events = Collections.singletonList(
+        lincolnDouglas
+    );
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+        .pathParam("eventId", lincolnDouglas.getId())
+        .pathParam("tournamentId", tournament.getId())
+        .queryParam("type", EventType.DEBATE_LD.name())
+            .contentType(MediaType.APPLICATION_JSON)
+        .when()
+        .post("/tournaments/{tournamentId}/events/{eventId}/type")
+        .then()
+        .statusCode(200);
+
+    List<Event> ldAfter = entityManager.createQuery("SELECT e FROM Event e WHERE e" +
+        ".eventType='DEBATE_SPEAKS'", Event.class).getResultList();
+    assertThat(ldAfter, hasSize(1));
 
   }
 
