@@ -63,4 +63,8 @@ public class Result {
     public String getCertColor(){
         return this.event.getEventType().getCertificateColor(this);
     }
+
+    public EliminationRound getEliminationRound() {
+        return eliminationRound;
+    }
 }

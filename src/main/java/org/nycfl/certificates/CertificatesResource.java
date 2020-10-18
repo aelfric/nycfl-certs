@@ -5,11 +5,13 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
+import org.nycfl.certificates.slides.SlideBuilder;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -210,6 +212,29 @@ public class CertificatesResource {
         return certificate
                 .data("tournament", tournament)
                 .render();
+    }
+
+    @Inject
+    SlideBuilder slideBuilder;
+
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/tournaments/{id}/slides_preview")
+    public String generateSlidesPreview(@PathParam("id") long tournamentId) {
+        Tournament tournament = tournamentService.getTournament(tournamentId);
+
+        return slideBuilder.buildSlidesPreview(tournament);
+    }
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/tournaments/{id}/slides")
+    public Response generateSlides(@PathParam("id") long tournamentId) {
+        Tournament tournament = tournamentService.getTournament(tournamentId);
+
+        return Response
+            .ok(slideBuilder.buildSlidesFile(tournament))
+            .header("Content-Disposition","attachment; filename=\"slides_tournament_"+tournamentId+".zip\"")
+            .build();
     }
 
     @GET

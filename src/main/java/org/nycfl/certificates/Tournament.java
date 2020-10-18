@@ -25,6 +25,7 @@ public class Tournament {
 
     private String host;
     private String logoUrl;
+    private String slideBackgroundUrl;
     private String certificateHeadline;
     private String signature;
     private String signatureTitle;
@@ -133,11 +134,20 @@ public class Tournament {
         this.signatureTitle = signatureTitle;
     }
 
+    public String getSlideBackgroundUrl() {
+        return slideBackgroundUrl;
+    }
+
+    public void setSlideBackgroundUrl(String slideBackgroundUrl) {
+        this.slideBackgroundUrl = slideBackgroundUrl;
+    }
+
     public void merge(Tournament updatedTournament) {
         this.host = updatedTournament.host;
         this.tournamentDate = updatedTournament.tournamentDate;
         this.name = updatedTournament.name;
         this.logoUrl = updatedTournament.logoUrl;
+        this.slideBackgroundUrl = updatedTournament.slideBackgroundUrl;
         this.signature = updatedTournament.signature;
         this.signatureTitle = updatedTournament.signatureTitle;
         this.certificateHeadline = updatedTournament.certificateHeadline;
