@@ -34,4 +34,14 @@ public interface ResultParser {
             throw new BadRequestException("Cannot parse CSV");
         }
     }
+
+    default String getOrAlternateColumn(CSVRecord record,
+                                        String primaryName,
+                                        String secondaryName) {
+        try {
+            return record.get(primaryName);
+        } catch (IllegalArgumentException e){
+            return record.get(secondaryName);
+        }
+    }
 }

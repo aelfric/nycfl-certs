@@ -8,25 +8,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DebateLDResultParser implements ResultParser {
+public class CongressResultsParser implements ResultParser {
     @Override
     public List<Result> parseResultsCSV(Map<String, School> schoolsMap,
                                         EliminationRound eliminationRound,
                                         InputStream inputStream) {
         CSVParser parse = getParser(inputStream);
         List<Result> results = new ArrayList<>();
+        List<String> headerNames = parse.getHeaderNames();
         for (CSVRecord record : getRecords(parse)) {
             Result result = new Result();
-            result.name = getOrAlternateColumn(record, "Name","Name 1");
-            result.count = 1;
+            result.name = record.get("Code");
             result.code = record.get("Code");
-            result.place = Integer.parseInt(getOrAlternateColumn(record,
-                "Place", "Ranking").replace("T-"
-                ,""));
+            result.place =
+                    Integer.parseInt(getOrAlternateColumn(record, "Ranking",
+                        "Place")
+                        .replace("T-", ""));
             result.eliminationRound = eliminationRound;
             result.school = schoolsMap.computeIfAbsent(
-                    result.code.substring(0, result.code.length()-3),
-                    School::fromCode);
+                    record.get("School"),
+                    School::fromName);
             results.add(result);
         }
         return results;

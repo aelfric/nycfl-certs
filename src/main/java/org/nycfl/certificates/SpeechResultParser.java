@@ -23,12 +23,14 @@ public class SpeechResultParser implements ResultParser {
                         record.get("Name 1") + " & " + record.get("Name 2");
                 result.count = 2;
             } else {
-                result.name = record.get("Name 1");
+                result.name = getOrAlternateColumn(record, "Name 1", "Name");
                 result.count = 1;
             }
             result.code = record.get("Code");
             result.place =
-                    Integer.parseInt(record.get("Ranking").replace("T-", ""));
+                    Integer.parseInt(getOrAlternateColumn(record, "Ranking",
+                        "Place")
+                        .replace("T-", ""));
             result.eliminationRound = eliminationRound;
             result.school = schoolsMap.computeIfAbsent(
                     record.get("School"),
@@ -37,5 +39,4 @@ public class SpeechResultParser implements ResultParser {
         }
         return results;
     }
-
 }

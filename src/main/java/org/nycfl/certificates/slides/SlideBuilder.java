@@ -45,7 +45,7 @@ public class SlideBuilder {
   }
 
   Map<String, String> buildSlides(Tournament tournament) {
-    Map<String, String> slides = new HashMap();
+    Map<String, String> slides = new LinkedHashMap<>();
     for (Event event : tournament.getEvents()) {
           if (event.getEventType() != EventType.DEBATE_SPEAKS) {
               Map<EliminationRound, List<Result>> collect =
@@ -60,12 +60,16 @@ public class SlideBuilder {
                   Collection<List<Result>> dividedResults = round
                       .getValue()
                       .stream()
+                      .filter(r->r.getPlace() < event.getCertificateCutoff())
                       .collect(
                           Collectors.groupingBy(it -> counter.getAndIncrement() / 9)
                       )
                       .values();
+                  int i = 0;
                   for (List<Result> dividedResult : dividedResults) {
-                      slides.put(event.getName() + round.getKey().name() + counter.get(),
+                      slides.put("%s_%s_%d".formatted(event.getName(),
+                          round.getKey().name(),
+                          i++),
                           slide
                               .data("slideBackground", tournament.getSlideBackgroundUrl())
                           .data("event", event)
