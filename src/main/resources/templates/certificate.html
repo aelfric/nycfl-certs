@@ -3,34 +3,13 @@
 {#for result in event.results}
 {#if result.place < event.certificateCutoff }
 <div style="overflow: hidden; height: 8.5in; width: 11in; padding: 0.5in">
-    <div class="certificate_border {result.certColor}">
-        <div class="certificate_body">
-            <img src="{tournament.logoUrl ?: "/nycfl-logo.svg"}" height="100px"/>
-            <p class="nycfl">{tournament.certificateHeadline ?: "New York Catholic Forensic League"}</p>
-            <p class="award_certificate">Award Certificate</p>
-            <div class="tournament_details">
-                <p class="host">{tournament.host}</p>
-                <p class="tournament_name">{tournament.name}</p>
-                <p class="tournament_date">{tournament.longDate}</p>
-            </div>
-            <p class="place">{result.placeString}</p>
-            <p class="before_text">This certificate is given to</p>
-            <p class="name">{result.name}</p>
-            </p>
-            <p class="before_text">to recognize outstanding performance in the category of</p>
-
-            <p class="event_name">{event.name}</p>
-
-            <p class="signature_block">
-                <span class="signature">{tournament.signature ?: "Thomas Beck"}</span>
-                <span class="position">{tournament.signatureTitle ?: "NYCFL President"} </span>
-            </p>
-            <p class="date_block">
-                <span class="signature-date">{tournament.shortDate}</span>
-                <span class="date-label">Date</span>
-            </p>
-        </div>
-    </div>
+    {#if event.certificateType eq CertificateType:DEBATE_SPEAKER }
+    {#debate_speaker /}
+    {#else if event.certificateType eq CertificateType:PLACEMENT }
+    {#placement /}
+    {#else if event.certificateType eq CertificateType:DEBATE_RECORD }
+    {#record /}
+    {/if }
 </div>
 <div style="page-break-after: always; visibility: hidden"></div>
 {/if}

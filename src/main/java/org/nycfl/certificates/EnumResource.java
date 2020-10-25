@@ -24,6 +24,15 @@ public class EnumResource {
     }
 
     @GET
+    @Path("certificate_types")
+    public List<LabeledEnumDTO> getCertTypes(){
+        return Arrays
+            .stream(CertificateType.values())
+            .map(LabeledEnumDTO::new)
+            .collect(Collectors.toList());
+    }
+
+    @GET
     @Path("elim_types")
     public List<LabeledEnumDTO> getRounds(){
         return Arrays
@@ -36,6 +45,7 @@ public class EnumResource {
         public final String label;
         public final String value;
 
+        @SuppressWarnings("CdiInjectionPointsInspection")
         public LabeledEnumDTO(LabeledEnum labeledEnum) {
             this.label = labeledEnum.getLabel();
             this.value = labeledEnum.getValue();

@@ -1,5 +1,7 @@
 package org.nycfl.certificates;
 
+import io.quarkus.qute.TemplateExtension;
+
 public class DebateSpeakerResultFormatter implements ResultFormatter{
     String[] NUMBER_ORDINALS = {
         "",
@@ -53,5 +55,10 @@ public class DebateSpeakerResultFormatter implements ResultFormatter{
         } else {
             return "red";
         }
+    }
+
+    @TemplateExtension(namespace = "Speaker", matchName = "cleanName")
+    static String cleanName(String val) {
+        return val.replace("Speaker Awards","").trim();
     }
 }

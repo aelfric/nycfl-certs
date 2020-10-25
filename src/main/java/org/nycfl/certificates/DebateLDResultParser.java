@@ -23,6 +23,7 @@ public class DebateLDResultParser implements ResultParser {
             result.place = Integer.parseInt(getOrAlternateColumn(record,
                 "Place", "Ranking").replace("T-"
                 ,""));
+            result.numWins = Integer.valueOf(record.get("WinPm"));
             result.eliminationRound = eliminationRound;
             result.school = schoolsMap.computeIfAbsent(
                     result.code.substring(0, result.code.length()-3),

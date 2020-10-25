@@ -15,6 +15,7 @@ public class DebatePFResultParser implements ResultParser {
                                         InputStream inputStream) {
         CSVParser parse = getParser(inputStream);
         List<Result> results = new ArrayList<>();
+        List<String> headerNames = parse.getHeaderNames();
         for (CSVRecord record : getRecords(parse)) {
             Result result = new Result();
             result.code = record.get("Code");
@@ -22,18 +23,15 @@ public class DebatePFResultParser implements ResultParser {
             result.school = schoolsMap.computeIfAbsent(
                     result.code.substring(0, result.code.length() - 3),
                     School::fromCode);
-
-            if(eliminationRound != EliminationRound.FINALIST) {
-                result.name = record.get("Name");
-                result.count = 2;
-                result.place = Integer.parseInt(record.get("Place"));
-            } else {
+            result.numWins = Integer.valueOf(record.get("WinPm"));
+            if (headerNames.contains("Name 2")) {
                 result.name =
-                            record.get("Name 1") + " & " + record.get("Name 2");
-                result.count = 2;
-                result.place =
-                        Integer.parseInt(record.get("Ranking").replace("T-", ""));
+                    record.get("Name 1") + " & " + record.get("Name 2");
+            } else {
+                result.name = getOrAlternateColumn(record, "Name 1", "Name");
             }
+            result.count = 2;
+            result.place = Integer.parseInt(record.get("Place"));
             results.add(result);
         }
         return results;

@@ -43,6 +43,9 @@ public class Result {
     @ManyToOne(optional = false)
     School school;
 
+    @Column(name = "NUM_WINS")
+    Integer numWins = 0;
+
     @Enumerated(EnumType.STRING)
     EliminationRound eliminationRound = EliminationRound.FINALIST;
 
@@ -57,11 +60,19 @@ public class Result {
 
 
     public String getPlaceString(){
-        return this.event.getEventType().formatPlacementString(this);
+        return this.event.formatResult(this);
     }
 
     public String getCertColor(){
-        return this.event.getEventType().getCertificateColor(this);
+        return this.event.getCertificateColor(this);
+    }
+
+    public Integer getNumWins() {
+        return numWins;
+    }
+
+    public void setNumWins(int numWins) {
+        this.numWins = numWins;
     }
 
     public EliminationRound getEliminationRound() {

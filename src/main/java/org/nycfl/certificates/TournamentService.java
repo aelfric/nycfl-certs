@@ -202,6 +202,7 @@ public class TournamentService {
             Event speakerEvent = new Event();
             speakerEvent.setEventType(EventType.DEBATE_SPEAKS);
             speakerEvent.setName(event.getName() +" Speaker Awards");
+            speakerEvent.setCertificateType(CertificateType.DEBATE_SPEAKER);
             speakerEvent.setTournament(event.getTournament());
             em.persist(speakerEvent);
         }
@@ -227,5 +228,24 @@ public class TournamentService {
             " ?1", School.class)
             .setParameter(1, tournamentId)
             .getResultList();
+    }
+
+
+    @Transactional
+    public Tournament updateCertificateType(long eventId,
+                                            CertificateType certificateType) {
+        Event event = em.find(Event.class, eventId);
+        event.setCertificateType(certificateType);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
+    }
+
+    @Transactional
+    public Tournament updateNumRounds(long eventId, int count) {
+        Event event = em.find(Event.class, eventId);
+        event.setNumRounds(count);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
+
     }
 }

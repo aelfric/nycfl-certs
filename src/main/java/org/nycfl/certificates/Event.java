@@ -36,9 +36,14 @@ public class Event {
     private int placementCutoff;
     private int certificateCutoff;
     private int medalCutoff;
+    @Column(name = "NUM_ROUNDS")
+    private Integer numRounds = 0;
 
     @Enumerated(EnumType.STRING)
     private EventType eventType = EventType.SPEECH;
+
+    @Enumerated(EnumType.STRING)
+    private CertificateType certificateType = CertificateType.PLACEMENT;
 
     public Long getId() {
         return id;
@@ -124,6 +129,23 @@ public class Event {
         this.eventType = eventType;
     }
 
+    public CertificateType getCertificateType() {
+        if(certificateType==null) return CertificateType.PLACEMENT;
+        return certificateType;
+    }
+
+    public void setCertificateType(CertificateType certificateType) {
+        this.certificateType = certificateType;
+    }
+
+    public Integer getNumRounds() {
+        return numRounds;
+    }
+
+    public void setNumRounds(int numRounds) {
+        this.numRounds = numRounds;
+    }
+
     void parseResults(EliminationRound eliminationRound,
                       InputStream csvInputStream,
                       Map<String, School> schoolsMap) {
@@ -142,5 +164,39 @@ public class Event {
 
     public void clearResults() {
         results.clear();
+    }
+
+    String formatResult(Result result) {
+        return switch (getCertificateType()) {
+            case PLACEMENT, DEBATE_SPEAKER -> getEventType()
+                .formatPlacementString(result);
+            case DEBATE_RECORD -> {
+                int wins = result.numWins != null ? result.numWins : 0;
+                int total = numRounds != null ? numRounds : 0;
+                yield String.format("%d-%d",
+                    wins,
+                    total - wins);
+            }
+            default -> "???";
+        };
+    }
+
+    String getCertificateColor(Result result) {
+        return switch (getCertificateType()) {
+            case PLACEMENT -> getEventType().getCertificateColor(result);
+            case DEBATE_SPEAKER -> "black";
+            case DEBATE_RECORD -> {
+                int wins = result.numWins != null ? result.numWins : 0;
+                int total = numRounds != null ? numRounds : 0;
+                if(wins == total){
+                    yield "gold";
+                } else if (wins == total - 1){
+                    yield "silver";
+                } else {
+                    yield "red";
+                }
+            }
+            default -> "???";
+        };
     }
 }

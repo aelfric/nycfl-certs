@@ -133,3 +133,13 @@ p {
     position: relative;
     overflow: hidden;
 }
+
+.certificate_body.record_certificate {
+    font-size: 13px;
+}
+.certificate_body.placement_certificate {
+    font-size: 16px;
+}
+.certificate_body.speaker_certificate {
+    font-size: 16px;
+}

@@ -28,7 +28,7 @@ public class CertificatesResource {
     TournamentService tournamentService;
 
     @Inject
-    Template cert;
+    Template certBorder;
 
     @GET
     @Path("/background.svg")
@@ -36,7 +36,7 @@ public class CertificatesResource {
     public String getBackgroundImage(
         @QueryParam("color") @DefaultValue("ffffff") String color
     ) {
-        return cert.data("color", "#" + color).render();
+        return certBorder.data("color", "#" + color).render();
     }
 
 
@@ -148,7 +148,6 @@ public class CertificatesResource {
                         record.get("Short Name"),
                         School::fromName);
                 school.setDisplayName(record.get("Full Name"));
-                ;
                 tournamentService.updateSchool(school, tournamentId);
             }
         } catch (IOException e) {
@@ -166,6 +165,26 @@ public class CertificatesResource {
     ) {
         return tournamentService
                 .updateEventType(eventId, eventType);
+    }
+    @POST
+    @Path("/tournaments/{id}/events/{evtId}/rounds")
+    public Tournament setEventType(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            @QueryParam("count") int count
+    ) {
+        return tournamentService
+                .updateNumRounds(eventId, count);
+    }
+    @POST
+    @Path("/tournaments/{id}/events/{evtId}/cert_type")
+    public Tournament setCertificateType(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            @QueryParam("type") CertificateType certificateType
+    ) {
+        return tournamentService
+                .updateCertificateType(eventId, certificateType);
     }
 
     @POST
