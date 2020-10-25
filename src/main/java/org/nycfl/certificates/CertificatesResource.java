@@ -219,22 +219,21 @@ public class CertificatesResource {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @Path("/tournaments/{id}/slides_preview")
-    public String generateSlidesPreview(@PathParam("id") long tournamentId) {
-        Tournament tournament = tournamentService.getTournament(tournamentId);
-
-        return slideBuilder.buildSlidesPreview(tournament);
-    }
-    @GET
-    @Produces(MediaType.TEXT_HTML)
     @Path("/tournaments/{id}/slides")
-    public Response generateSlides(@PathParam("id") long tournamentId) {
+    public Response generateSlidesPreview(
+        @PathParam("id") long tournamentId,
+        @QueryParam("dl") @DefaultValue("0") int download
+    ) {
         Tournament tournament = tournamentService.getTournament(tournamentId);
 
-        return Response
-            .ok(slideBuilder.buildSlidesFile(tournament))
-            .header("Content-Disposition","attachment; filename=\"slides_tournament_"+tournamentId+".zip\"")
-            .build();
+        if(download==1){
+            return Response
+                .ok(slideBuilder.buildSlidesFile(tournament))
+                .header("Content-Disposition","attachment; filename=\"slides_tournament_"+tournamentId+".zip\"")
+                .build();
+        } else {
+            return Response.ok(slideBuilder.buildSlidesPreview(tournament)).build();
+        }
     }
 
     @GET

@@ -21,10 +21,9 @@ public class SlideBuilder {
   Template slide;
 
   public String buildSlidesPreview(Tournament tournament) {
-    String stringBuilder = "<html><body>" +
-        String.join("", buildSlides(tournament).values()) +
-        "</body></html>";
-    return stringBuilder;
+      return "<html><body>" +
+          String.join("", buildSlides(tournament).values()) +
+          "</body></html>";
   }
 
   public byte[] buildSlidesFile(Tournament tournament){
