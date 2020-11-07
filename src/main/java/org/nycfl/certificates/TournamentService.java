@@ -248,4 +248,13 @@ public class TournamentService {
         return getTournament(event.getTournament().getId());
 
     }
+
+    @Transactional
+    public Tournament renameEvent(long eventId, String newName) {
+        Event event = em.find(Event.class, eventId);
+        event.setName(newName);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
+
+    }
 }

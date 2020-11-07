@@ -167,6 +167,16 @@ public class CertificatesResource {
                 .updateEventType(eventId, eventType);
     }
     @POST
+    @Path("/tournaments/{id}/events/{evtId}/rename")
+    public Tournament renameEvent(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            @QueryParam("name") String newName
+    ) {
+        return tournamentService
+                .renameEvent(eventId, newName);
+    }
+    @POST
     @Path("/tournaments/{id}/events/{evtId}/rounds")
     public Tournament setEventType(
             @PathParam("id") long tournamentId,
