@@ -2,7 +2,10 @@ package org.nycfl.certificates;
 
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Utilities;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Object;
@@ -12,6 +15,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,11 +47,37 @@ public class S3SyncResource extends S3Resource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<FileObject> listFiles() {
+    public List<PublicListing> listFiles() {
         ListObjectsRequest listRequest = ListObjectsRequest.builder().bucket(bucketName).build();
-
         //HEAD S3 objects to get metadata
-        return s3.listObjects(listRequest).contents().stream().sorted(Comparator.comparing(S3Object::lastModified).reversed())
-                .map(FileObject::from).collect(Collectors.toList());
+        return s3.listObjects(listRequest)
+            .contents()
+            .stream()
+            .sorted(Comparator.comparing(S3Object::lastModified).reversed())
+            .map(o->getPublicListing(o.key()))
+            .collect(Collectors.toList());
     }
+
+    private PublicListing getPublicListing(String objectName) {
+        S3Utilities utilities = s3.utilities();
+        GetUrlRequest request = GetUrlRequest.builder()
+            .bucket(bucketName)
+            .key(objectName)
+            // Use a different region other than configured on the S3Client/S3Utilities
+            .region(Region.AP_NORTHEAST_1)
+            .build();
+        URL url = utilities.getUrl(request);
+        return new PublicListing(url, objectName);
+    }
+
+    public static class PublicListing {
+        public final URL url;
+        public final String objectName;
+
+        public PublicListing(URL url, String objectName) {
+            this.url = url;
+            this.objectName = objectName;
+        }
+    }
+
 }
