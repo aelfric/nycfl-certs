@@ -15,7 +15,6 @@ public class CongressResultsParser implements ResultParser {
                                         InputStream inputStream) {
         CSVParser parse = getParser(inputStream);
         List<Result> results = new ArrayList<>();
-        List<String> headerNames = parse.getHeaderNames();
         for (CSVRecord record : getRecords(parse)) {
             Result result = new Result();
             result.name = record.get("Code");
@@ -28,6 +27,7 @@ public class CongressResultsParser implements ResultParser {
             result.school = schoolsMap.computeIfAbsent(
                     record.get("School"),
                     School::fromName);
+            result.count = 1;
             results.add(result);
         }
         return results;
