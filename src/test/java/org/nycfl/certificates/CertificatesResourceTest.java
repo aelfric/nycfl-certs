@@ -828,7 +828,6 @@ class CertificatesResourceTest {
     given()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
-        .multiPart(new File("src/test/resources/JV-OI.csv"))
         .delete("/tournaments/{tournamentId}/events/{eventId}/results");
 
     Event jvOIAfter = entityManager.find(Event.class, jvOI.getId());

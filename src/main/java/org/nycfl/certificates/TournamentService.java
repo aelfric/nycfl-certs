@@ -173,7 +173,7 @@ public class TournamentService {
     public AggregateSweeps getSweeps() {
         return new AggregateSweeps(em.createQuery("SELECT new org.nycfl.certificates" +
                 ".SweepsResult" +
-                "(s.name, coalesce(s.sweepsPoints, 0),  t.name, t.id) " +
+                "(s.name, coalesce(s.sweepsPoints, 0),  t.name, t.id, s.id) " +
                 "FROM School s " +
                 "LEFT JOIN s.tournament t " +
                 "ORDER BY s.name", SweepsResult.class)

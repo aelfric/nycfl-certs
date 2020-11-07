@@ -23,7 +23,14 @@ public class DebatePFResultParser implements ResultParser {
             result.school = schoolsMap.computeIfAbsent(
                     result.code.substring(0, result.code.length() - 3),
                     School::fromCode);
-            result.numWins = Integer.valueOf(record.get("WinPm"));
+            try {
+                result.numWins = Integer.valueOf(getOrAlternateColumn(record,
+                    "WinPm",
+                    "WinPr"));
+            } catch (IllegalArgumentException e){
+                result.numWins = 0;
+                e.printStackTrace();
+            };
             if (headerNames.contains("Name 2")) {
                 result.name =
                     record.get("Name 1") + " & " + record.get("Name 2");
@@ -31,7 +38,8 @@ public class DebatePFResultParser implements ResultParser {
                 result.name = getOrAlternateColumn(record, "Name 1", "Name");
             }
             result.count = 2;
-            result.place = Integer.parseInt(record.get("Place"));
+            result.place = Integer.parseInt(getOrAlternateColumn(record,
+                "Place", "Ranking"));
             results.add(result);
         }
         return results;
