@@ -139,6 +139,13 @@ public class TournamentService {
         em.persist(event);
         return getTournament(event.getTournament().getId());
     }
+    @Transactional
+    public Tournament updateHalfQuals(long eventId, int cutoff) {
+        Event event = em.find(Event.class, eventId);
+        event.setHalfQuals(cutoff);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
+    }
 
     public List<MedalCount> getMedalCount(long tournamentId) {
         return em.createQuery("SELECT new org.nycfl.certificates.MedalCount(r" +

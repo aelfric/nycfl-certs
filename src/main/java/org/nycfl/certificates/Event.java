@@ -36,6 +36,9 @@ public class Event {
     private int placementCutoff;
     private int certificateCutoff;
     private int medalCutoff;
+    @Column(name = "HALF_QUALS", columnDefinition = "int DEFAULT 0 NOT NULL")
+    private int halfQuals;
+
     @Column(name = "NUM_ROUNDS")
     private Integer numRounds = 0;
 
@@ -144,6 +147,14 @@ public class Event {
 
     public void setNumRounds(int numRounds) {
         this.numRounds = numRounds;
+    }
+
+    public int getHalfQuals() {
+        return halfQuals;
+    }
+
+    public void setHalfQuals(int halfQuals) {
+        this.halfQuals = halfQuals;
     }
 
     void parseResults(EliminationRound eliminationRound,

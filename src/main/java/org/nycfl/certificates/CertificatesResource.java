@@ -230,6 +230,17 @@ public class CertificatesResource {
                 .updateMedalCutoff(eventId, cutoffRequest.cutoff);
     }
 
+    @POST
+    @Path("/tournaments/{id}/events/{evtId}/quals")
+    public Tournament setHalfQuals(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            CutoffRequest cutoffRequest
+    ) {
+        return tournamentService
+                .updateHalfQuals(eventId, cutoffRequest.cutoff);
+    }
+
     @Inject
     Template certificate;
 
