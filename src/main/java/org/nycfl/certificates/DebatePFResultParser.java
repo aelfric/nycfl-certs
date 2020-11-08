@@ -24,9 +24,11 @@ public class DebatePFResultParser implements ResultParser {
                     result.code.substring(0, result.code.length() - 3),
                     School::fromCode);
             try {
-                result.numWins = Integer.valueOf(getOrAlternateColumn(record,
+                result.numWins = Integer.valueOf(getOrAlternateColumn(
+                    record,
                     "WinPm",
-                    "WinPr"));
+                    "WinPr",
+                    "Win"));
             } catch (IllegalArgumentException e){
                 result.numWins = 0;
                 e.printStackTrace();
@@ -35,11 +37,16 @@ public class DebatePFResultParser implements ResultParser {
                 result.name =
                     record.get("Name 1") + " & " + record.get("Name 2");
             } else {
-                result.name = getOrAlternateColumn(record, "Name 1", "Name");
+                result.name = getOrAlternateColumn(
+                    record,
+                    "Name 1",
+                    "Name");
             }
             result.count = 2;
-            result.place = Integer.parseInt(getOrAlternateColumn(record,
-                "Place", "Ranking"));
+            result.place = Integer.parseInt(getOrAlternateColumn(
+                record,
+                "Place",
+                "Ranking"));
             results.add(result);
         }
         return results;

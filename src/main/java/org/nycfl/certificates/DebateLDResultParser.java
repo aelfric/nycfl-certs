@@ -26,7 +26,7 @@ public class DebateLDResultParser implements ResultParser {
             try {
                 result.numWins = Integer.valueOf(getOrAlternateColumn(record,
                     "WinPm",
-                    "WinPr"));
+                    "WinPr", "Win"));
             } catch (IllegalArgumentException e){
                 result.numWins = 0;
                 e.printStackTrace();

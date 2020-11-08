@@ -36,12 +36,14 @@ public interface ResultParser {
     }
 
     default String getOrAlternateColumn(CSVRecord record,
-                                        String primaryName,
-                                        String secondaryName) {
-        try {
-            return record.get(primaryName);
-        } catch (IllegalArgumentException e){
-            return record.get(secondaryName);
+                                        String... names) {
+        for(String name : names ) {
+            try {
+                return record.get(name);
+            } catch (IllegalArgumentException e) {
+                continue;
+            }
         }
+        throw new IllegalArgumentException("Could not find any of [" + names + "]");
     }
 }
