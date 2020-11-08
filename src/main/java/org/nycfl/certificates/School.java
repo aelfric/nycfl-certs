@@ -67,6 +67,9 @@ public class School {
     }
 
     public String getDebateCode() {
+        if(debateCode == null){
+            return this.name;
+        }
         return debateCode;
     }
 
