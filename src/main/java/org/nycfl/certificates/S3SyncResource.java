@@ -2,7 +2,6 @@ package org.nycfl.certificates;
 
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Utilities;
 import software.amazon.awssdk.services.s3.model.GetUrlRequest;
@@ -63,8 +62,6 @@ public class S3SyncResource extends S3Resource {
         GetUrlRequest request = GetUrlRequest.builder()
             .bucket(bucketName)
             .key(objectName)
-            // Use a different region other than configured on the S3Client/S3Utilities
-            .region(Region.AP_NORTHEAST_1)
             .build();
         URL url = utilities.getUrl(request);
         return new PublicListing(url, objectName);
