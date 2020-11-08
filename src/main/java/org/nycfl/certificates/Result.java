@@ -11,6 +11,11 @@ public class Result {
     int count;
     int place;
     String code;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     String name;
 
     public int getCount() {

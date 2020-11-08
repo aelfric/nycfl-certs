@@ -264,4 +264,14 @@ public class TournamentService {
         return getTournament(event.getTournament().getId());
 
     }
+
+    @Transactional
+    public Tournament renameStudent(long tournamentId,
+                                    long resultId,
+                                    String newName) {
+        Result result = em.find(Result.class, resultId);
+        result.setName(newName);
+        em.persist(result);
+        return getTournament(tournamentId);
+    }
 }

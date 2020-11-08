@@ -220,6 +220,18 @@ public class CertificatesResource {
     }
 
     @POST
+    @Path("/tournaments/{id}/events/{evtId}/results/{resultId}")
+    public Tournament renameStudent(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            @PathParam("resultId") long resultId,
+            @QueryParam("newName") String newName
+    ) {
+        return tournamentService
+                .renameStudent(tournamentId, resultId, newName);
+    }
+
+    @POST
     @Path("/tournaments/{id}/events/{evtId}/medal")
     public Tournament setMedalCutoff(
             @PathParam("id") long tournamentId,
