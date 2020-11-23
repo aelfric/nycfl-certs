@@ -14,7 +14,7 @@ public class Tournament {
                fetch = FetchType.LAZY,
                cascade = CascadeType.ALL,
                orphanRemoval = true)
-            @OrderBy("name asc")
+            @OrderBy("eventType asc, name asc")
     List<Event> events = new ArrayList<>();
 
     @Id
@@ -38,6 +38,9 @@ public class Tournament {
                orphanRemoval = true,
                cascade = CascadeType.ALL)
     List<School> schools = new ArrayList<>();
+
+    @Lob
+    private String styleOverrides2;
 
     public List<Event> getEvents() {
         return events;
@@ -151,5 +154,14 @@ public class Tournament {
         this.signature = updatedTournament.signature;
         this.signatureTitle = updatedTournament.signatureTitle;
         this.certificateHeadline = updatedTournament.certificateHeadline;
+        this.styleOverrides2 = updatedTournament.styleOverrides2;
+    }
+
+    public String getStyleOverrides() {
+        return styleOverrides2;
+    }
+
+    public void setStyleOverrides(String styleOverrides) {
+        this.styleOverrides2 = styleOverrides;
     }
 }

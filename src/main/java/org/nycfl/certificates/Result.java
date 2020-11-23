@@ -83,4 +83,8 @@ public class Result {
     public EliminationRound getEliminationRound() {
         return eliminationRound;
     }
+
+    public String getHtmlName(){
+        return name.replaceAll("&", "&amp;");
+    }
 }

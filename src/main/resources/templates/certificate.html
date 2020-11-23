@@ -1,4 +1,7 @@
 <link rel='stylesheet' href='/certs.css' />
+<style>
+    {tournament.styleOverrides.raw}
+</style>
 {#for event in tournament.events}
 {#for result in event.results}
 {#if result.place < event.certificateCutoff }

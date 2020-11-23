@@ -11,7 +11,7 @@
         </clipPath>
         <filter id="filter1511" x="-.010481" y="-.014033" width="1.021" height="1.0281"
                 color-interpolation-filters="sRGB">
-            <feGaussianBlur stdDeviation="2.2270053"/>
+            <feGaussianBlur stdDeviation="0.75"/>
         </filter>
         <filter id="dropShadow">
             <feFlood flood-color="rgb(0,0,0)" flood-opacity=".8" result="flood"/>
@@ -35,9 +35,9 @@
           style="font-size:1em; font-weight: bold; font-family: 'League Gothic';" filter="url(#dropShadow)">
         {#for result in results}
          {#if count eq 1 }
-          <tspan x="35%">{result.name}</tspan>
+          <tspan x="35%">{result.htmlName}</tspan>
           {#else}
-          <tspan x="35%" dy="1.5em">{result.name}</tspan>
+          <tspan x="35%" dy="1.5em">{result.htmlName}</tspan>
         {/if}
         <tspan x="65%">{result.school.displayName}</tspan>
         {/for}

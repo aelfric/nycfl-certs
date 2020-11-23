@@ -11,6 +11,11 @@
     src: url("/AlikeAngular/AlikeAngular-Regular.woff2") format('woff2')
 }
 
+@font-face {
+    font-family: "Oswald SemiBold";
+    src: url("/Oswald/static/Oswald-Semibold.woff2") format('woff2')
+}
+
 body {
     margin: 0;
     font-family: "Olde English", serif;
