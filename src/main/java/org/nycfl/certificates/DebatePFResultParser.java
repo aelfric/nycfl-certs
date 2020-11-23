@@ -46,7 +46,7 @@ public class DebatePFResultParser implements ResultParser {
             result.place = Integer.parseInt(getOrAlternateColumn(
                 record,
                 "Place",
-                "Ranking"));
+                "Ranking").replace("T-",""));
             results.add(result);
         }
         return results;
