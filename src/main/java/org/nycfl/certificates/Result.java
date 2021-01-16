@@ -85,6 +85,6 @@ public class Result {
     }
 
     public String getHtmlName(){
-        return name.replaceAll("&", "&amp;");
+        return name == null ? "" : name.replaceAll("&", "&amp;");
     }
 }

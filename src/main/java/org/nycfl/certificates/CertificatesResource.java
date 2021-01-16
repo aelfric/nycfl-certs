@@ -56,6 +56,13 @@ public class CertificatesResource {
         return tournamentService.updateTournament(tournamentId, tournament);
     }
 
+    @GET
+    @Path("/tournaments/{id}")
+    public Tournament getTournament(
+            @PathParam("id") long tournamentId) {
+        return tournamentService.getTournament(tournamentId);
+    }
+
     @POST
     @Path("/events")
     public Tournament createEvents(EventList eventList) {
@@ -114,7 +121,7 @@ public class CertificatesResource {
 
     @GET
     @Path("/tournaments")
-    public List<Tournament> listAllTournaments() {
+    public List<TournamentStub> listAllTournaments() {
         return tournamentService.all();
     }
 
@@ -176,6 +183,18 @@ public class CertificatesResource {
         return tournamentService
                 .renameEvent(eventId, newName);
     }
+
+    @POST
+    @Path("/tournaments/{id}/events/{evtId}/results/{resultId}/rename")
+    public Tournament renameCompetitor(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            @PathParam("resultId") long resultId,
+            @QueryParam("name") @DefaultValue("") String newName
+    ) {
+        return tournamentService
+                .renameCompetitor(eventId, resultId, newName);
+    }
     @POST
     @Path("/tournaments/{id}/events/{evtId}/rounds")
     public Tournament setEventType(
@@ -217,18 +236,6 @@ public class CertificatesResource {
     ) {
         return tournamentService
                 .updateCertificateCutoff(eventId, cutoffRequest.cutoff);
-    }
-
-    @POST
-    @Path("/tournaments/{id}/events/{evtId}/results/{resultId}")
-    public Tournament renameStudent(
-            @PathParam("id") long tournamentId,
-            @PathParam("evtId") long eventId,
-            @PathParam("resultId") long resultId,
-            @QueryParam("newName") String newName
-    ) {
-        return tournamentService
-                .renameStudent(tournamentId, resultId, newName);
     }
 
     @POST

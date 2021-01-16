@@ -835,6 +835,53 @@ class CertificatesResourceTest {
   }
 
   @Test
+  void renameResult() throws SystemException, NotSupportedException,
+      HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    transaction.begin();
+    Tournament tournament = jsonb.fromJson("""
+                                           {
+                                             "name": "NYCFL First Regis",
+                                             "host": "Regis High School",
+                                             "date": "2020-09-26"
+                                           }""", Tournament.class);
+    Event jvOI = new Event();
+    jvOI.setName("Junior Varsity Oral Interpretation");
+    jvOI.setTournament(tournament);
+    tournament.events = Collections.singletonList(
+        jvOI
+    );
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+        .pathParam("eventId", jvOI.getId())
+        .pathParam("tournamentId", tournament.getId())
+        .multiPart(new File("src/test/resources/JV-OI.csv"))
+        .post("/tournaments/{tournamentId}/events/{eventId}/results");
+
+    Long
+        resultId =
+        entityManager
+            .createQuery("Select id FROM Result r WHERE r.name = 'Carina" +
+                " " +
+                "Dillard'", Long.class).getSingleResult();
+
+    given()
+        .pathParam("evtId", jvOI.getId())
+        .pathParam("id", tournament.getId())
+        .pathParam("resultId", resultId)
+        .queryParam("name", "Johnny Newname")
+        .contentType(MediaType.APPLICATION_JSON)
+        .post("/tournaments/{id}/events/{evtId}/results/{resultId}/rename")
+        .then()
+        .statusCode(200);;
+
+    Result result = entityManager.find(Result.class, resultId);
+
+    assertThat(result.name, is("Johnny Newname"));
+  }
+
+  @Test
   void setPlacementCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Tournament tournament = jsonb.fromJson("""

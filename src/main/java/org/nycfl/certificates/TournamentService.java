@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
@@ -23,17 +24,14 @@ public class TournamentService {
         return tournament;
     }
 
-    public List<Tournament> all() {
-        List<Tournament> tournaments = em.createQuery(
-                "SELECT DISTINCT t FROM Tournament t LEFT JOIN FETCH t.events" +
-                        " e ORDER BY t.tournamentDate desc ",
-                Tournament.class).getResultList();
-        if (!tournaments.isEmpty()){
-            em.createQuery(
-                    "SELECT DISTINCT e FROM Event e LEFT JOIN " +
-                            "FETCH e.results WHERE e.tournament in ?1",
-                    Event.class).setParameter(1, tournaments).getResultList();
-        }
+    public List<TournamentStub> all() {
+        List<TournamentStub> tournaments = em.createQuery(
+                "SELECT new org.nycfl.certificates.TournamentStub(t.id, t.name) " +
+                    "FROM " +
+                    "Tournament t " +
+                    " ORDER BY t.tournamentDate desc ",
+                TournamentStub.class).getResultList();
+
         return tournaments;
     }
 
@@ -266,12 +264,17 @@ public class TournamentService {
     }
 
     @Transactional
-    public Tournament renameStudent(long tournamentId,
-                                    long resultId,
-                                    String newName) {
+    public Tournament renameCompetitor(long eventId,
+                                       long resultId,
+                                       String newName) {
         Result result = em.find(Result.class, resultId);
-        result.setName(newName);
-        em.persist(result);
-        return getTournament(tournamentId);
+        if(result.getEvent().getId()==eventId) {
+            result.setName(newName);
+            em.persist(result);
+            Event event = em.find(Event.class, eventId);
+            return getTournament(event.getTournament().getId());
+        }
+        throw new NotFoundException("Bad Event Result ID Pair [%d, %d]"
+            .formatted(eventId, resultId));
     }
 }
