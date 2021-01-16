@@ -29,6 +29,8 @@ public class Tournament {
     private String certificateHeadline;
     private String signature;
     private String signatureTitle;
+    private String line1;
+    private String line2;
 
     @JsonbDateFormat(value = "yyyy-MM-dd")
     private LocalDate tournamentDate;
@@ -78,6 +80,30 @@ public class Tournament {
 
     public void setDate(LocalDate tournamentDate) {
         this.tournamentDate = tournamentDate;
+    }
+
+    public String getLine1() {
+        return line1;
+    }
+
+    public String getLine2() {
+        return line2;
+    }
+
+    public void setLine1(String line1) {
+        this.line1 = line1;
+    }
+
+    public void setLine2(String line2) {
+        this.line2 = line2;
+    }
+
+    public String getCertLine1() {
+        return line1 != null ? line1 : host;
+    }
+
+    public String getCertLine2() {
+        return line2 != null ? line2 : name;
     }
 
     @Override
@@ -155,6 +181,8 @@ public class Tournament {
         this.signatureTitle = updatedTournament.signatureTitle;
         this.certificateHeadline = updatedTournament.certificateHeadline;
         this.styleOverrides2 = updatedTournament.styleOverrides2;
+        this.line1 = updatedTournament.line1;
+        this.line2 = updatedTournament.line2;
     }
 
     public String getStyleOverrides() {
