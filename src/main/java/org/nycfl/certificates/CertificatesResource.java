@@ -91,6 +91,14 @@ public class CertificatesResource {
                                    @PathParam("tournamentId") long tournamentId) {
         return tournamentService.clearResults(eventId);
     }
+    @DELETE
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/tournaments/{tournamentId}/events/{eventId}")
+    public Tournament deleteEvent(@PathParam("eventId") int eventId,
+                                   @PathParam("tournamentId") long tournamentId) {
+
+        return tournamentService.deleteEvent(eventId);
+    }
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)

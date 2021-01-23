@@ -277,4 +277,12 @@ public class TournamentService {
         throw new NotFoundException("Bad Event Result ID Pair [%d, %d]"
             .formatted(eventId, resultId));
     }
+
+    @Transactional
+    public Tournament deleteEvent(long eventId) {
+        Event event = em.find(Event.class, eventId);
+        Long tournamentId = event.getTournament().getId();
+        em.remove(event);
+        return getTournament(tournamentId);
+    }
 }
