@@ -11,10 +11,10 @@ public class DebateResultFormatter implements ResultFormatter{
                 boolean useNumbers = event.getPlacementCutoff() > 1;
                 return result.place == 1 ?
                     useNumbers ?
-                        "First Place" :
+                        Ordinals.ofInt(result.place) + " Place" :
                         "Champion" :
                     useNumbers ?
-                        "Second Place" :
+                        Ordinals.ofInt(result.place) + " Place" :
                         "Finalist";
             } else {
                 return result.eliminationRound.label;
