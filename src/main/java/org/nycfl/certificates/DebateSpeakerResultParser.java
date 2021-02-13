@@ -28,7 +28,7 @@ public class DebateSpeakerResultParser implements ResultParser {
             }
             result.name = record.get("Name");
             result.count = 1;
-            result.place = Integer.parseInt(record.get("Order"));
+            result.place = Integer.parseInt(record.get("Order").replace("T-",""));
             results.add(result);
         }
         return results;

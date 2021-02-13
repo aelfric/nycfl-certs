@@ -33,7 +33,7 @@ public class SpeechResultParser implements ResultParser {
                         .replace("T-", ""));
             result.eliminationRound = eliminationRound;
             result.school = schoolsMap.computeIfAbsent(
-                    record.get("School"),
+                    getOrDefault(record, "School",""),
                     School::fromName);
             results.add(result);
         }

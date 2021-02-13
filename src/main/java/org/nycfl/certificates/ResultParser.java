@@ -19,7 +19,7 @@ public interface ResultParser {
     default List<CSVRecord> getRecords(CSVParser parse) {
         try {
             return parse.getRecords();
-        } catch (IOException ioException){
+        } catch (IOException ioException) {
             throw new BadRequestException("Could not get CSV Records");
         }
     }
@@ -30,14 +30,14 @@ public interface ResultParser {
                 StandardCharsets.UTF_8,
                 CSVFormat.DEFAULT.withFirstRecordAsHeader()
                     .withAllowMissingColumnNames(true));
-        } catch (IOException ioException){
+        } catch (IOException ioException) {
             throw new BadRequestException("Cannot parse CSV");
         }
     }
 
     default String getOrAlternateColumn(CSVRecord record,
                                         String... names) {
-        for(String name : names ) {
+        for (String name : names) {
             try {
                 return record.get(name);
             } catch (IllegalArgumentException e) {
@@ -45,5 +45,15 @@ public interface ResultParser {
             }
         }
         throw new IllegalArgumentException("Could not find any of [" + names + "]");
+    }
+
+    default String getOrDefault(CSVRecord record,
+                                String name,
+                                String defaultVal) {
+        try {
+            return record.get(name);
+        } catch (IllegalArgumentException e) {
+            return defaultVal;
+        }
     }
 }
