@@ -70,6 +70,7 @@ public class SlideBuilder {
                           round.getKey().name(),
                           i++),
                           slide
+                              .data("roundType", round.getKey().label)
                               .data("slideBackground", tournament.getSlideBackgroundUrl())
                           .data("event", event)
                           .data("round", round.getKey().label)

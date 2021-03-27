@@ -26,10 +26,10 @@
     <image x="-.1149" y="-67.141" width="509.93" height="380.87" clip-path="url(#clipPath1407)"
            filter="url(#filter1511)" stroke-width=".43037"
            xlink:href="{slideBackground}" preserveAspectRatio="none"/>
-    <rect x="31.75" y="31.75" width="444.5" height="222.25" fill="#020202" opacity=".25484"/>
+    <rect x="31.75" y="31.75" width="444.5" height="222.25" fill="#020202" opacity=".35484"/>
     <text x="50%" y="50.75" dominant-baseline="hanging" text-anchor="middle" fill="#FFFFFF"
           style="font-size:1.4em; font-family: 'League Gothic';" filter="url(#dropShadow)">
-        {#if round ne "Finalist"}Non-Advancing{/if} {round}s - {event.name}
+        {#if roundType ne "Finalist"}Non-Advancing{/if} {round}s - {event.name}
     </text>
     <text x="0" y="50.75" dy="2.5em" dominant-baseline="hanging" text-anchor="middle" fill="#FFFFFF"
           style="font-size:1em; font-weight: bold; font-family: 'League Gothic';" filter="url(#dropShadow)">

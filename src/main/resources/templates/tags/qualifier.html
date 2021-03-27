@@ -1,0 +1,23 @@
+<div class="certificate_border {result.certColor}">
+    <div class="certificate_body speaker_certificate">
+        <img src="{tournament.logoUrl ?: "/nycfl-logo.svg"}" height="100px"/>
+        <p class="nycfl">{tournament.certificateHeadline ?: "New York Catholic Forensic League"}</p>
+        <p class="award_certificate">{result.placeString}</p>
+        {#tournament_details /}
+        <p class="name">{result.name}</p>
+        <p class="before_text">from</p>
+        <p class="school">{result.school.name}</p>
+        <p class="before_text">in the category of</p>
+
+        <p class="event_name">{Speaker:cleanName(event.name)}</p>
+
+        <p class="signature_block">
+            <span class="signature">{tournament.signature ?: "Thomas Beck"}</span>
+            <span class="position">{tournament.signatureTitle ?: "NYCFL President"} </span>
+        </p>
+        <p class="date_block">
+            <span class="signature-date">{tournament.shortDate}</span>
+            <span class="date-label">Date</span>
+        </p>
+    </div>
+</div>

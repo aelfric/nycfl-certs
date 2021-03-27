@@ -188,6 +188,9 @@ public class Event {
                     wins,
                     total - wins);
             }
+            case QUALIFIER -> result.place < getPlacementCutoff() ?
+                "Qualifier" : result.place < getCertificateCutoff() ?
+                "Alternate" : "";
             default -> "???";
         };
     }
@@ -207,6 +210,8 @@ public class Event {
                     yield "red";
                 }
             }
+            case QUALIFIER -> result.place < placementCutoff ? "gold" :
+                "silver";
             default -> "???";
         };
     }

@@ -8,6 +8,7 @@ import javax.ws.rs.BadRequestException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,7 @@ public interface ResultParser {
         }
     }
 
-    default String getOrAlternateColumn(CSVRecord record,
+    default String  getOrAlternateColumn(CSVRecord record,
                                         String... names) {
         for (String name : names) {
             try {
@@ -44,7 +45,8 @@ public interface ResultParser {
                 continue;
             }
         }
-        throw new IllegalArgumentException("Could not find any of [" + names + "]");
+        throw new IllegalArgumentException("Could not find any of [" +
+            Arrays.toString(names) + "]");
     }
 
     default String getOrDefault(CSVRecord record,

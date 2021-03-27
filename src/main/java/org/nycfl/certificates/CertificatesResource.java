@@ -34,9 +34,15 @@ public class CertificatesResource {
     @Path("/background.svg")
     @Produces("image/svg+xml")
     public String getBackgroundImage(
-        @QueryParam("color") @DefaultValue("ffffff") String color
+        @QueryParam("color") @DefaultValue("ffffff") String color,
+        @QueryParam("color2") @DefaultValue("323131") String color2,
+        @QueryParam("color3") @DefaultValue("323131") String color3
     ) {
-        return certBorder.data("color", "#" + color).render();
+        return certBorder
+            .data("color", "#" + color)
+            .data("color2","#" + color2)
+            .data("color3","#" + color3)
+            .render();
     }
 
 

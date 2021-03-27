@@ -12,6 +12,8 @@
     {#placement /}
     {#else if event.certificateType eq CertificateType:DEBATE_RECORD }
     {#record /}
+    {#else if event.certificateType eq CertificateType:QUALIFIER }
+    {#qualifier /}
     {/if }
 </div>
 <div style="page-break-after: always; visibility: hidden"></div>

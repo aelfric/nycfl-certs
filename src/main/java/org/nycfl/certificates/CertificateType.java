@@ -7,7 +7,8 @@ import static io.quarkus.qute.TemplateExtension.ANY;
 public enum CertificateType implements LabeledEnum {
     PLACEMENT("Placement"),
     DEBATE_SPEAKER("Top Speaker"),
-    DEBATE_RECORD("Debate Record");
+    DEBATE_RECORD("Debate Record"),
+    QUALIFIER("Qualifier");
 
     private final String label;
 

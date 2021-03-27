@@ -133,6 +133,13 @@ p {
     color: #8f3935;
 }
 
+.school {
+    font-size: 3em;
+    border-bottom: 1px solid black;
+    width: 90%;
+    margin: 0 auto;
+}
+
 .certificate_body {
     padding: 1in;
     position: relative;
