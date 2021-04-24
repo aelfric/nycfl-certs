@@ -421,59 +421,6 @@ class CertificatesResourceTest {
 
     assertThat(topSpeaks.place, is(1));
   }
-  @Test
-  void canMapDebateSchools() throws SystemException, NotSupportedException,
-          HeuristicRollbackException, HeuristicMixedException, RollbackException {
-    transaction.begin();
-    Tournament tournament = jsonb.fromJson("""
-                                           {
-                                             "name": "NYCFL First Regis",
-                                             "host": "Regis High School",
-                                             "date": "2020-09-26"
-                                           }""", Tournament.class);
-    Event lincolnDouglasSpeaks = new Event();
-    lincolnDouglasSpeaks.setName("Lincoln-Douglas Debate Speaker Awards");
-    lincolnDouglasSpeaks.setTournament(tournament);
-    lincolnDouglasSpeaks.setEventType(EventType.DEBATE_SPEAKS);
-
-    Event lincolnDouglas = new Event();
-    lincolnDouglas.setName("Lincoln-Douglas Debate");
-    lincolnDouglas.setTournament(tournament);
-    lincolnDouglas.setEventType(EventType.DEBATE_LD);
-    tournament.events = Arrays.asList(
-        lincolnDouglasSpeaks,
-        lincolnDouglas
-    );
-    entityManager.persist(tournament);
-    transaction.commit();
-
-    given()
-            .pathParam("eventId", lincolnDouglasSpeaks.getId())
-            .pathParam("tournamentId", tournament.getId())
-            .multiPart(new File("src/test/resources/debate-speaks.csv"))
-            .when()
-            .post("/tournaments/{tournamentId}/events/{eventId}/results")
-            .then()
-            .statusCode(200);
-    given()
-            .pathParam("eventId", lincolnDouglas.getId())
-            .pathParam("tournamentId", tournament.getId())
-            .multiPart(new File("src/test/resources/ld-finals-for-mapping.csv"))
-            .when()
-            .post("/tournaments/{tournamentId}/events/{eventId}/results")
-            .then()
-            .statusCode(200);
-
-    Result topSpeaks = entityManager
-            .createQuery("SELECT r FROM Result r  where r.code=?1 and r.event" +
-                    ".id=?2",
-                    Result.class)
-            .setParameter(1, "Byram Hills JL")
-            .setParameter(2, lincolnDouglas.getId())
-            .getSingleResult();
-
-    assertThat(topSpeaks.school.getName(), is("Byram Hills High School"));
-  }
 
   @Test
   void testAddSweeps() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
