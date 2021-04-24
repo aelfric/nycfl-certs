@@ -8,12 +8,15 @@ import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.nycfl.certificates.slides.SlideBuilder;
 
 import javax.inject.Inject;
+import javax.mail.MessagingException;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -313,6 +316,24 @@ public class CertificatesResource {
     @Path("/tournaments/{id}/medals")
     public List<MedalCount> getMedalCount(@PathParam("id") long tournamentId) {
         return tournamentService.getMedalCount(tournamentId);
+    }
+
+    @GET
+    @Path("/tournaments/{id}/awards_sheet")
+    public Response getAwardsSheet(@PathParam("id") long tournamentId) {
+        List<AwardsResult> awardsBySchool =
+            tournamentService.getAwardsBySchool(tournamentId);
+        AwardsResults awardsResults = new AwardsResults(awardsBySchool);
+        File entity = awardsResults.toSpreadsheet();
+        try {
+            GmailQuickstart.doDraft(entity);
+        } catch (IOException | MessagingException | GeneralSecurityException e) {
+            throw new BadRequestException(e);
+        }
+        return Response.ok(entity, MediaType.APPLICATION_OCTET_STREAM)
+            .header("Content-Disposition",
+                "attachment; filename=\"" + entity.getName() + "\"" ) //optional
+            .build();
     }
 
     @GET
