@@ -66,7 +66,8 @@ public class SlideBuilder {
                       .values();
                   int i = 0;
                   for (List<Result> dividedResult : dividedResults) {
-                      slides.put("%s_%s_%d".formatted(event.getName(),
+                      slides.put(String.format("%s_%s_%d",
+                          event.getName(),
                           round.getKey().name(),
                           i++),
                           slide
