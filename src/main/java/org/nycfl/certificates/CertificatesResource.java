@@ -1,12 +1,14 @@
 package org.nycfl.certificates;
 
 import io.quarkus.qute.Template;
+import io.quarkus.security.Authenticated;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.nycfl.certificates.slides.SlideBuilder;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.mail.MessagingException;
 import javax.transaction.Transactional;
@@ -24,6 +26,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Path("/certs")
+@Authenticated
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CertificatesResource {
@@ -51,6 +54,7 @@ public class CertificatesResource {
 
     @POST
     @Path("/tournaments")
+    @RolesAllowed("superuser")
     public Tournament createTournament(Tournament tournament) {
 
         return tournamentService.createTournament(tournament);
@@ -59,6 +63,7 @@ public class CertificatesResource {
     @POST
     @Path("/tournaments/{id}")
     @Transactional
+    @RolesAllowed("superuser")
     public Tournament updateTournament(
             @PathParam("id") long tournamentId,
             Tournament tournament) {
@@ -73,12 +78,14 @@ public class CertificatesResource {
     }
 
     @POST
+    @RolesAllowed("superuser")
     @Path("/events")
     public Tournament createEvents(EventList eventList) {
         return tournamentService.addEvents(eventList);
     }
 
     @POST
+    @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{tournamentId}/events/{eventId}/results")
     public Tournament addElimResults(@MultipartForm MultipartBody body,
@@ -94,6 +101,7 @@ public class CertificatesResource {
                 body.file);
     }
     @DELETE
+    @RolesAllowed("superuser")
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{tournamentId}/events/{eventId}/results")
     public Tournament clearResults(@PathParam("eventId") int eventId,
@@ -101,6 +109,7 @@ public class CertificatesResource {
         return tournamentService.clearResults(eventId);
     }
     @DELETE
+    @RolesAllowed("superuser")
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{tournamentId}/events/{eventId}")
     public Tournament deleteEvent(@PathParam("eventId") int eventId,
@@ -110,6 +119,7 @@ public class CertificatesResource {
     }
 
     @POST
+    @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{id}/sweeps")
     public Tournament addSweepsResults(@MultipartForm MultipartBody body,
@@ -156,6 +166,7 @@ public class CertificatesResource {
     }
 
     @POST
+    @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{id}/schools")
     public List<School> addSchools(
@@ -181,6 +192,7 @@ public class CertificatesResource {
     }
 
     @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/type")
     public Tournament setEventType(
             @PathParam("id") long tournamentId,
@@ -191,6 +203,7 @@ public class CertificatesResource {
                 .updateEventType(eventId, eventType);
     }
     @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/rename")
     public Tournament renameEvent(
             @PathParam("id") long tournamentId,
@@ -202,6 +215,7 @@ public class CertificatesResource {
     }
 
     @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/results/{resultId}/rename")
     public Tournament renameCompetitor(
             @PathParam("id") long tournamentId,
@@ -213,6 +227,7 @@ public class CertificatesResource {
                 .renameCompetitor(eventId, resultId, newName);
     }
     @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/rounds")
     public Tournament setEventType(
             @PathParam("id") long tournamentId,
@@ -223,6 +238,7 @@ public class CertificatesResource {
                 .updateNumRounds(eventId, count);
     }
     @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/cert_type")
     public Tournament setCertificateType(
             @PathParam("id") long tournamentId,
@@ -234,6 +250,7 @@ public class CertificatesResource {
     }
 
     @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/placement")
     public Tournament setPlacementCutoff(
             @PathParam("id") long tournamentId,
@@ -245,6 +262,7 @@ public class CertificatesResource {
     }
 
     @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/cutoff")
     public Tournament setCertificateCutoff(
             @PathParam("id") long tournamentId,
@@ -256,6 +274,7 @@ public class CertificatesResource {
     }
 
     @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/medal")
     public Tournament setMedalCutoff(
             @PathParam("id") long tournamentId,
@@ -267,6 +286,7 @@ public class CertificatesResource {
     }
 
     @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/quals")
     public Tournament setHalfQuals(
             @PathParam("id") long tournamentId,

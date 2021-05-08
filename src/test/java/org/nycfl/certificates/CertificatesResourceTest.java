@@ -1,12 +1,16 @@
 package org.nycfl.certificates;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.oidc.server.OidcWiremockTestResource;
 import io.restassured.RestAssured;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperDeserializationContext;
 import io.restassured.mapper.ObjectMapperSerializationContext;
+import io.restassured.specification.RequestSpecification;
+import io.smallrye.jwt.build.Jwt;
 import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterAll;
@@ -22,10 +26,7 @@ import javax.persistence.NoResultException;
 import javax.transaction.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
@@ -38,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
 @TestHTTPEndpoint(CertificatesResource.class)
+@QuarkusTestResource(OidcWiremockTestResource.class)
 class CertificatesResourceTest {
   @Inject
   EntityManager entityManager;
@@ -46,6 +48,16 @@ class CertificatesResourceTest {
   UserTransaction transaction;
 
   static Jsonb jsonb;
+
+  private String getToken(Set<String> roles) {
+    return Jwt.preferredUserName("frank")
+        .groups(roles)
+        .issuer("https://server.example.com")
+        .audience("https://service.example.com")
+        .jws()
+        .keyId("1")
+        .sign();
+  }
 
   @BeforeAll
   public static void giveMeAMapper() {
@@ -87,7 +99,7 @@ class CertificatesResourceTest {
         .createQuery("SELECT COUNT(distinct t.id) FROM Tournament t", Long.class)
         .getSingleResult();
 
-    given()
+    givenASuperUser()
         .body("{\n" +
             "              \"name\": \"NYCFL First Regis\",\n" +
             "              \"host\": \"Regis High School\",\n" +
@@ -115,7 +127,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
             .body("{\n" +
                     "  \"name\": \"Byram Hills Invitational\",\n" +
                     "  \"host\": \"Byram Hills " +
@@ -145,7 +157,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
                                  "Varsity Oralnterpretation\\nDuo " +
             "Interpretation\"}", tournament.getId()))
@@ -162,6 +174,40 @@ class CertificatesResourceTest {
 
     assertThat(numEvents, CoreMatchers.is(2L));
 
+  }
+  @Test
+  void testRequiresSuperuser() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    transaction.begin();
+    Tournament tournament = testTournament();
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    givenARegularUser()
+        .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
+                                 "Varsity Oralnterpretation\\nDuo " +
+            "Interpretation\"}", tournament.getId()))
+        .contentType(MediaType.APPLICATION_JSON)
+        .when()
+        .post("/events")
+        .then()
+        .statusCode(403);
+  }
+  @Test
+  void testRequiresAuth() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    transaction.begin();
+    Tournament tournament = testTournament();
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    given()
+        .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
+                                 "Varsity Oralnterpretation\\nDuo " +
+            "Interpretation\"}", tournament.getId()))
+        .contentType(MediaType.APPLICATION_JSON)
+        .when()
+        .post("/events")
+        .then()
+        .statusCode(401);
   }
 
   @Test
@@ -181,7 +227,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
@@ -198,7 +244,7 @@ class CertificatesResourceTest {
 
     assertThat(numResults, CoreMatchers.is(12L));
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", duo.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/duo.csv"))
@@ -230,7 +276,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
             .queryParam("type",EliminationRound.QUARTER_FINALIST.name())
             .pathParam("eventId", lincolnDouglas.getId())
             .pathParam("tournamentId", tournament.getId())
@@ -240,7 +286,7 @@ class CertificatesResourceTest {
             .then()
             .statusCode(200);
 
-    given()
+    givenASuperUser()
             .queryParam("type",EliminationRound.SEMIFINALIST.name())
             .pathParam("eventId", lincolnDouglas.getId())
             .pathParam("tournamentId", tournament.getId())
@@ -250,7 +296,7 @@ class CertificatesResourceTest {
             .then()
             .statusCode(200);
 
-    given()
+    givenASuperUser()
             .queryParam("type",EliminationRound.FINALIST.name())
             .pathParam("eventId", lincolnDouglas.getId())
             .pathParam("tournamentId", tournament.getId())
@@ -302,7 +348,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
             .queryParam("type",EliminationRound.QUARTER_FINALIST.name())
             .pathParam("eventId", lincolnDouglas.getId())
             .pathParam("tournamentId", tournament.getId())
@@ -312,7 +358,7 @@ class CertificatesResourceTest {
             .then()
             .statusCode(200);
 
-    given()
+    givenASuperUser()
             .queryParam("type",EliminationRound.SEMIFINALIST.name())
             .pathParam("eventId", lincolnDouglas.getId())
             .pathParam("tournamentId", tournament.getId())
@@ -322,7 +368,7 @@ class CertificatesResourceTest {
             .then()
             .statusCode(200);
 
-    given()
+    givenASuperUser()
             .queryParam("type",EliminationRound.FINALIST.name())
             .pathParam("eventId", lincolnDouglas.getId())
             .pathParam("tournamentId", tournament.getId())
@@ -375,7 +421,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
             .pathParam("eventId", lincolnDouglas.getId())
             .pathParam("tournamentId", tournament.getId())
             .multiPart(new File("src/test/resources/debate-speaks.csv"))
@@ -400,12 +446,12 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .multiPart(new File("src/test/resources/schools.csv"))
         .post("/tournaments/{id}/schools")
         .body();
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .multiPart(new File("src/test/resources/sweeps.csv"))
         .post("/tournaments/{id}/sweeps")
@@ -428,7 +474,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .multiPart(new File("src/test/resources/schools.csv"))
         .post("/tournaments/{id}/schools")
@@ -442,7 +488,7 @@ class CertificatesResourceTest {
         .setParameter(2, tournament.getId())
         .getSingleResult();
 
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .pathParam("sid", regisId)
         .when()
@@ -485,13 +531,13 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .multiPart(new File("src/test/resources/schools.csv"))
         .post("/tournaments/{id}/schools")
         .body();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
@@ -506,7 +552,7 @@ class CertificatesResourceTest {
         .setParameter(2, tournament.getId())
         .getSingleResult();
 
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .pathParam("sid", regisId)
         .when()
@@ -523,18 +569,18 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .multiPart(new File("src/test/resources/schools.csv"))
         .post("/tournaments/{id}/schools")
         .body();
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .multiPart(new File("src/test/resources/sweeps.csv"))
         .post("/tournaments/{id}/sweeps")
         .body();
 
-    List<SweepsResult> sweepsResults = given()
+    List<SweepsResult> sweepsResults = givenARegularUser()
             .pathParam("id", tournament.getId())
             .get("/tournaments/{id}/sweeps")
             .body()
@@ -559,28 +605,28 @@ class CertificatesResourceTest {
     entityManager.persist(tournament2);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("id", tournament1.getId())
         .multiPart(new File("src/test/resources/schools.csv"))
         .post("/tournaments/{id}/schools")
         .body();
-    given()
+    givenASuperUser()
         .pathParam("id", tournament1.getId())
         .multiPart(new File("src/test/resources/sweeps.csv"))
         .post("/tournaments/{id}/sweeps")
         .body();
-    given()
+    givenASuperUser()
         .pathParam("id", tournament2.getId())
         .multiPart(new File("src/test/resources/schools.csv"))
         .post("/tournaments/{id}/schools")
         .body();
-    given()
+    givenASuperUser()
         .pathParam("id", tournament2.getId())
         .multiPart(new File("src/test/resources/sweeps2.csv"))
         .post("/tournaments/{id}/sweeps")
         .body();
 
-    AggregateSweeps sweepsResults = given()
+    AggregateSweeps sweepsResults = givenARegularUser()
             .get("/tournaments/sweeps")
             .body()
             .as(AggregateSweeps.class);
@@ -590,6 +636,18 @@ class CertificatesResourceTest {
             is(97+79));
     assertThat(sweepsResults.totals.get("Democracy Prep Harlem Prep"),
             is(39+13));
+  }
+
+  private RequestSpecification givenASuperUser() {
+    return given()
+        .auth()
+        .oauth2(getToken(Collections.singleton("superuser")));
+  }
+
+  private RequestSpecification givenARegularUser() {
+    return given()
+        .auth()
+        .oauth2(getToken(Collections.singleton("user")));
   }
 
   private Tournament testTournament() {
@@ -607,7 +665,7 @@ class CertificatesResourceTest {
         .createQuery("SELECT COUNT(t.id) FROM Tournament t", Long.class)
         .getSingleResult();
 
-    List<Tournament> tournaments = given()
+    List<Tournament> tournaments = givenARegularUser()
         .get("/tournaments")
         .body()
         .as(
@@ -630,14 +688,14 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .when()
         .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
-    List<School> schools = given()
+    List<School> schools = givenARegularUser()
         .pathParam("id", tournament.getId())
         .get("/tournaments/{id}/schools")
         .body().as(
@@ -661,7 +719,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    String schoolsJson = given()
+    String schoolsJson = givenASuperUser()
         .pathParam("id", tournament.getId())
         .multiPart(new File("src/test/resources/schools.csv"))
         .post("/tournaments/{id}/schools")
@@ -705,13 +763,13 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .delete("/tournaments/{tournamentId}/events/{eventId}/results");
@@ -734,7 +792,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
@@ -747,7 +805,7 @@ class CertificatesResourceTest {
                 " " +
                 "Dillard'", Long.class).getSingleResult();
 
-    given()
+    givenASuperUser()
         .pathParam("evtId", jvOI.getId())
         .pathParam("id", tournament.getId())
         .pathParam("resultId", resultId)
@@ -775,13 +833,13 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .pathParam("evtId", jvOI.getId())
         .body("{\"cutoff\":\"3\"}")
@@ -808,7 +866,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
@@ -817,7 +875,7 @@ class CertificatesResourceTest {
         .then()
         .statusCode(200);
 
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .pathParam("evtId", jvOI.getId())
         .body("{\"cutoff\":\"3\"}")
@@ -845,7 +903,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", lincolnDouglas.getId())
         .pathParam("tournamentId", tournament.getId())
         .queryParam("type", EventType.DEBATE_LD.name())
@@ -872,7 +930,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", lincolnDouglas.getId())
         .pathParam("tournamentId", tournament.getId())
         .queryParam("type", EventType.DEBATE_LD.name())
@@ -901,7 +959,7 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
@@ -910,7 +968,7 @@ class CertificatesResourceTest {
         .then()
         .statusCode(200);
 
-    given()
+    givenASuperUser()
         .pathParam("id", tournament.getId())
         .pathParam("evtId", jvOI.getId())
         .body("{\"cutoff\":\"3\"}")
@@ -947,21 +1005,21 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .when()
         .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", duo.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/duo.csv"))
         .when()
         .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
-    String certificateHtml = given()
+    String certificateHtml = givenARegularUser()
         .pathParam("id", tournament.getId())
         .get("/tournaments/{id}/certificates")
         .body()
@@ -1001,21 +1059,21 @@ class CertificatesResourceTest {
     entityManager.persist(tournament);
     transaction.commit();
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", jvOI.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/JV-OI.csv"))
         .when()
         .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
-    given()
+    givenASuperUser()
         .pathParam("eventId", duo.getId())
         .pathParam("tournamentId", tournament.getId())
         .multiPart(new File("src/test/resources/duo.csv"))
         .when()
         .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
-    List<MedalCount> medalCounts = given()
+    List<MedalCount> medalCounts = givenARegularUser()
         .pathParam("id", tournament.getId())
         .get("/tournaments/{id}/medals")
         .body()
