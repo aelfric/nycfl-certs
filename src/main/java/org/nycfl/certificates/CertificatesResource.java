@@ -8,6 +8,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.nycfl.certificates.slides.SlideBuilder;
 
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.mail.MessagingException;
@@ -39,6 +40,7 @@ public class CertificatesResource {
     @GET
     @Path("/background.svg")
     @Produces("image/svg+xml")
+    @PermitAll
     public String getBackgroundImage(
         @QueryParam("color") @DefaultValue("ffffff") String color,
         @QueryParam("color2") @DefaultValue("323131") String color2,
@@ -302,6 +304,7 @@ public class CertificatesResource {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
+    @Consumes(MediaType.TEXT_HTML)
     @Path("/tournaments/{id}/certificates")
     public String generateCertificates(@PathParam("id") long tournamentId) {
         Tournament tournament = tournamentService.getTournament(tournamentId);
@@ -315,6 +318,7 @@ public class CertificatesResource {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
+    @Consumes(MediaType.TEXT_HTML)
     @Path("/tournaments/{id}/slides")
     public Response generateSlidesPreview(
         @PathParam("id") long tournamentId,
