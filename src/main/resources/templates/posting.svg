@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1920" height="1080" version="1.1" viewBox="0 0 508 285.75" xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink" style="font-size: 12px">
+    <defs>
+        <clipPath id="clipPath857">
+            <rect y="1.4211e-14" width="508" height="285.75" fill="#808080" opacity=".39032" stop-color="#000000"/>
+        </clipPath>
+        <clipPath id="clipPath1407">
+            <rect x="31.75" y="31.75" width="444.5" height="222.25" fill="#f1f1f1" opacity=".63226"
+                  stop-color="#000000"/>
+        </clipPath>
+        <filter id="filter1511" x="-.010481" y="-.014033" width="1.021" height="1.0281"
+                color-interpolation-filters="sRGB">
+            <feGaussianBlur stdDeviation="0.75"/>
+        </filter>
+        <filter id="dropShadow">
+            <feFlood flood-color="rgb(0,0,0)" flood-opacity=".8" result="flood"/>
+            <feComposite in="flood" in2="SourceGraphic" operator="in" result="composite1"/>
+            <feGaussianBlur in="composite1" result="blur" stdDeviation="0.45"/>
+            <feOffset dx="1" dy="1" result="offset"/>
+            <feComposite in="SourceGraphic" in2="offset" result="composite2"/>
+        </filter>
+    </defs>
+    <image x="-.1149" y="-67.141" width="509.93" height="380.87" clip-path="url(#clipPath857)" stroke-width=".43037"
+           xlink:href="{slideBackground}" preserveAspectRatio="none"/>
+    <image x="-.1149" y="-67.141" width="509.93" height="380.87" clip-path="url(#clipPath1407)"
+           filter="url(#filter1511)" stroke-width=".43037"
+           xlink:href="{slideBackground}" preserveAspectRatio="none"/>
+    <rect x="31.75" y="31.75" width="444.5" height="222.25" fill="#020202" opacity=".35484"/>
+    <text x="50%" y="50.75" dominant-baseline="hanging" text-anchor="middle" fill="#FFFFFF"
+          style="font-size:1.4em; font-family: 'League Gothic';" filter="url(#dropShadow)">
+        {round}s - {event.name}
+    </text>
+    <text x="0" y="4.5em" dominant-baseline="hanging" text-anchor="middle" alignment-baseline="middle" fill="#FFFFFF"
+          style="font-size:1.5em; font-weight: bold; font-family: 'League Gothic';" filter="url(#dropShadow)">
+        {#for result in results}
+         {#if count.getIsStart }
+          <tspan x="{count.getXOffset(results.size)}" y="4.5em" text-anchor="middle">{result.code}</tspan>
+          {#else}
+          <tspan x="{count.getXOffset(results.size)}" dy="1.5em" text-anchor="middle">{result.code}</tspan>
+        {/if}
+        {/for}
+    </text>
+</svg>

@@ -5,6 +5,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
+import org.nycfl.certificates.slides.PostingsBuilder;
 import org.nycfl.certificates.slides.SlideBuilder;
 
 import javax.annotation.security.PermitAll;
@@ -315,6 +316,9 @@ public class CertificatesResource {
     @Inject
     SlideBuilder slideBuilder;
 
+    @Inject
+    PostingsBuilder postingsBuilder;
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Consumes(MediaType.TEXT_HTML)
@@ -332,6 +336,27 @@ public class CertificatesResource {
                 .build();
         } else {
             return Response.ok(slideBuilder.buildSlidesPreview(tournament)).build();
+        }
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    @Consumes(MediaType.TEXT_HTML)
+    @PermitAll
+    @Path("/tournaments/{id}/postings")
+    public Response generatePostingsPreview(
+        @PathParam("id") long tournamentId,
+        @QueryParam("dl") @DefaultValue("0") int download
+    ) {
+        Tournament tournament = tournamentService.getTournament(tournamentId);
+
+        if(download==1){
+            return Response
+                .ok(slideBuilder.buildSlidesFile(tournament))
+                .header("Content-Disposition","attachment; filename=\"slides_tournament_"+tournamentId+".zip\"")
+                .build();
+        } else {
+            return Response.ok(postingsBuilder.buildSlidesPreview(tournament)).build();
         }
     }
 
