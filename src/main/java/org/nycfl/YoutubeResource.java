@@ -10,23 +10,39 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
+import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
+@Path("/youtube")
 public class YoutubeResource {
-  private static final String CLIENT_SECRETS= "client_secret.json";
+  private static final String CLIENT_SECRETS= "/credentials.json";
   private static final Collection<String> SCOPES =
       Collections.singletonList("https://www.googleapis.com/auth/youtube");
 
   private static final String APPLICATION_NAME = "NYCFL Certificates";
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public List scheduleStreams(List details){
+    return details;
+  }
 
   /**
    * Create an authorized Credential object.
@@ -42,6 +58,9 @@ public class YoutubeResource {
     // Build flow and trigger user authorization request.
     GoogleAuthorizationCodeFlow flow =
         new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY, clientSecrets, SCOPES)
+            .setDataStoreFactory(new FileDataStoreFactory(new File("c:\\Users" +
+                "\\aelfr" +
+                "\\google")))
             .build();
     return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
   }
@@ -71,12 +90,34 @@ public class YoutubeResource {
     YouTube youtubeService = getService();
     // Define and execute the API request
 
-    final LiveBroadcast liveBroadcast = scheduleStream(youtubeService,
-        "NYCFL Live - Final Round Duo",
-        DateTime.parseRfc3339("2021-02-08T15:32:26.553Z"),
-        DateTime.parseRfc3339("2021-02-08T17:32:26.553Z"));
+//    scheduleStream(youtubeService,
+//        "NCFL Live - Final Round Lincoln Douglas Debate",
+//        DateTime.parseRfc3339("2021-05-30T21:00:00.00Z"),
+//        DateTime.parseRfc3339("2021-05-30T22:30:00.00Z"));
+//
+//  scheduleStream(youtubeService,
+//        "NCFL Live - Final Round Public Forum Debate",
+//      DateTime.parseRfc3339("2021-05-30T21:00:00.00Z"),
+//      DateTime.parseRfc3339("2021-05-30T22:30:00.00Z"));
+//
+//  scheduleStream(youtubeService,
+//        "NCFL Live - Final Round Duo",
+//      DateTime.parseRfc3339("2021-05-30T21:00:00.00Z"),
+//      DateTime.parseRfc3339("2021-05-30T22:30:00.00Z"));
 
+    System.out.println(getScheduledStreams(youtubeService));
 
+  }
+
+  private static LiveStreamListResponse getScheduledStreams(YouTube youtubeService) throws IOException {
+    YouTube.LiveStreams.List request = youtubeService.liveStreams()
+        .list("snippet,cdn,status");
+    LiveStreamListResponse execute = request.setMine(true).execute();
+    for (LiveStream item : execute.getItems()) {
+      System.out.println(item.getSnippet().getTitle());
+      System.out.println(item.getCdn().getIngestionInfo().getStreamName());
+    }
+    return execute;
   }
 
   private static LiveBroadcast scheduleStream(YouTube youtubeService, String streamTitle, DateTime startTime, DateTime endTime) throws IOException {
@@ -88,7 +129,7 @@ public class YoutubeResource {
 
     final LiveBroadcastStatus status = new LiveBroadcastStatus();
     status.setPrivacyStatus("private");
-    status.setMadeForKids(false);
+    status.setSelfDeclaredMadeForKids(false);
 
     final LiveBroadcast broadcast = new LiveBroadcast();
     broadcast.setKind("youtube#liveBroadcast");
