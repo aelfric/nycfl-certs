@@ -81,7 +81,7 @@ public class YoutubeResource {
       final YouTube service = getService();
       transition(BroadcastStatus.COMPLETE, broadcastId, service);
       return getScheduledStreams(service);
-    } catch (IOException | GeneralSecurityException e){
+    } catch (IOException | GeneralSecurityException e) {
       throw new BadRequestException("Could not transition the stream", e);
     }
   }
@@ -95,7 +95,7 @@ public class YoutubeResource {
       final YouTube service = getService();
       transition(BroadcastStatus.LIVE, broadcastId, service);
       return getScheduledStreams(service);
-    } catch (IOException | GeneralSecurityException e){
+    } catch (IOException | GeneralSecurityException e) {
       throw new BadRequestException("Could not transition the stream", e);
     }
   }
@@ -109,7 +109,7 @@ public class YoutubeResource {
       final YouTube service = getService();
       transition(BroadcastStatus.TESTING, broadcastId, service);
       return getScheduledStreams(service);
-    } catch (IOException | GeneralSecurityException e){
+    } catch (IOException | GeneralSecurityException e) {
       throw new BadRequestException("Could not transition the stream", e);
     }
   }
@@ -118,7 +118,7 @@ public class YoutubeResource {
    * Create an authorized Credential object.
    *
    * @return an authorized Credential object.
-   * @throws IOException
+   * @throws IOException if the credentials file or data store cannot be found
    */
   private static Credential authorize(final NetHttpTransport httpTransport) throws IOException {
     // Load client secrets.
@@ -126,11 +126,10 @@ public class YoutubeResource {
     GoogleClientSecrets clientSecrets =
         GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
     // Build flow and trigger user authorization request.
+    final File dataDirectory = new File("c:\\Users\\aelfr\\google");
     GoogleAuthorizationCodeFlow flow =
         new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY, clientSecrets, SCOPES)
-            .setDataStoreFactory(new FileDataStoreFactory(new File("c:\\Users" +
-                "\\aelfr" +
-                "\\google")))
+            .setDataStoreFactory(new FileDataStoreFactory(dataDirectory))
             .build();
     return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
   }
@@ -193,7 +192,7 @@ public class YoutubeResource {
         .build();
   }
 
-  private static LiveBroadcast createYoutubeStream(YouTube youtubeService, String streamTitle, DateTime startTime, DateTime endTime) throws IOException {
+  private static void createYoutubeStream(YouTube youtubeService, String streamTitle, DateTime startTime, DateTime endTime) throws IOException {
     final LiveBroadcastSnippet snippet = new LiveBroadcastSnippet();
 
     snippet.setTitle(streamTitle);
@@ -231,7 +230,7 @@ public class YoutubeResource {
     final YouTube.LiveBroadcasts.Bind liveBroadcastBind = youtubeService.liveBroadcasts().bind(returnedBroadcast.getId(), "id,contentDetails");
     liveBroadcastBind.setStreamId(returnedStream.getId());
 
-    return liveBroadcastBind.execute();
+    liveBroadcastBind.execute();
   }
 
   public static void transition(BroadcastStatus broadcastStatus, String broadcastId, YouTube youtubeService) throws GeneralSecurityException, IOException {
@@ -246,7 +245,7 @@ public class YoutubeResource {
     request.execute();
   }
 
-  public static enum BroadcastStatus {
+  public enum BroadcastStatus {
     TESTING("testing"),
     LIVE("live"),
     COMPLETE("complete");
