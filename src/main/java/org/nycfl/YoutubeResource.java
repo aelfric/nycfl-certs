@@ -28,7 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Path("/youtube")
-@RolesAllowed({"basicuser,streamcontroller"})
+@RolesAllowed({"streamcontroller"})
 public class YoutubeResource {
   private static final String CLIENT_SECRETS = "/credentials.json";
   private static final Collection<String> SCOPES =
