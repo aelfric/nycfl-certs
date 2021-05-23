@@ -9,6 +9,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Path("/s3")
+@RolesAllowed({"basicuser,superuser"})
 public class S3SyncResource extends S3Resource {
     @Inject
     S3Client s3;
@@ -28,7 +30,8 @@ public class S3SyncResource extends S3Resource {
     @Path("upload")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadFile(@MultipartForm MultipartBody formData) throws Exception {
+    @RolesAllowed("superuser")
+    public Response uploadFile(@MultipartForm MultipartBody formData) {
 
         if (formData.fileName == null || formData.fileName.isEmpty()) {
             return Response.status(Status.BAD_REQUEST).build();

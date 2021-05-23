@@ -647,7 +647,7 @@ class CertificatesResourceTest {
   private RequestSpecification givenARegularUser() {
     return given()
         .auth()
-        .oauth2(getToken(Collections.singleton("user")));
+        .oauth2(getToken(Collections.singleton("basicuser")));
   }
 
   private Tournament testTournament() {

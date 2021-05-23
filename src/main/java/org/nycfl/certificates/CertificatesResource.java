@@ -1,7 +1,6 @@
 package org.nycfl.certificates;
 
 import io.quarkus.qute.Template;
-import io.quarkus.security.Authenticated;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -27,7 +26,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Path("/certs")
-@Authenticated
+@RolesAllowed({"basicuser","superuser"})
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CertificatesResource {
