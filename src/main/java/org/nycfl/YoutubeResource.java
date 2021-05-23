@@ -13,6 +13,7 @@ import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -33,6 +34,9 @@ public class YoutubeResource {
 
   private static final String APPLICATION_NAME = "NYCFL Certificates";
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+
+  @ConfigProperty(name="google.credentials.path")
+  String googleCredentialsPath;
 
   public static class LiveStreamRequest {
     public String title;
@@ -120,13 +124,13 @@ public class YoutubeResource {
    * @return an authorized Credential object.
    * @throws IOException if the credentials file or data store cannot be found
    */
-  private static Credential authorize(final NetHttpTransport httpTransport) throws IOException {
+  private Credential authorize(final NetHttpTransport httpTransport) throws IOException {
     // Load client secrets.
     InputStream in = YoutubeResource.class.getResourceAsStream(CLIENT_SECRETS);
     GoogleClientSecrets clientSecrets =
         GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
     // Build flow and trigger user authorization request.
-    final File dataDirectory = new File("c:\\Users\\aelfr\\google");
+    final File dataDirectory = new File(googleCredentialsPath);
     GoogleAuthorizationCodeFlow flow =
         new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY, clientSecrets, SCOPES)
             .setDataStoreFactory(new FileDataStoreFactory(dataDirectory))
@@ -140,7 +144,7 @@ public class YoutubeResource {
    * @return an authorized API client service
    * @throws GeneralSecurityException, IOException
    */
-  private static YouTube getService() throws GeneralSecurityException, IOException {
+  private YouTube getService() throws GeneralSecurityException, IOException {
     final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
     Credential credential = authorize(httpTransport);
     return new YouTube.Builder(httpTransport, JSON_FACTORY, credential)
@@ -148,32 +152,25 @@ public class YoutubeResource {
         .build();
   }
 
-  /**
-   * Call function to create API service object. Define and
-   * execute API request. Print API response.
-   *
-   * @throws GeneralSecurityException, IOException, GoogleJsonResponseException
-   */
-  public static void main(String[] args)
-      throws GeneralSecurityException, IOException {
-    YouTube youtubeService = getService();
-    // Define and execute the API request
-
-    System.out.println(getScheduledStreams(youtubeService));
-
-  }
-
   private static List<LiveStreamResponse> getScheduledStreams(YouTube youtubeService) throws IOException {
     YouTube.LiveStreams.List request = youtubeService.liveStreams()
         .list("snippet,cdn,status");
-    LiveStreamListResponse execute = request.setMine(true).execute();
+    LiveStreamListResponse execute =
+        request
+            .setMine(true)
+            .setMaxResults(64L)
+            .execute();
     Map<String, LiveStream> streamMap = execute
         .getItems()
         .stream()
         .collect(Collectors.toMap(LiveStream::getId, Function.identity()));
 
     YouTube.LiveBroadcasts.List request2 = youtubeService.liveBroadcasts().list("snippet,status,contentDetails");
-    final LiveBroadcastListResponse broadcastListResponse = request2.setMine(true).execute();
+    final LiveBroadcastListResponse broadcastListResponse =
+        request2
+            .setMine(true)
+            .setMaxResults(64L)
+            .execute();
     final List<LiveStreamResponse> liveStreamResponses = new ArrayList<>();
     for (LiveBroadcast broadcast : broadcastListResponse.getItems()) {
       final LiveStreamResponse liveStreamResponse = getLiveStreamResponse(streamMap, broadcast);
