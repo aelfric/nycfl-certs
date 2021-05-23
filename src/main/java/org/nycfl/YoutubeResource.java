@@ -18,10 +18,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.function.Function;
@@ -30,7 +28,6 @@ import java.util.stream.Collectors;
 @Path("/youtube")
 @RolesAllowed({"streamcontroller"})
 public class YoutubeResource {
-  private static final String CLIENT_SECRETS = "/credentials.json";
   private static final Collection<String> SCOPES =
       Collections.singletonList("https://www.googleapis.com/auth/youtube");
 
@@ -41,6 +38,7 @@ public class YoutubeResource {
   String googleCredentialsPath;
 
   public static class LiveStreamRequest {
+
     public String title;
     public String startTime;
     public String endTime;
@@ -132,7 +130,12 @@ public class YoutubeResource {
    */
   private Credential authorize(final NetHttpTransport httpTransport) throws IOException {
     // Load client secrets.
-    InputStream in = YoutubeResource.class.getResourceAsStream(CLIENT_SECRETS);
+    InputStream in =
+        new FileInputStream(
+            Paths
+                .get(googleCredentialsPath)
+                .resolve("credentials.json")
+                .toFile());
     GoogleClientSecrets clientSecrets =
         GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
     // Build flow and trigger user authorization request.
