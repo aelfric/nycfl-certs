@@ -15,6 +15,7 @@ import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -27,6 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Path("/youtube")
+@RolesAllowed({"basicuser,streamcontroller"})
 public class YoutubeResource {
   private static final String CLIENT_SECRETS = "/credentials.json";
   private static final Collection<String> SCOPES =
@@ -57,6 +59,7 @@ public class YoutubeResource {
   }
 
   @POST
+  @RolesAllowed({"streamcontroller"})
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public List<LiveStreamResponse> scheduleStreams(List<LiveStreamRequest> details) {
@@ -78,6 +81,7 @@ public class YoutubeResource {
 
   @POST
   @Path("/{broadcastId}/complete")
+  @RolesAllowed({"streamcontroller"})
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public List<LiveStreamResponse> completeStream(@PathParam("broadcastId") String broadcastId) {
@@ -91,6 +95,7 @@ public class YoutubeResource {
   }
 
   @POST
+  @RolesAllowed({"streamcontroller"})
   @Path("/{broadcastId}/golive")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
@@ -105,6 +110,7 @@ public class YoutubeResource {
   }
 
   @POST
+  @RolesAllowed({"streamcontroller"})
   @Path("/{broadcastId}/test")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
