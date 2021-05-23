@@ -14,34 +14,104 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Path("/youtube")
 public class YoutubeResource {
-  private static final String CLIENT_SECRETS= "/credentials.json";
+  private static final String CLIENT_SECRETS = "/credentials.json";
   private static final Collection<String> SCOPES =
       Collections.singletonList("https://www.googleapis.com/auth/youtube");
 
   private static final String APPLICATION_NAME = "NYCFL Certificates";
   private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
+  public static class LiveStreamRequest {
+    public String title;
+    public String startTime;
+    public String endTime;
+  }
+
+  @GET
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<LiveStreamResponse> getStreams() {
+    try {
+      YouTube youtubeService = getService();
+      return getScheduledStreams(youtubeService);
+    } catch (GeneralSecurityException | IOException e) {
+      throw new InternalServerErrorException("Could not connect to YouTube", e);
+    }
+  }
+
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public List scheduleStreams(List details){
-    return details;
+  public List<LiveStreamResponse> scheduleStreams(List<LiveStreamRequest> details) {
+    try {
+      YouTube youtubeService = getService();
+      for (LiveStreamRequest schedule : details) {
+        createYoutubeStream(
+            youtubeService,
+            schedule.title,
+            DateTime.parseRfc3339(schedule.startTime),
+            DateTime.parseRfc3339(schedule.endTime)
+        );
+      }
+      return getScheduledStreams(youtubeService);
+    } catch (GeneralSecurityException | IOException e) {
+      throw new InternalServerErrorException("Could not connect to YouTube", e);
+    }
+  }
+
+  @POST
+  @Path("/{broadcastId}/complete")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<LiveStreamResponse> completeStream(@PathParam("broadcastId") String broadcastId) {
+    try {
+      final YouTube service = getService();
+      transition(BroadcastStatus.COMPLETE, broadcastId, service);
+      return getScheduledStreams(service);
+    } catch (IOException | GeneralSecurityException e){
+      throw new BadRequestException("Could not transition the stream", e);
+    }
+  }
+
+  @POST
+  @Path("/{broadcastId}/golive")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<LiveStreamResponse> goLive(@PathParam("broadcastId") String broadcastId) {
+    try {
+      final YouTube service = getService();
+      transition(BroadcastStatus.LIVE, broadcastId, service);
+      return getScheduledStreams(service);
+    } catch (IOException | GeneralSecurityException e){
+      throw new BadRequestException("Could not transition the stream", e);
+    }
+  }
+
+  @POST
+  @Path("/{broadcastId}/test")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<LiveStreamResponse> testStream(@PathParam("broadcastId") String broadcastId) {
+    try {
+      final YouTube service = getService();
+      transition(BroadcastStatus.TESTING, broadcastId, service);
+      return getScheduledStreams(service);
+    } catch (IOException | GeneralSecurityException e){
+      throw new BadRequestException("Could not transition the stream", e);
+    }
   }
 
   /**
@@ -90,37 +160,40 @@ public class YoutubeResource {
     YouTube youtubeService = getService();
     // Define and execute the API request
 
-//    scheduleStream(youtubeService,
-//        "NCFL Live - Final Round Lincoln Douglas Debate",
-//        DateTime.parseRfc3339("2021-05-30T21:00:00.00Z"),
-//        DateTime.parseRfc3339("2021-05-30T22:30:00.00Z"));
-//
-//  scheduleStream(youtubeService,
-//        "NCFL Live - Final Round Public Forum Debate",
-//      DateTime.parseRfc3339("2021-05-30T21:00:00.00Z"),
-//      DateTime.parseRfc3339("2021-05-30T22:30:00.00Z"));
-//
-//  scheduleStream(youtubeService,
-//        "NCFL Live - Final Round Duo",
-//      DateTime.parseRfc3339("2021-05-30T21:00:00.00Z"),
-//      DateTime.parseRfc3339("2021-05-30T22:30:00.00Z"));
-
     System.out.println(getScheduledStreams(youtubeService));
 
   }
 
-  private static LiveStreamListResponse getScheduledStreams(YouTube youtubeService) throws IOException {
+  private static List<LiveStreamResponse> getScheduledStreams(YouTube youtubeService) throws IOException {
     YouTube.LiveStreams.List request = youtubeService.liveStreams()
         .list("snippet,cdn,status");
     LiveStreamListResponse execute = request.setMine(true).execute();
-    for (LiveStream item : execute.getItems()) {
-      System.out.println(item.getSnippet().getTitle());
-      System.out.println(item.getCdn().getIngestionInfo().getStreamName());
+    Map<String, LiveStream> streamMap = execute
+        .getItems()
+        .stream()
+        .collect(Collectors.toMap(LiveStream::getId, Function.identity()));
+
+    YouTube.LiveBroadcasts.List request2 = youtubeService.liveBroadcasts().list("snippet,status,contentDetails");
+    final LiveBroadcastListResponse broadcastListResponse = request2.setMine(true).execute();
+    final List<LiveStreamResponse> liveStreamResponses = new ArrayList<>();
+    for (LiveBroadcast broadcast : broadcastListResponse.getItems()) {
+      final LiveStreamResponse liveStreamResponse = getLiveStreamResponse(streamMap, broadcast);
+      liveStreamResponses.add(liveStreamResponse);
     }
-    return execute;
+    return liveStreamResponses;
   }
 
-  private static LiveBroadcast scheduleStream(YouTube youtubeService, String streamTitle, DateTime startTime, DateTime endTime) throws IOException {
+  private static LiveStreamResponse getLiveStreamResponse(Map<String, LiveStream> streamMap, LiveBroadcast item) {
+    final String boundStreamId = item.getContentDetails().getBoundStreamId();
+
+    return LiveStreamResponse
+        .builder()
+        .withBroadcast(item)
+        .withLiveStream(streamMap.get(boundStreamId))
+        .build();
+  }
+
+  private static LiveBroadcast createYoutubeStream(YouTube youtubeService, String streamTitle, DateTime startTime, DateTime endTime) throws IOException {
     final LiveBroadcastSnippet snippet = new LiveBroadcastSnippet();
 
     snippet.setTitle(streamTitle);
@@ -159,5 +232,29 @@ public class YoutubeResource {
     liveBroadcastBind.setStreamId(returnedStream.getId());
 
     return liveBroadcastBind.execute();
+  }
+
+  public static void transition(BroadcastStatus broadcastStatus, String broadcastId, YouTube youtubeService) throws GeneralSecurityException, IOException {
+    // Define and execute the API request
+    YouTube.LiveBroadcasts.Transition request = youtubeService
+        .liveBroadcasts()
+        .transition(
+            broadcastStatus.value,
+            broadcastId,
+            "snippet,status"
+        );
+    request.execute();
+  }
+
+  public static enum BroadcastStatus {
+    TESTING("testing"),
+    LIVE("live"),
+    COMPLETE("complete");
+
+    public final String value;
+
+    BroadcastStatus(String value) {
+      this.value = value;
+    }
   }
 }
