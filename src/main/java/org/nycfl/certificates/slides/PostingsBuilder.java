@@ -16,14 +16,13 @@ public class PostingsBuilder {
   @Inject
   Template posting;
 
-  public static double getXOffset(int index, int total){
-    final int offset = 445 - (total / 6 + 1 ) * 60;
-//    return offset + ((index - 1) / 6) * 60;
-    return 444.5 / 2;
+  public static double getXOffset(int index){
+    final int column = index / 8;
+    return (float) -1377.8 + column * 65;
   }
 
   public static boolean getIsStart(int count){
-    return (count - 1) % 6 == 0 ;
+    return (count - 1) % 8 == 0 ;
   }
 
   public String buildSlidesPreview(Tournament tournament) {
