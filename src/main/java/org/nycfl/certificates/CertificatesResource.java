@@ -344,19 +344,16 @@ public class CertificatesResource {
     @Consumes(MediaType.TEXT_HTML)
     @PermitAll
     @Path("/tournaments/{id}/postings")
-    public Response generatePostingsPreview(
+    public String generatePostingsPreview(
         @PathParam("id") long tournamentId,
         @QueryParam("dl") @DefaultValue("0") int download
     ) {
         Tournament tournament = tournamentService.getTournament(tournamentId);
 
         if(download==1){
-            return Response
-                .ok(slideBuilder.buildSlidesFile(tournament))
-                .header("Content-Disposition","attachment; filename=\"slides_tournament_"+tournamentId+".zip\"")
-                .build();
+            return postingsBuilder.buildSlidesFile(tournament);
         } else {
-            return Response.ok(postingsBuilder.buildSlidesPreview(tournament)).build();
+            return postingsBuilder.buildSlidesPreview(tournament);
         }
     }
 

@@ -219,22 +219,13 @@
                 {#for result in results}
                 {#if count.getIsStart }
             </text>
-            <text transform="matrix(6.262 0 0 6.262 {count.getXOffset} -313.37)" font-family="'League Spartan'"
-                  style="line-height:1;shape-inside:url(#rect2174);white-space:pre" xml:space="preserve">
-                <tspan x="257.35547" y="67.791733">{result.code} </tspan>
+            <text font-family="'League Spartan'"
+                  style="line-height:1;shape-inside:url(#rect2174);white-space:pre; font-size: 15pt;" xml:space="preserve">
+                <tspan x="{count.getXOffset}" y="70pt">{result.code} </tspan>
                 {#else}
-                <tspan x="257.35547" dy="3.622894">{result.code}</tspan>
+                <tspan x="{count.getXOffset}" dy="18pt">{result.code}</tspan>
                 {/if}
                 {/for}
-            </text>
-            <text transform="matrix(6.262 0 0 6.262 -1311 -313.37)" font-family="'League Spartan'"
-                  style="line-height:1;shape-inside:url(#rect2174);white-space:pre" xml:space="preserve">
-            </text>
-            <text transform="matrix(6.262 0 0 6.262 -1244.3 -313.37)" font-family="'League Spartan'"
-                  style="line-height:1;shape-inside:url(#rect2174);white-space:pre" xml:space="preserve">
-            </text>
-            <text transform="matrix(6.262 0 0 6.262 -1177.6 -313.37)" font-family="'League Spartan'"
-                  style="line-height:1;shape-inside:url(#rect2174);white-space:pre" xml:space="preserve">
             </text>
         </g>
         <text x="365.98557" y="27.870516" font-size="11.657px" letter-spacing="1.7485px" stroke-width=".87425"
