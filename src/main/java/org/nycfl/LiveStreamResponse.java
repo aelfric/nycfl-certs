@@ -1,5 +1,6 @@
 package org.nycfl;
 
+import com.google.api.client.util.DateTime;
 import com.google.api.services.youtube.model.LiveBroadcast;
 import com.google.api.services.youtube.model.LiveBroadcastSnippet;
 import com.google.api.services.youtube.model.LiveStream;
@@ -84,12 +85,20 @@ public class LiveStreamResponse {
       this.broadcastId = broadcast.getId();
       final LiveBroadcastSnippet snippet = broadcast.getSnippet();
       this.title = snippet.getTitle();
-      this.startTime = snippet.getScheduledStartTime().toStringRfc3339();
-      this.endTime = snippet.getScheduledEndTime().toStringRfc3339();
+      this.startTime = timeToString(snippet.getScheduledStartTime());
+      this.endTime = timeToString(snippet.getScheduledEndTime());
       this.status = broadcast.getStatus().getLifeCycleStatus();
       this.embedHtml = broadcast.getContentDetails().getMonitorStream().getEmbedHtml();
       privacyStatus = broadcast.getStatus().getPrivacyStatus();
       return this;
+    }
+
+    private String timeToString(DateTime scheduledStartTime) {
+      if(scheduledStartTime != null) {
+        return scheduledStartTime.toStringRfc3339();
+      } else {
+        return "";
+      }
     }
   }
 }
