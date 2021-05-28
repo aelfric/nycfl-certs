@@ -37,6 +37,21 @@ public class PostingsBuilder {
   }
 
   @SuppressWarnings("unused")
+  public static double getPostingFontSize(String newText, int textBaseSize){
+    int newLength = newText.length();
+    double charsPerLine = 35.0;
+    double newEmSize = charsPerLine / newLength;
+
+    // Applying ems directly was causing some weirdness, converting ems to pixels got rid of the weirdyness
+    if(newEmSize < 1){
+      return newEmSize * textBaseSize;
+    } else {
+      // It fits, leave it alone
+      return textBaseSize;
+    }
+  }
+
+  @SuppressWarnings("unused")
   public static boolean getIsStart(int count){
     perColumn = 8;
     return (count - 1) % perColumn == 0 ;

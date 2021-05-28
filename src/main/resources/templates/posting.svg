@@ -213,24 +213,23 @@
     <rect width="508" height="285.75" fill="none" stroke="#123f66" stroke-width="5"
           style="paint-order:markers stroke fill"/>
     <path d="m216.24 0v285.75" fill="none" stroke="#123f66" stroke-width="6"/>
-    <g fill="#1970b7" font-family="'Cooper Black'" word-spacing="0px">
-        <g font-size="3.5278px" letter-spacing=".52917px">
             <text>
                 {#for result in results}
                 {#if count.getIsStart }
             </text>
             <text font-family="'League Spartan'"
-                  style="line-height:1;shape-inside:url(#rect2174);white-space:pre; font-size: 15pt;" xml:space="preserve">
-                <tspan x="{count.getXOffset}" y="70pt">{result.code} </tspan>
+                  x="{count.getXOffset}"
+                  style="line-height:1;white-space:pre; font-size: 15pt;fill: #1970b7; letter-spacing: 0.5;">
+                <tspan x="{count.getXOffset}px" y="70pt" font-size="{result.code.getPostingFontSize(15)}">{result.code}</tspan>
                 {#else}
-                <tspan x="{count.getXOffset}" dy="18pt">{result.code}</tspan>
+                <tspan x="{count.getXOffset}px" font-size="{result.code.getPostingFontSize(15)}" dy="18pt">{result.code}</tspan>
                 {/if}
                 {/for}
             </text>
-        </g>
-        <text x="365.98557" y="27.870516" font-size="11.657px" letter-spacing="1.7485px" stroke-width=".87425"
-              text-align="center" text-anchor="middle" style="line-height:1.5" xml:space="preserve"><tspan x="365.98557" y="27.870516" fill="#1970b7" font-family="'League Spartan'" stroke-width=".87425" text-align="center" text-anchor="middle">ADVANCING {round.toUpperCase}S</tspan></text>
-        <text x="366.8598" y="55.166859" font-size="19.286px" letter-spacing="2.8929px" stroke-width="1.4464"
-              text-align="center" text-anchor="middle" style="line-height:1.5" xml:space="preserve"><tspan x="368.30624" y="55.166859" fill="#1970b7" font-family="'League Spartan'" stroke-width="1.4464" text-align="center" text-anchor="middle">{event.name.toUpperCase}</tspan></text>
-    </g>
+        <text x="362" y="27.870516" font-size="11.657px" stroke-width=".87425" fill="#1970b7"
+              text-align="center" text-anchor="middle" style="line-height:1.5"  font-family="'League Spartan'">ADVANCING {round.toUpperCase}S</text>
+        <text x="362" y="55.166859" font-size="{event.name.toUpperCase.getPostingFontSize(17)}" stroke-width="1.4464"
+              text-align="center" text-anchor="middle" style="line-height:1.5"
+              font-family="'League Spartan'"  fill="#1970b7"
+        >{event.name.toUpperCase}</text>
 </svg>
