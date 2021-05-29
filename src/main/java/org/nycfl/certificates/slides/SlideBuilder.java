@@ -1,13 +1,17 @@
 package org.nycfl.certificates.slides;
 
 import io.quarkus.qute.Template;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.nycfl.certificates.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -20,17 +24,22 @@ public class SlideBuilder {
   @Inject
   Template slide;
 
+  @ConfigProperty(name="app.data.path")
+  String dataPath;
+
   public String buildSlidesPreview(Tournament tournament) {
       return "<html><body>" +
           String.join("", buildSlides(tournament).values()) +
           "</body></html>";
   }
 
-  public byte[] buildSlidesFile(Tournament tournament){
+  public String buildSlidesFile(Tournament tournament){
     Map<String, String> stringStringMap = buildSlides(tournament);
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-    try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)){
+    try (
+      FileOutputStream fileOutputStream = new FileOutputStream(getOutputFile(tournament));
+      ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
+      ){
       for (Map.Entry<String, String> memoryFile : stringStringMap.entrySet()) {
         ZipEntry zipEntry = new ZipEntry(memoryFile.getKey() + ".svg");
         zipOutputStream.putNextEntry(zipEntry);
@@ -40,9 +49,14 @@ public class SlideBuilder {
     } catch (IOException ioException){
       throw new BadRequestException("Could not create file");
     }
-    return byteArrayOutputStream.toByteArray();
+    return "\"OK\"";
   }
-
+  private File getOutputFile(Tournament tournament) throws IOException {
+    Files.createDirectories(Paths.get(dataPath));
+    return Paths.get(dataPath).resolve(
+      String.format("%d_slides_%d.zip", tournament.getId(),
+        System.currentTimeMillis())).toFile();
+  }
   Map<String, String> buildSlides(Tournament tournament) {
     Map<String, String> slides = new LinkedHashMap<>();
     for (Event event : tournament.getEvents()) {

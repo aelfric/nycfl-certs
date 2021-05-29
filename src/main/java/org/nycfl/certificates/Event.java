@@ -1,12 +1,10 @@
 package org.nycfl.certificates;
 
+import javax.json.bind.annotation.JsonbProperty;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -72,6 +70,13 @@ public class Event {
 
     public Tournament getTournament() {
         return this.tournament;
+    }
+
+    @JsonbProperty("latestResult")
+    public Optional<String> getLatestResult(){
+        return results.stream().map(r -> r.eliminationRound).min(
+          Comparator.comparingInt(EliminationRound::ordinal)
+        ).map(EliminationRound::getLabel);
     }
 
     public void addResults(List<Result> newResults) {
