@@ -6,23 +6,22 @@ import org.nycfl.certificates.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @ApplicationScoped
 public class SlideBuilder {
 
   @Inject
   Template slide;
+
+  @Inject
+  SlideWriter slideWriter;
 
   @ConfigProperty(name="app.data.path")
   String dataPath;
@@ -34,22 +33,10 @@ public class SlideBuilder {
   }
 
   public String buildSlidesFile(Tournament tournament){
-    Map<String, String> stringStringMap = buildSlides(tournament);
-
-    try (
-      FileOutputStream fileOutputStream = new FileOutputStream(getOutputFile(tournament));
-      ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
-      ){
-      for (Map.Entry<String, String> memoryFile : stringStringMap.entrySet()) {
-        ZipEntry zipEntry = new ZipEntry(memoryFile.getKey() + ".svg");
-        zipOutputStream.putNextEntry(zipEntry);
-        zipOutputStream.write(memoryFile.getValue().getBytes());
-        zipOutputStream.closeEntry();
-      }
-    } catch (IOException ioException){
-      throw new BadRequestException("Could not create file");
-    }
-    return "\"OK\"";
+    return slideWriter.writeSlides(
+      tournament,
+      buildSlides(tournament),
+      "slides");
   }
   private File getOutputFile(Tournament tournament) throws IOException {
     Files.createDirectories(Paths.get(dataPath));
