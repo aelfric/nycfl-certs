@@ -30,7 +30,7 @@ public class PostingsBuilder {
   @SuppressWarnings("unused")
   public static double getPostingFontSize(String newText, int textBaseSize){
     int newLength = newText.length();
-    double charsPerLine = 35.0;
+    double charsPerLine = 30.0;
     double newEmSize = charsPerLine / newLength;
 
     // Applying ems directly was causing some weirdness, converting ems to pixels got rid of the weirdyness
