@@ -68,9 +68,9 @@ public class SlideBuilder {
                   int i = 0;
                   for (List<Result> dividedResult : dividedResults) {
                       slides.put(String.format("%s_%s_%d",
-                          event.getName(),
-                          round.getKey().name(),
-                          i++),
+                        event.getEventType().name(),
+                        event.getName(),
+                        i++),
                           slide
                               .data("roundType", round.getKey().label)
                               .data("slideBackground", tournament.getSlideBackgroundUrl())
