@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Path("/s3")
-@RolesAllowed({"basicuser,superuser"})
+@RolesAllowed({"basicuser","superuser"})
 public class S3SyncResource extends S3Resource {
     @Inject
     S3Client s3;
