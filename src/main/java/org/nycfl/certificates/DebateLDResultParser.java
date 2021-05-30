@@ -29,7 +29,6 @@ public class DebateLDResultParser implements ResultParser {
                     "WinPr", "Win"));
             } catch (IllegalArgumentException e){
                 result.numWins = 0;
-                e.printStackTrace();
             }
             result.eliminationRound = eliminationRound;
             result.school = schoolsMap.computeIfAbsent(
