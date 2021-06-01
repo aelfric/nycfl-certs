@@ -8,6 +8,7 @@ public enum CertificateType implements LabeledEnum {
     PLACEMENT("Placement"),
     DEBATE_SPEAKER("Top Speaker"),
     DEBATE_RECORD("Debate Record"),
+    CONGRESS_PO("Presiding Officer"),
     QUALIFIER("Qualifier");
 
     private final String label;

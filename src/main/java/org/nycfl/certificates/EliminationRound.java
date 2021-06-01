@@ -1,17 +1,20 @@
 package org.nycfl.certificates;
 
 public enum EliminationRound implements LabeledEnum{
-    FINALIST("Finalist"),
-    SEMIFINALIST("Semi-Finalist"),
-    QUARTER_FINALIST("Quarter-Finalist"),
-    OCTOFINALIST("Octo-Finalist"),
-    DOUBLE_OCTOFINALIST("Double Octo-Finalist"),
-    TRIPLE_OCTOFINALIST("Triple Octo-Finalist");
+    FINALIST("Finalist", "Finals"),
+    SEMIFINALIST("Semi-Finalist", "Semi-Finals"),
+    QUARTER_FINALIST("Quarter-Finalist", "Quarter-Finals"),
+    OCTOFINALIST("Octo-Finalist", "Octo-Finals"),
+    DOUBLE_OCTOFINALIST("Double Octo-Finalist", "Double Octo-Finals"),
+    TRIPLE_OCTOFINALIST("Triple Octo-Finalist", "Double Octo-Finals"),
+    PRELIM("Prelim", "Prelims");
 
     public final String label;
+    public final String roundName;
 
-    EliminationRound(String label) {
+    EliminationRound(String label, String finals) {
         this.label = label;
+        roundName = finals;
     }
 
     @Override

@@ -61,7 +61,6 @@ public class Tournament {
     }
 
     public void setEvents(List<Event> events) {
-        this.events.clear();
         this.events.addAll(events);
         events.forEach(e -> e.setTournament(this));
     }

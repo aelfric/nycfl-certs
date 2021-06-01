@@ -14,6 +14,8 @@
     {#record /}
     {#else if event.certificateType eq CertificateType:QUALIFIER }
     {#qualifier /}
+    {#else if event.certificateType eq CertificateType:CONGRESS_PO }
+    {#po /}
     {/if }
 </div>
 <div style="page-break-after: always; visibility: hidden"></div>

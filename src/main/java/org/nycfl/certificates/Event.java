@@ -184,7 +184,7 @@ public class Event {
 
     String formatResult(Result result) {
         return switch (getCertificateType()) {
-            case PLACEMENT, DEBATE_SPEAKER -> getEventType()
+            case PLACEMENT, DEBATE_SPEAKER, CONGRESS_PO -> getEventType()
                 .formatPlacementString(result);
             case DEBATE_RECORD -> {
                 int wins = result.numWins != null ? result.numWins : 0;
@@ -196,7 +196,6 @@ public class Event {
             case QUALIFIER -> result.place < getPlacementCutoff() ?
                 "Qualifier" : result.place < getCertificateCutoff() ?
                 "Alternate" : "";
-            default -> "???";
         };
     }
 
