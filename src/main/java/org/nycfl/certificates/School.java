@@ -19,6 +19,10 @@ public class School {
     @OneToMany(mappedBy = "school")
     Set<Result> results;
 
+    @OneToMany(mappedBy = "school", fetch = FetchType.EAGER)
+    Set<SchoolEmail> emails;
+
+
     public static School fromName(String name) {
         School school = new School();
         school.name = name;
@@ -76,6 +80,9 @@ public class School {
     public void setDebateCode(String debateCode) {
         this.debateCode = debateCode;
     }
+    public Set<SchoolEmail> getEmails(){
+        return this.emails;
+    }
 
     @Override
     public String toString() {
@@ -90,5 +97,10 @@ public class School {
         School school = fromName(code);
         school.debateCode = code;
         return school;
+    }
+
+    @JsonbTransient
+    public Set<Result> getResults() {
+        return this.results;
     }
 }

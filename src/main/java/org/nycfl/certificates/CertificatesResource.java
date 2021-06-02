@@ -15,7 +15,6 @@ import javax.mail.MessagingException;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -230,6 +229,17 @@ public class CertificatesResource {
     }
     @POST
     @RolesAllowed("superuser")
+    @Path("/tournaments/{id}/events/{evtId}/results/{resultId}/school")
+    public Tournament switchCompetitorSchool(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            @PathParam("resultId") long resultId,
+            @QueryParam("schoolId") long newSchool
+    ) {
+        return tournamentService.switchSchool(eventId, resultId, newSchool);
+    }
+    @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/rounds")
     public Tournament setEventType(
             @PathParam("id") long tournamentId,
@@ -362,20 +372,58 @@ public class CertificatesResource {
 
     @GET
     @Path("/tournaments/{id}/awards_sheet")
-    public Response getAwardsSheet(@PathParam("id") long tournamentId) {
-        List<AwardsResult> awardsBySchool =
-            tournamentService.getAwardsBySchool(tournamentId);
-        AwardsResults awardsResults = new AwardsResults(awardsBySchool);
-        File entity = awardsResults.toSpreadsheet();
-        try {
-            GmailQuickstart.doDraft(entity);
-        } catch (IOException | MessagingException | GeneralSecurityException e) {
-            throw new BadRequestException(e);
+    public List<AwardsResult> getAwardsSheet(@PathParam("id") long tournamentId) {
+        return tournamentService.getAwardsBySchool(tournamentId);
+    }
+
+    @Inject
+    GmailQuickstart gmailQuickstart;
+
+    @Inject
+    Template emailText;
+
+    @POST
+    @Path("/tournaments/{id}/awards_sheet")
+    public String draftAwardsSheetEmails(@PathParam("id") long tournamentId) {
+        List<School> schools = tournamentService.getSchools(tournamentId);
+        int count = 0;
+        for (School school : schools) {
+            List<AwardsResult> awardsBySchool =
+              tournamentService.getAwardsBySchool(tournamentId, school.getId());
+            AwardsResults awardsResults = new AwardsResults(awardsBySchool, school.getName());
+            File entity = awardsResults.toSpreadsheet();
+            try {
+                count += gmailQuickstart.doDraft(entity, school.emails,
+                  emailText
+                    .data("school", school.getName())
+                    .render()
+                );
+            } catch (IOException | MessagingException | GeneralSecurityException e) {
+                throw new BadRequestException(e);
+            }
         }
-        return Response.ok(entity, MediaType.APPLICATION_OCTET_STREAM)
-            .header("Content-Disposition",
-                "attachment; filename=\"" + entity.getName() + "\"" ) //optional
-            .build();
+
+
+        return String.format("\"Drafted %d emails\"", count);
+    }
+
+    @POST
+    @RolesAllowed("superuser")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tournaments/{id}/contacts")
+    public String uploadContactInfo(@MultipartForm MultipartBody body, @PathParam("tournamentId") long tournamentId){
+        return String.format("\"%d records updated\"",
+          tournamentService.updateSchoolContacts(body.file));
+    }
+
+    @GET
+    @RolesAllowed("superuser")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/tournaments/{id}/contacts")
+    public List<School> getContactInfo(@PathParam("tournamentId") long tournamentId){
+        return tournamentService.getSchools(tournamentId);
     }
 
     @GET

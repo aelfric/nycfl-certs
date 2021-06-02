@@ -9,8 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,8 +18,10 @@ import static java.nio.file.StandardOpenOption.CREATE;
 public class AwardsResults {
 
     final List<AwardsResult> results;
+    private String schoolName;
 
-    public AwardsResults(Collection<AwardsResult> c) {
+    public AwardsResults(Collection<AwardsResult> c, String schoolName) {
+        this.schoolName = schoolName;
         results = c
             .stream()
             .flatMap(
@@ -41,6 +42,7 @@ public class AwardsResults {
         Row row = sheet.createRow(rowNum++);
 
         writeHeaderRow(workbook, row, List.of(
+            "ID",
             "Student Name",
             "School Name",
             "Award",
@@ -55,6 +57,8 @@ public class AwardsResults {
             row = sheet.createRow(rowNum++);
             colNum = 0;
             Cell cell = row.createCell(colNum++);
+            cell.setCellValue(datatype.id);
+            cell = row.createCell(colNum++);
             cell.setCellValue(datatype.studentName);
             cell = row.createCell(colNum++);
             cell.setCellValue(datatype.schoolName);
@@ -68,7 +72,8 @@ public class AwardsResults {
         }
 
         try {
-            Path tempSpreadsheet = Files.createTempFile("tempSpreadsheet",
+            Path tempSpreadsheet = Files.createTempFile("Awards for " +
+                schoolName.replace("/"," ") + " ",
                 ".xlsx");
             OutputStream outputStream =
                 Files.newOutputStream(tempSpreadsheet, CREATE);

@@ -87,4 +87,26 @@ public class Result {
     public String getHtmlName(){
         return name == null ? "" : name.replaceAll("&", "&amp;");
     }
+
+    public void setSchool(School school) {
+        this.school.getResults().remove(this);
+        this.school = school;
+        school.getResults().add(this);
+    }
+
+    @Override
+    public boolean equals(Object that){
+        if(this == that) return true;
+        if(that instanceof Result) {
+            Result other = (Result) that;
+            return this.id == other.id && this.id != 0;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return 7;
+    }
 }

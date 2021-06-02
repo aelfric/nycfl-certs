@@ -7,12 +7,16 @@ import java.util.Objects;
 public class MedalCount {
   public final String school;
   public final long count;
+  public final long schoolId;
 
   @JsonbCreator
   public MedalCount(@JsonbProperty("school") String school,
-                    @JsonbProperty("count") long count) {
+                    @JsonbProperty("count") long count,
+                    @JsonbProperty("schoolId") long schoolId
+                    ) {
     this.school = school;
     this.count = count;
+    this.schoolId = schoolId;
   }
 
   @Override

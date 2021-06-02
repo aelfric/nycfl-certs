@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AwardsResult {
+    public final long id;
     public final String studentName;
     public final int place;
     public final String schoolName;
@@ -12,16 +13,18 @@ public class AwardsResult {
     public final EliminationRound eliminationRound;
     public final EventType eventType;
     public final String award;
+    public final long schoolId;
 
     private AwardsResult(String studentName,
                          AwardsResult that){
+        this.id = that.id;
         this.studentName = studentName;
         this.place = that.place;
         this.schoolName = that.schoolName;
         this.eventName = that.eventName;
         this.eliminationRound = that.eliminationRound;
         this.eventType = that.eventType;
-
+        this.schoolId = that.schoolId;
         this.award = that.award;
     }
 
@@ -29,7 +32,9 @@ public class AwardsResult {
     public AwardsResult(Result result,
                         String schoolName,
                         String eventName,
-                        EventType eventType) {
+                        EventType eventType,
+                        long schoolId) {
+        this.id = result.id;
         this.studentName = result.getName();
         this.place = result.getPlace();
         this.eliminationRound = result.getEliminationRound();
@@ -37,6 +42,7 @@ public class AwardsResult {
         this.eventName = eventName;
         this.eventType = eventType;
         this.award = this.eventType.formatPlacementString(result);
+        this.schoolId = schoolId;
     }
 
     public List<AwardsResult> split() {

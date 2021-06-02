@@ -1083,9 +1083,9 @@ class CertificatesResourceTest {
         );
 
     assertThat(medalCounts, hasItems(
-        new MedalCount("Regis", 5),
-        new MedalCount("Bronx Science", 1),
-        new MedalCount("Convent of the Sacred Heart", 1)
+        new MedalCount("Regis", 5, 0L),
+        new MedalCount("Bronx Science", 1, 0L),
+        new MedalCount("Convent of the Sacred Heart", 1, 0L)
     ));
   }
 }

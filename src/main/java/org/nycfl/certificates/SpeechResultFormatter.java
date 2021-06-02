@@ -1,5 +1,7 @@
 package org.nycfl.certificates;
 
+import java.util.Locale;
+
 public class SpeechResultFormatter implements ResultFormatter{
 
     @Override
@@ -19,17 +21,18 @@ public class SpeechResultFormatter implements ResultFormatter{
     public String getCertificateColor(Result result) {
         int place = result.place;
         Event event = result.event;
+        String round = result.eliminationRound.label.toLowerCase(Locale.ROOT);
         if(place>=event.getPlacementCutoff()){
-            return "black";
+            return "black " + round;
         }
         if(place==1){
-            return "gold";
+            return "gold "+round;
         } if (place==2){
-            return "silver";
+            return "silver " + round;
         } if (place == 3){
-            return "bronze";
+            return "bronze " + round;
         } else {
-            return "red";
+            return "red " + round;
         }
     }
 }

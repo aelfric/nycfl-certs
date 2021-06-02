@@ -201,7 +201,7 @@ public class Event {
 
     String getCertificateColor(Result result) {
         return switch (getCertificateType()) {
-            case PLACEMENT -> getEventType().getCertificateColor(result);
+            case PLACEMENT, CONGRESS_PO -> getEventType().getCertificateColor(result);
             case DEBATE_SPEAKER -> "black";
             case DEBATE_RECORD -> {
                 int wins = result.numWins != null ? result.numWins : 0;
@@ -216,7 +216,6 @@ public class Event {
             }
             case QUALIFIER -> result.place < placementCutoff ? "gold" :
                 "silver";
-            default -> "???";
         };
     }
 }

@@ -29,24 +29,34 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.Draft;
 import com.google.api.services.gmail.model.Message;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
+import javax.enterprise.context.ApplicationScoped;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.io.*;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+@ApplicationScoped
 public class GmailQuickstart {
     private static final String APPLICATION_NAME = "Gmail API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
+
+    @ConfigProperty(name="google.credentials.path")
+    String googleCredentialsPath;
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -54,7 +64,7 @@ public class GmailQuickstart {
      */
     private static final List<String> SCOPES =
         List.of(GmailScopes.GMAIL_LABELS, "https://www.googleapis.com/auth/gmail.compose");
-    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+    private Gmail service;
 
     /**
      * Creates an authorized Credential object.
@@ -62,12 +72,14 @@ public class GmailQuickstart {
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
      */
-    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+    private Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = GmailQuickstart.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-        if (in == null) {
-            throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
-        }
+        InputStream in =
+          new FileInputStream(
+            Paths
+              .get(googleCredentialsPath)
+              .resolve("credentials.json")
+              .toFile());
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         // Build flow and trigger user authorization request.
@@ -80,35 +92,56 @@ public class GmailQuickstart {
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
-    public static void main(String... args) throws IOException, GeneralSecurityException, MessagingException {
-
-    }
-    public static void doDraft(File file) throws IOException, MessagingException, GeneralSecurityException {
-        // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-            .setApplicationName(APPLICATION_NAME)
-            .build();
+    public int doDraft(File file,
+                       Set<SchoolEmail> emails, String bodyText) throws IOException, MessagingException, GeneralSecurityException {
+        Gmail service = getService();
 
         // Print the labels in the user's account.
         String user = "me";
         Draft draft = new Draft();
 
+        List<String> primaryAddresses = new ArrayList<>();
+        List<String> secondaryAddresses = new ArrayList<>();
+        if (emails == null) return 0;
+        for (SchoolEmail email : emails) {
+            if(email.isPrimary){
+                primaryAddresses.add(email.email);
+            } else {
+                secondaryAddresses.add(email.email);
+            }
+        }
+        if (primaryAddresses.isEmpty()) return 0;
         MimeMessage
             email =
-            createEmail("Results Spreadsheet", "I generated this " +
-                "email and the attached spreadsheet from" +
-                " my certificates program", file);
+            createEmail("NCFL 2021 Awards Mailing Instructions Spreadsheet", bodyText, file,
+              String.join(",", primaryAddresses),
+              String.join(",", secondaryAddresses)
+            );
         Message messageWithEmail = createMessageWithEmail(email);
 
 
         draft.setMessage(messageWithEmail);
         service.users().drafts().create(user, draft).execute();
+        return 1;
+    }
+
+    private Gmail getService() throws GeneralSecurityException, IOException {
+        // Build a new authorized API client service.
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        if(this.service == null){
+            this.service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY,
+              getCredentials(HTTP_TRANSPORT))
+              .setApplicationName(APPLICATION_NAME)
+              .build();
+        }
+        return this.service;
     }
 
     public static MimeMessage createEmail(String subject,
                                           String bodyText,
-                                          File file)
+                                          File file,
+                                          String primaryContact,
+                                          String secondaryContacts)
         throws MessagingException {
         Properties props = new Properties();
         Session session = Session.getDefaultInstance(props, null);
@@ -131,6 +164,12 @@ public class GmailQuickstart {
 
         multipart.addBodyPart(mimeBodyPart);
         email.setContent(multipart);
+        email.addRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(
+          primaryContact));
+        if (!secondaryContacts.isBlank()) {
+            email.addRecipients(javax.mail.Message.RecipientType.CC, InternetAddress.parse(
+              secondaryContacts));
+        }
         return email;
     }
 
