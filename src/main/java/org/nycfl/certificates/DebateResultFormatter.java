@@ -1,5 +1,7 @@
 package org.nycfl.certificates;
 
+import java.util.Locale;
+
 public class DebateResultFormatter implements ResultFormatter{
 
     @Override
@@ -37,7 +39,7 @@ public class DebateResultFormatter implements ResultFormatter{
         } else if (result.eliminationRound == EliminationRound.QUARTER_FINALIST) {
             return "red";
         } else {
-            return "black";
+            return "black " + result.eliminationRound.label.toLowerCase(Locale.ROOT);
         }
     }
 }
