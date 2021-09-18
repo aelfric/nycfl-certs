@@ -1,0 +1,12 @@
+<section>
+    <h1>{#if roundType ne "Finalist"}Non-Advancing{/if} {round}s</h1>
+    <h2>{event.name}</h2>
+    <ul>
+        {#for result in results}
+        <li>
+        <span>{result.htmlName.raw}</span>
+        <span>{result.school.displayName}</span>
+        </li>
+        {/for}
+    </ul>
+</section>

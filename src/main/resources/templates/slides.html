@@ -1,0 +1,25 @@
+<html>
+<head>
+    <style>
+        :root {
+            --primary-accent: #00356b;
+            --background-color: #dddddd;
+            --main-text: #222222;
+            --background-image: url("{image}");
+        }
+
+    </style>
+    <link rel='stylesheet' href='/slides.css'/>
+</head>
+<body>
+<div class="background"></div>
+{#for slide in slides}
+{slide.raw}
+{/for}
+<div class="buttons">
+    <button id='btn-prev' type="button">◀</button>
+    <button id='btn-next' type="button">▶</button>
+</div>
+<script src='/slides.js'></script>
+</body>
+</html>
