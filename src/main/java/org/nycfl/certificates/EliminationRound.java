@@ -6,7 +6,7 @@ public enum EliminationRound implements LabeledEnum{
     QUARTER_FINALIST("Quarter-Finalist", "Quarter-Finals"),
     OCTOFINALIST("Octo-Finalist", "Octo-Finals"),
     DOUBLE_OCTOFINALIST("Double Octo-Finalist", "Double Octo-Finals"),
-    TRIPLE_OCTOFINALIST("Triple Octo-Finalist", "Double Octo-Finals"),
+    TRIPLE_OCTOFINALIST("Triple Octo-Finalist", "Triple Octo-Finals"),
     PRELIM("Prelim", "Prelims");
 
     public final String label;

@@ -25,7 +25,12 @@ public class SlideBuilder {
     String slideBackgroundUrl = tournament.getSlideBackgroundUrl();
     return slides.render(
       Map.of(
-        "slides", buildSlides(tournament).values(),
+        "slides",
+        buildSlides(tournament)
+          .entrySet()
+          .stream()
+          .sorted(Map.Entry.comparingByKey())
+          .map(Map.Entry::getValue),
         "image", slideBackgroundUrl == null ? "" : slideBackgroundUrl
       ));
   }
