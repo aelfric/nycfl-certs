@@ -17,13 +17,16 @@ section {
     width: 100%;
     position: absolute;
     top: 0;
-    transition: all ease-in-out 1.5s;
     opacity: 0;
     text-align: center;
     justify-content: center;
     align-items: center;
     display: flex;
     flex-direction: column;
+}
+
+section {
+    transition: all ease-in-out 1.5s;
 }
 
 .background {
@@ -61,7 +64,7 @@ button:focus {
 }
 ul {
     list-style: none;
-    margin: 0;
+    margin: 1.5em 0 0 0 ;
     padding: 0;
 }
 
