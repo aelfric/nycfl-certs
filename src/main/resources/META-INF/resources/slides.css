@@ -82,12 +82,12 @@ h4 {
     text-transform: uppercase;
 }
 h1 {
-    font-size: 3.77em;
+    font-size: 3em;
     color: var(--primary-accent);
 }
 h2 {
     font-size: 2.11em;
-    color: var(--primary-accent);
+    color: var(--secondary-accent);
 }
 h3 {
     font-size: 1.55em;

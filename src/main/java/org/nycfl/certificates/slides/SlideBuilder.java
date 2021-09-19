@@ -33,6 +33,7 @@ public class SlideBuilder {
           .map(Map.Entry::getValue),
         "image", slideBackgroundUrl == null ? "" : slideBackgroundUrl,
         "accentColor", tournament.getSlideAccentColor(),
+        "secondaryAccentColor", tournament.getSlideSecondaryAccentColor(),
         "primaryColor", tournament.getSlidePrimaryColor()
       ));
   }

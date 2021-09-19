@@ -35,6 +35,9 @@ public class Tournament {
     @Column(columnDefinition = "VARCHAR(32) default '#00356b'")
     private String slideAccentColor;
 
+    @Column(columnDefinition = "VARCHAR(32) default '#4a4a4a'")
+    private String slideSecondaryAccentColor;
+
     @Column(columnDefinition = "VARCHAR(32) default '#222222'")
     private String slidePrimaryColor;
 
@@ -183,6 +186,7 @@ public class Tournament {
         this.logoUrl = updatedTournament.logoUrl;
         this.slideBackgroundUrl = updatedTournament.slideBackgroundUrl;
         this.slideAccentColor = updatedTournament.slideAccentColor;
+        this.slideSecondaryAccentColor = updatedTournament.slideSecondaryAccentColor;
         this.slidePrimaryColor = updatedTournament.slidePrimaryColor;
         this.signature = updatedTournament.signature;
         this.signatureTitle = updatedTournament.signatureTitle;
@@ -214,5 +218,13 @@ public class Tournament {
 
     public void setSlidePrimaryColor(String slidePrimaryColor) {
         this.slidePrimaryColor = slidePrimaryColor;
+    }
+
+    public String getSlideSecondaryAccentColor() {
+        return slideSecondaryAccentColor;
+    }
+
+    public void setSlideSecondaryAccentColor(String slideSecondaryAccentColor) {
+        this.slideSecondaryAccentColor = slideSecondaryAccentColor;
     }
 }
