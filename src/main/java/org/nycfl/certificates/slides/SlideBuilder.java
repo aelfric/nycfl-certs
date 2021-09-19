@@ -31,7 +31,9 @@ public class SlideBuilder {
           .stream()
           .sorted(Map.Entry.comparingByKey())
           .map(Map.Entry::getValue),
-        "image", slideBackgroundUrl == null ? "" : slideBackgroundUrl
+        "image", slideBackgroundUrl == null ? "" : slideBackgroundUrl,
+        "accentColor", tournament.getSlideAccentColor(),
+        "primaryColor", tournament.getSlidePrimaryColor()
       ));
   }
 

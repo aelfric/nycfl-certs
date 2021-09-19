@@ -32,6 +32,12 @@ public class Tournament {
     private String line1;
     private String line2;
 
+    @Column(columnDefinition = "VARCHAR(32) default '#00356b'")
+    private String slideAccentColor;
+
+    @Column(columnDefinition = "VARCHAR(32) default '#222222'")
+    private String slidePrimaryColor;
+
     @JsonbDateFormat(value = "yyyy-MM-dd")
     private LocalDate tournamentDate;
 
@@ -176,6 +182,8 @@ public class Tournament {
         this.name = updatedTournament.name;
         this.logoUrl = updatedTournament.logoUrl;
         this.slideBackgroundUrl = updatedTournament.slideBackgroundUrl;
+        this.slideAccentColor = updatedTournament.slideAccentColor;
+        this.slidePrimaryColor = updatedTournament.slidePrimaryColor;
         this.signature = updatedTournament.signature;
         this.signatureTitle = updatedTournament.signatureTitle;
         this.certificateHeadline = updatedTournament.certificateHeadline;
@@ -190,5 +198,21 @@ public class Tournament {
 
     public void setStyleOverrides(String styleOverrides) {
         this.styleOverrides2 = styleOverrides;
+    }
+
+    public String getSlideAccentColor() {
+        return slideAccentColor;
+    }
+
+    public void setSlideAccentColor(String slideAccentColor) {
+        this.slideAccentColor = slideAccentColor;
+    }
+
+    public String getSlidePrimaryColor() {
+        return slidePrimaryColor;
+    }
+
+    public void setSlidePrimaryColor(String slidePrimaryColor) {
+        this.slidePrimaryColor = slidePrimaryColor;
     }
 }
