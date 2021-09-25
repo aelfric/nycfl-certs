@@ -13,8 +13,8 @@ body {
 }
 
 section {
-    height: 100%;
-    width: 100%;
+    width: 100vw;
+    height: 100vh;
     position: absolute;
     top: 0;
     opacity: 0;
@@ -33,8 +33,8 @@ section {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     opacity: 0.15;
     background-image: var(--background-image);
     background-repeat: no-repeat;
@@ -104,4 +104,49 @@ h4 {
     top: 0;
     right: 0;
     z-index: 5;
+}
+
+@media print {
+    html,
+    body {
+        overflow: visible;
+        font-size: 32px;
+        position: static;
+        height: 100%;
+        width: 100%;
+    }
+
+    .background {
+        display: none;
+    }
+    section:before{
+        display: block;
+        position: absolute;
+        background: var(--background-color);
+        opacity: 0.85;
+        content: "";
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+    section {
+        width:100%;
+        height:100%;
+        page-break-after:always;
+        position: relative;
+        opacity: 1;
+        background-image: var(--background-image);
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    section h1, section h2, section ul {
+        z-index: 5;
+    }
+
+    .background {
+        display: none;
+    }
+
+    button {display: none;}
 }
