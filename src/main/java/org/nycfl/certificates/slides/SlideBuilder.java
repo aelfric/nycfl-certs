@@ -31,11 +31,15 @@ public class SlideBuilder {
           .stream()
           .sorted(Map.Entry.comparingByKey())
           .map(Map.Entry::getValue),
-        "image", slideBackgroundUrl == null ? "" : slideBackgroundUrl,
-        "accentColor", tournament.getSlideAccentColor(),
-        "secondaryAccentColor", tournament.getSlideSecondaryAccentColor(),
-        "primaryColor", tournament.getSlidePrimaryColor()
+        "image", orDefault(slideBackgroundUrl, ""),
+        "accentColor", orDefault(tournament.getSlideAccentColor(), "#00356b"),
+        "secondaryAccentColor", orDefault(tournament.getSlideSecondaryAccentColor(), "#4a4a4a"),
+        "primaryColor", orDefault(tournament.getSlidePrimaryColor(), "#222222")
       ));
+  }
+
+  private String orDefault(String slideBackgroundUrl, String defaultValue) {
+    return slideBackgroundUrl == null ? defaultValue : slideBackgroundUrl;
   }
 
   public String buildSlidesFile(Tournament tournament) {
