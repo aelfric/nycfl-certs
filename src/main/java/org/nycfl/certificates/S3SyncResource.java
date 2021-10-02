@@ -70,7 +70,7 @@ public class S3SyncResource extends S3Resource {
     private PublicListing getPublicListing(String objectName) {
         try {
             URIBuilder builder = new URIBuilder();
-            builder.setScheme("http");
+            builder.setScheme("https");
             builder.setHost(cloudfrontHost);
             builder.setPath(objectName);
 
