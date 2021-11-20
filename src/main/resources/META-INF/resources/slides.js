@@ -39,4 +39,7 @@
         }
     });
     switchSlide();
+    requestAnimationFrame(()=>{
+        document.body.classList.add("animated")
+    })
 })(document.querySelectorAll("section"));
