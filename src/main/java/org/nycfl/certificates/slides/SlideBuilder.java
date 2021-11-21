@@ -57,7 +57,7 @@ public class SlideBuilder {
           event
             .getResults()
             .stream()
-            .sorted(Comparator.comparing(Result::getName))
+            .sorted(Comparator.comparing(Result::getPlace))
             .collect(Collectors.groupingBy(Result::getEliminationRound));
         for (Map.Entry<EliminationRound, List<Result>> round : collect.entrySet()) {
           final AtomicInteger counter = new AtomicInteger();
