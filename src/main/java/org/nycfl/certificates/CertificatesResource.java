@@ -3,6 +3,7 @@ package org.nycfl.certificates;
 import io.quarkus.qute.Template;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.nycfl.certificates.slides.PostingsBuilder;
@@ -17,6 +18,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -321,6 +323,31 @@ public class CertificatesResource {
         return certificate
                 .data("tournament", tournament)
                 .render();
+    }
+
+    @GET
+    @Produces("text/csv")
+    @Consumes(MediaType.TEXT_HTML)
+    @PermitAll
+    @Path("/tournaments/{id}/certificates/index")
+    public String generateCertificatesIndex(@PathParam("id") long tournamentId) {
+        Tournament tournament = tournamentService.getTournament(tournamentId);
+
+        int startPage = 1;
+        StringWriter out = new StringWriter();
+        try (CSVPrinter printer = new CSVPrinter(out, CSVFormat.EXCEL)) {
+            printer.printRecord("event", "startPage", "endPage");
+            for (Event event : tournament.events) {
+                if(event.getCertificateCutoff() > 0) {
+                    int endPage = startPage + event.getCertificateCutoff() - 2;
+                    printer.printRecord(event.getName(), startPage, endPage);
+                    startPage = endPage + 1;
+                }
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return out.toString();
     }
 
     @Inject
