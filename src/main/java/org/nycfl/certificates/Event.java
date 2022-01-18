@@ -218,4 +218,11 @@ public class Event {
                 "silver";
         };
     }
+
+    long countCertificates() {
+        return getResults()
+            .stream()
+            .filter(result -> result.place <= getCertificateCutoff())
+            .count();
+    }
 }

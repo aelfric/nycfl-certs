@@ -333,13 +333,13 @@ public class CertificatesResource {
     public String generateCertificatesIndex(@PathParam("id") long tournamentId) {
         Tournament tournament = tournamentService.getTournament(tournamentId);
 
-        int startPage = 1;
+        long startPage = 1;
         StringWriter out = new StringWriter();
         try (CSVPrinter printer = new CSVPrinter(out, CSVFormat.EXCEL)) {
             printer.printRecord("event", "startPage", "endPage");
             for (Event event : tournament.events) {
                 if(event.getCertificateCutoff() > 0) {
-                    int endPage = startPage + event.getCertificateCutoff() - 2;
+                    long endPage = startPage + event.countCertificates() - 1;
                     printer.printRecord(event.getName(), startPage, endPage);
                     startPage = endPage + 1;
                 }
