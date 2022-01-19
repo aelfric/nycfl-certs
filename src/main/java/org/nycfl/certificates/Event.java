@@ -222,7 +222,7 @@ public class Event {
     long countCertificates() {
         return getResults()
             .stream()
-            .filter(result -> result.place <= getCertificateCutoff())
+            .filter(result -> result.place < getCertificateCutoff())
             .count();
     }
 }
