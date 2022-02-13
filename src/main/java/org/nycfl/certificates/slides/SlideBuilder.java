@@ -34,7 +34,8 @@ public class SlideBuilder {
         "image", orDefault(slideBackgroundUrl, ""),
         "accentColor", orDefault(tournament.getSlideAccentColor(), "#00356b"),
         "secondaryAccentColor", orDefault(tournament.getSlideSecondaryAccentColor(), "#4a4a4a"),
-        "primaryColor", orDefault(tournament.getSlidePrimaryColor(), "#222222")
+        "primaryColor", orDefault(tournament.getSlidePrimaryColor(), "#222222"),
+        "overlayColor", orDefault(tournament.getSlideOverlayColor(), "#dddddd")
       ));
   }
 

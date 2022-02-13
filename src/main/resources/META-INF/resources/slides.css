@@ -1,4 +1,9 @@
 
+@font-face {
+    font-family: "League Gothic";
+    src: url("/LeagueGothic/LeagueGothic-Regular.woff2") format('woff2')
+}
+
 html,
 body {
     height: 100vh;
