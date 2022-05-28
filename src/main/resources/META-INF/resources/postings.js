@@ -38,6 +38,10 @@
     document.addEventListener('keydown', function (event) {
         if (event.key === 'k' || event.key === 'n') {
             next();
+        } else if (event.key === 'r') {
+            currSlide = 0;
+            startTime = null;
+            switchSlide();
         } else if (event.key === 's') {
             if (!isRunning) {
                 isRunning = true;

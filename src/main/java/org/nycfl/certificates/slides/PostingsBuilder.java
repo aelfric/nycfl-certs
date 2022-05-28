@@ -46,11 +46,12 @@ public class PostingsBuilder extends BaseAnimatedSlideBuilder {
             if(!highestElimResults.isEmpty()) {
                 final AtomicInteger counter = new AtomicInteger();
                 final AtomicInteger slideCounter = new AtomicInteger();
-                Collection<List<Result>> subSlides = highestElimResults
+              final int i = event.getEventType() == EventType.SPEECH || event.getEventType() == EventType.CONGRESS ? 28 : 10;
+              Collection<List<Result>> subSlides = highestElimResults
                   .stream()
                   .collect(
                     Collectors
-                      .groupingBy(it -> counter.getAndIncrement() / 28)
+                      .groupingBy(it -> counter.getAndIncrement() / i)
                   )
                   .values();
                 for (List<Result> subSlide : subSlides) {
