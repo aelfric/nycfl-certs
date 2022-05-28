@@ -31,7 +31,7 @@ public class PostingsBuilder extends BaseAnimatedSlideBuilder {
                 .map(Result::getEliminationRound)
                 .min(Comparator.comparingInt(Enum::ordinal));
 
-            if(maybeBreakLevel.isEmpty()) return Map.of();
+            if(maybeBreakLevel.isEmpty()) continue;
 
             final EliminationRound breakLevel = maybeBreakLevel.get();
 
