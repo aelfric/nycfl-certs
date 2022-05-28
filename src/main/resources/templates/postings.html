@@ -1,0 +1,22 @@
+<html>
+<head>
+    <style>
+        :root {
+            --primary-accent: {accentColor};
+            --secondary-accent: {secondaryAccentColor};
+            --background-color: {overlayColor};
+            --main-text: {primaryColor};
+            --background-image: url("{image}");
+        }
+
+    </style>
+    <link rel='stylesheet' href='/slides.css'/>
+</head>
+<body>
+<div class="background"></div>
+{#for slide in slides}
+{slide.raw}
+{/for}
+<script src='/postings.js'></script>
+</body>
+</html>

@@ -12,76 +12,36 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 @TemplateExtension
-public class PostingsBuilder {
+public class PostingsBuilder extends BaseAnimatedSlideBuilder {
 
-  private static int perColumn = 8;
+  @Inject
+  Template postings;
+
   @Inject
   Template posting;
 
-  @Inject
-  SlideWriter slideWriter;
-
-  @SuppressWarnings("unused")
-  public static double getXOffset(int index){
-    final int column = (index - 1) / perColumn;
-    return (float) 237.35547 + column * 65;
-  }
-
-  @SuppressWarnings("unused")
-  public static double getPostingFontSize(String newText, int textBaseSize){
-    int newLength = newText.length();
-    double charsPerLine = 30.0;
-    double newEmSize = charsPerLine / newLength;
-
-    // Applying ems directly was causing some weirdness, converting ems to pixels got rid of the weirdyness
-    if(newEmSize < 1){
-      return newEmSize * textBaseSize;
-    } else {
-      // It fits, leave it alone
-      return textBaseSize;
-    }
-  }
-
-  @SuppressWarnings("unused")
-  public static boolean getIsStart(int count){
-    perColumn = 8;
-    return (count - 1) % perColumn == 0 ;
-  }
-
-  public String buildSlidesPreview(Tournament tournament) {
-    Map<String, String> stringStringMap = buildSlides(tournament);
-    return "<html><body>" +
-          String.join("", stringStringMap.values()) +
-          "</body></html>";
-  }
-
-  public String buildSlidesFile(Tournament tournament){
-    return slideWriter.writeSlides(
-      tournament,
-      buildSlides(tournament),
-      "postings");
-  }
-
+  @Override
   Map<String, String> buildSlides(Tournament tournament) {
     Map<String, String> slides = new LinkedHashMap<>();
     for (Event event : tournament.getEvents()) {
           if (event.getEventType() != EventType.DEBATE_SPEAKS) {
-            final Optional<EliminationRound> breakLevel = event
+            final Optional<EliminationRound> maybeBreakLevel = event
                 .getResults()
                 .stream()
                 .map(Result::getEliminationRound)
                 .min(Comparator.comparingInt(Enum::ordinal));
+
+            if(maybeBreakLevel.isEmpty()) return Map.of();
+
+            final EliminationRound breakLevel = maybeBreakLevel.get();
+
             List<Result> highestElimResults =
                   event
                       .getResults()
                       .stream()
-                      .filter(r -> breakLevel.isPresent() && breakLevel.get() == r.getEliminationRound())
+                      .filter(r -> breakLevel == r.getEliminationRound())
                       .sorted(Comparator.comparing(Result::getCode))
                       .collect(Collectors.toList());
-
-            int codeLength =
-                highestElimResults.stream().map(Result::getCode)
-                    .mapToInt(String::length).max().orElse(4);
 
             if(!highestElimResults.isEmpty()) {
                 final AtomicInteger counter = new AtomicInteger();
@@ -90,20 +50,13 @@ public class PostingsBuilder {
                   .stream()
                   .collect(
                     Collectors
-                      .groupingBy(it -> counter.getAndIncrement() / (codeLength <= 4 ? perColumn * 4 : perColumn))
+                      .groupingBy(it -> counter.getAndIncrement() / 28)
                   )
                   .values();
                 for (List<Result> subSlide : subSlides) {
                   slides.put(
-                    String.format("%s_%s_%d",
-                    event.getEventType().name(),
-                    event.getName(),
-                    slideCounter.getAndIncrement()),
-                    renderSlide(
-                      event,
-                      breakLevel,
-                      subSlide
-                    )
+                      slideName(event, slideCounter),
+                      renderSlide(event, breakLevel, subSlide)
                   );
                 }
             }
@@ -112,17 +65,26 @@ public class PostingsBuilder {
     return slides;
   }
 
-    private String renderSlide(Event event,
-                               Optional<EliminationRound> breakLevel,
+  private String slideName(Event event, AtomicInteger slideCounter) {
+    return String.format(
+        "%s_%s_%d",
+        event.getEventType().name(),
+        event.getName(),
+        slideCounter.getAndIncrement());
+  }
+
+  private String renderSlide(Event event,
+                               EliminationRound breakLevel,
                                List<Result> highestElimResults) {
-        return posting
-            .data("results", highestElimResults)
-            .data("event", event)
-            .data("round",
-                breakLevel
-                    .map(EliminationRound::getLabel)
-                    .orElse(""))
-            .render();
+      return posting
+          .data("roundType", breakLevel.label)
+          .data("event", event)
+          .data("round", breakLevel.label)
+          .data("results", highestElimResults)
+          .render();
     }
 
+  public String buildSlidesPreview(Tournament tournament) {
+    return this.buildSlidesPreview(tournament, postings);
+  }
 }

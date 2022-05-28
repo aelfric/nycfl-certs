@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class SlideBuilder {
+public class SlideBuilder extends BaseAnimatedSlideBuilder{
 
   @Inject
   Template slide2;
@@ -18,36 +18,8 @@ public class SlideBuilder {
   @Inject
   Template slides;
 
-  @Inject
-  SlideWriter slideWriter;
-
   public String buildSlidesPreview(Tournament tournament) {
-    String slideBackgroundUrl = tournament.getSlideBackgroundUrl();
-    return slides.render(
-      Map.of(
-        "slides",
-        buildSlides(tournament)
-          .entrySet()
-          .stream()
-          .sorted(Map.Entry.comparingByKey())
-          .map(Map.Entry::getValue),
-        "image", orDefault(slideBackgroundUrl, ""),
-        "accentColor", orDefault(tournament.getSlideAccentColor(), "#00356b"),
-        "secondaryAccentColor", orDefault(tournament.getSlideSecondaryAccentColor(), "#4a4a4a"),
-        "primaryColor", orDefault(tournament.getSlidePrimaryColor(), "#222222"),
-        "overlayColor", orDefault(tournament.getSlideOverlayColor(), "#dddddd")
-      ));
-  }
-
-  private String orDefault(String slideBackgroundUrl, String defaultValue) {
-    return slideBackgroundUrl == null ? defaultValue : slideBackgroundUrl;
-  }
-
-  public String buildSlidesFile(Tournament tournament) {
-    return slideWriter.writeSlides(
-      tournament,
-      buildSlides(tournament),
-      "slides");
+    return this.buildSlidesPreview(tournament, slides);
   }
 
   Map<String, String> buildSlides(Tournament tournament) {

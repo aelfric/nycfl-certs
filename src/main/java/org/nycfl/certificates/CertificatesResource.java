@@ -366,11 +366,7 @@ public class CertificatesResource {
     ) {
         Tournament tournament = tournamentService.getTournament(tournamentId);
 
-        if(download==1){
-            return slideBuilder.buildSlidesFile(tournament);
-        } else {
-            return slideBuilder.buildSlidesPreview(tournament);
-        }
+        return slideBuilder.buildSlidesPreview(tournament);
     }
 
     @GET
@@ -384,11 +380,7 @@ public class CertificatesResource {
     ) {
         Tournament tournament = tournamentService.getTournament(tournamentId);
 
-        if(download==1){
-            return postingsBuilder.buildSlidesFile(tournament);
-        } else {
-            return postingsBuilder.buildSlidesPreview(tournament);
-        }
+        return postingsBuilder.buildSlidesPreview(tournament);
     }
 
     @GET
