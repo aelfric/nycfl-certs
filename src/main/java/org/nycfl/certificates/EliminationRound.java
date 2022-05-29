@@ -5,7 +5,7 @@ public enum EliminationRound implements LabeledEnum{
     SEMIFINALIST("Semi-Finalist", "Semi-Finals"),
     QUARTER_FINALIST("Quarter-Finalist", "Quarter-Finals"),
     OCTOFINALIST("Octo-Finalist", "Octo-Finals"),
-    PLAY_IN("Play-In", "Play-In"),
+    PLAY_IN("Play-Ins and Double-Octofinalist", "Play-In and Double-Octofinalist"),
     DOUBLE_OCTOFINALIST("Double Octo-Finalist", "Double Octo-Finals"),
     TRIPLE_OCTOFINALIST("Triple Octo-Finalist", "Triple Octo-Finals"),
     PRELIM("Prelim", "Prelims");
