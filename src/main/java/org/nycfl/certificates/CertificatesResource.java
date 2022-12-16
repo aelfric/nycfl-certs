@@ -219,6 +219,18 @@ public class CertificatesResource {
 
     @POST
     @RolesAllowed("superuser")
+    @Path("/tournaments/{id}/events/{evtId}/abbreviate")
+    public Tournament abbreviateEvent(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            @QueryParam("abbreviation") String abbreviation
+    ) {
+        return tournamentService
+                .abbreviateEvent(eventId, abbreviation);
+    }
+
+    @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/results/{resultId}/rename")
     public Tournament renameCompetitor(
             @PathParam("id") long tournamentId,

@@ -371,4 +371,12 @@ public class TournamentService {
           .setParameter(2, schoolId)
           .getResultList();
     }
+
+    @Transactional
+    public Tournament abbreviateEvent(long eventId, String abbreviation) {
+        Event event = em.find(Event.class, eventId);
+        event.setAbbreviation(abbreviation);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
+    }
 }

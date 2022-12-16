@@ -159,7 +159,7 @@ class CertificatesResourceTest {
 
     givenASuperUser()
         .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                                 "Varsity Oralnterpretation\\nDuo " +
+                                 "Varsity Oral Interpretation\\nDuo " +
             "Interpretation\"}", tournament.getId()))
         .contentType(MediaType.APPLICATION_JSON)
         .when()
@@ -173,6 +173,50 @@ class CertificatesResourceTest {
         .getSingleResult();
 
     assertThat(numEvents, CoreMatchers.is(2L));
+
+  }
+
+  @Test
+  void testAbbreviateEvent() throws HeuristicRollbackException, RollbackException,
+      HeuristicMixedException, SystemException, NotSupportedException {
+    transaction.begin();
+    Tournament tournament = testTournament();
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    givenASuperUser()
+        .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
+                                 "Varsity Oral Interpretation\\nDuo " +
+            "Interpretation\"}", tournament.getId()))
+        .contentType(MediaType.APPLICATION_JSON)
+        .when()
+        .post("/events");
+
+    Long evtId = entityManager
+        .createQuery("SELECT e.id FROM Event e WHERE e.tournament.id=?1",
+            Long.class)
+        .setMaxResults(1)
+        .setParameter(1, tournament.getId())
+        .getSingleResult();
+
+
+    givenASuperUser()
+        .queryParam("abbreviation","JV OI")
+        .pathParam("id", tournament.getId())
+        .pathParam("evtId",  evtId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .when()
+        .post("/tournaments/{id}/events/{evtId}/abbreviate")
+        .then()
+        .statusCode(200)
+        .body(CoreMatchers.containsString("JV OI"));
+
+    String abbreviation = entityManager
+        .createQuery("SELECT e.abbreviation FROM Event e WHERE e.id=?1", String.class)
+        .setParameter(1, evtId)
+        .getSingleResult();
+
+    assertThat(abbreviation, CoreMatchers.is("JV OI"));
 
   }
   @Test

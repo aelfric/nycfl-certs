@@ -16,6 +16,8 @@ public class Event {
 
     private String name;
 
+    private String abbreviation;
+
     public List<Result> getResults() {
         return results;
     }
@@ -224,5 +226,13 @@ public class Event {
             .stream()
             .filter(result -> result.place < getCertificateCutoff())
             .count();
+    }
+
+    public String getAbbreviation() {
+        return abbreviation;
+    }
+
+    public void setAbbreviation(String abbreviation) {
+        this.abbreviation = abbreviation;
     }
 }
