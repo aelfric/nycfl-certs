@@ -31,14 +31,12 @@ public class TournamentService {
     }
 
     public List<TournamentStub> all() {
-        List<TournamentStub> tournaments = em.createQuery(
+        return em.createQuery(
                 "SELECT new org.nycfl.certificates.TournamentStub(t.id, t.name) " +
                     "FROM " +
                     "Tournament t " +
                     " ORDER BY t.tournamentDate desc ",
                 TournamentStub.class).getResultList();
-
-        return tournaments;
     }
 
     @Transactional

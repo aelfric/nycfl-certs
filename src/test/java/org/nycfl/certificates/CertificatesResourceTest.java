@@ -23,6 +23,7 @@ import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 import javax.transaction.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -539,14 +540,13 @@ class CertificatesResourceTest {
         .delete("/tournaments/{id}/schools/{sid}")
         .then().statusCode(200);
 
-    assertThrows(NoResultException.class, () ->
-        entityManager
-            .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
-                    ".tournament.id = ?2",
-                Long.class)
-            .setParameter(1, "Regis")
-            .setParameter(2, tournament.getId())
-            .getSingleResult());
+    TypedQuery<Long> query = entityManager
+        .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
+                ".tournament.id = ?2",
+            Long.class)
+        .setParameter(1, "Regis")
+        .setParameter(2, tournament.getId());
+    assertThrows(NoResultException.class, query::getSingleResult);
   }
   @Test
   void testCannotDeleteSchoolWithResults() throws SystemException,

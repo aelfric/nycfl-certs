@@ -3,7 +3,7 @@ package org.nycfl.certificates;
 import io.quarkus.qute.TemplateExtension;
 
 public class DebateSpeakerResultFormatter implements ResultFormatter{
-    String[] NUMBER_ORDINALS = {
+    static final String[] NUMBER_ORDINALS = {
         "",
         "First",
         "Second",
@@ -48,9 +48,9 @@ public class DebateSpeakerResultFormatter implements ResultFormatter{
         }
         if(place==1){
             return "gold";
-        } if (place==2){
+        } else if (place==2){
             return "silver";
-        } if (place == 3){
+        } else if (place == 3){
             return "bronze";
         } else {
             return "red";

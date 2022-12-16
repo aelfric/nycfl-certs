@@ -167,13 +167,13 @@ public class Event {
     void parseResults(EliminationRound eliminationRound,
                       InputStream csvInputStream,
                       Map<String, School> schoolsMap) {
-        List<Result> results = eventType.parseResults(
+        List<Result> parsedResults = eventType.parseResults(
                 schoolsMap,
                 eliminationRound,
                 csvInputStream
         );
-        Collections.reverse(results);
-        addResults(results);
+        Collections.reverse(parsedResults);
+        addResults(parsedResults);
     }
 
     Function<School, String> getSchoolMappingFunction() {

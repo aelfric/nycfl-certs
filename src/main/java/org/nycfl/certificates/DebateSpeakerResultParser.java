@@ -15,20 +15,20 @@ public class DebateSpeakerResultParser implements ResultParser {
                                         InputStream inputStream) {
         CSVParser parse = getParser(inputStream);
         List<Result> results = new ArrayList<>();
-        for (CSVRecord record : getRecords(parse)) {
+        for (CSVRecord csvRecord : getRecords(parse)) {
             Result result = new Result();
-            result.code = record.get("Code");
+            result.code = csvRecord.get("Code");
             result.eliminationRound = eliminationRound;
             School school = schoolsMap.computeIfAbsent(
-                record.get("School"),
+                csvRecord.get("School"),
                 School::fromName);
             result.school = school;
             if(school.getDebateCode()==null){
                 school.setDebateCode(getSchoolFromCode(result.code));
             }
-            result.name = record.get("Name");
+            result.name = csvRecord.get("Name");
             result.count = 1;
-            result.place = Integer.parseInt(record.get("Order").replace("T-",""));
+            result.place = Integer.parseInt(csvRecord.get("Order").replace("T-",""));
             results.add(result);
         }
         return results;

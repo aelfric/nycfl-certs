@@ -85,7 +85,7 @@ public class Result {
     }
 
     public String getHtmlName(){
-        return name == null ? "" : name.replaceAll("&", "&amp;");
+        return name == null ? "" : name.replace("&", "&amp;");
     }
 
     public void setSchool(School school) {

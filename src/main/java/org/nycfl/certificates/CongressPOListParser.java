@@ -15,14 +15,14 @@ public class CongressPOListParser implements ResultParser {
                                         InputStream inputStream) {
         CSVParser parse = getParser(inputStream);
         List<Result> results = new ArrayList<>();
-        for (CSVRecord record : getRecords(parse)) {
+        for (CSVRecord csvRecord : getRecords(parse)) {
             Result result = new Result();
-            result.name = record.get("Entry");
-            result.code = "po_" + record.get("Entry");
+            result.name = csvRecord.get("Entry");
+            result.code = "po_" + csvRecord.get("Entry");
             result.place = 1;
-            result.eliminationRound = fromString(record.get("Session"));
+            result.eliminationRound = fromString(csvRecord.get("Session"));
             result.school = schoolsMap.computeIfAbsent(
-                    record.get("School"),
+                    csvRecord.get("School"),
                     School::fromName);
             result.count = 1;
             results.add(result);

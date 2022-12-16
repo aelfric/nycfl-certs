@@ -27,9 +27,9 @@ public class SpeechResultFormatter implements ResultFormatter{
         }
         if(place==1){
             return "gold "+round;
-        } if (place==2){
+        } else if (place==2){
             return "silver " + round;
-        } if (place == 3){
+        } else if (place == 3){
             return "bronze " + round;
         } else {
             return "red " + round;

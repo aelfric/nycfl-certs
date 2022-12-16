@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 @TemplateExtension
-public class PostingsBuilder extends BaseAnimatedSlideBuilder {
+public class PostingsBuilder implements BaseAnimatedSlideBuilder {
 
   @Inject
   Template postings;
@@ -21,7 +21,7 @@ public class PostingsBuilder extends BaseAnimatedSlideBuilder {
   Template posting;
 
   @Override
-  Map<String, String> buildSlides(Tournament tournament) {
+  public Map<String, String> buildSlides(Tournament tournament) {
     Map<String, String> slides = new LinkedHashMap<>();
     for (Event event : tournament.getEvents()) {
           if (event.getEventType() != EventType.DEBATE_SPEAKS) {

@@ -134,13 +134,13 @@ public class CertificatesResource {
         try {
             CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8,
                     CSVFormat.DEFAULT.withFirstRecordAsHeader());
-            for (CSVRecord record : parse.getRecords()) {
+            for (CSVRecord csvRecord : parse.getRecords()) {
                 School school = map.computeIfAbsent(
-                        record.get("School"),
+                        csvRecord.get("School"),
                         School::fromName);
                 school.setSweepsPoints(
                         Integer.parseInt(
-                                record.get("Total")));
+                                csvRecord.get("Total")));
                 tournamentService.updateSchool(school, tournamentId);
             }
         } catch (IOException e) {
@@ -181,11 +181,11 @@ public class CertificatesResource {
         try {
             CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8,
                     CSVFormat.DEFAULT.withFirstRecordAsHeader());
-            for (CSVRecord record : parse.getRecords()) {
+            for (CSVRecord csvRecord : parse.getRecords()) {
                 School school = map.computeIfAbsent(
-                        record.get("Short Name"),
+                        csvRecord.get("Short Name"),
                         School::fromName);
-                school.setDisplayName(record.get("Full Name"));
+                school.setDisplayName(csvRecord.get("Full Name"));
                 tournamentService.updateSchool(school, tournamentId);
             }
         } catch (IOException e) {

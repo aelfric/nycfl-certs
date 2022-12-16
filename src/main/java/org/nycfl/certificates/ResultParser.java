@@ -36,24 +36,28 @@ public interface ResultParser {
         }
     }
 
-    default String  getOrAlternateColumn(CSVRecord record,
+    /**
+     * @param csvRecord a CSV Record
+     * @param names a varargs list of column names that may or may not exist in this record
+     * @return the value of the first valid colum in the list of column names provided
+     */
+    default String  getOrAlternateColumn(CSVRecord csvRecord,
                                         String... names) {
         for (String name : names) {
             try {
-                return record.get(name);
-            } catch (IllegalArgumentException e) {
-                continue;
+                return csvRecord.get(name);
+            } catch (IllegalArgumentException ignored) {
             }
         }
         throw new IllegalArgumentException("Could not find any of [" +
             Arrays.toString(names) + "]");
     }
 
-    default String getOrDefault(CSVRecord record,
+    default String getOrDefault(CSVRecord csvRecord,
                                 String name,
                                 String defaultVal) {
         try {
-            return record.get(name);
+            return csvRecord.get(name);
         } catch (IllegalArgumentException e) {
             return defaultVal;
         }
