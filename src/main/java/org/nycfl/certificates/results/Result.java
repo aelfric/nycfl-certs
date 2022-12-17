@@ -1,4 +1,8 @@
-package org.nycfl.certificates;
+package org.nycfl.certificates.results;
+
+import org.nycfl.certificates.EliminationRound;
+import org.nycfl.certificates.Event;
+import org.nycfl.certificates.School;
 
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
@@ -107,5 +111,13 @@ public class Result {
     @Override
     public int hashCode() {
         return 7;
+    }
+
+    public void setEliminationRound(EliminationRound eliminationRound) {
+        this.eliminationRound = eliminationRound;
+    }
+
+    public void setPlace(int place) {
+        this.place = place;
     }
 }

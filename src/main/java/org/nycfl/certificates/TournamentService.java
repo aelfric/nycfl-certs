@@ -1,8 +1,8 @@
 package org.nycfl.certificates;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.nycfl.certificates.results.Result;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -12,7 +12,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -344,10 +343,7 @@ public class TournamentService {
     public int updateSchoolContacts(InputStream file) {
         int i = 0;
         try {
-            CSVParser parse = CSVParser.parse(file,
-                StandardCharsets.UTF_8,
-                CSVFormat.DEFAULT.withFirstRecordAsHeader()
-                    .withAllowMissingColumnNames(true));
+            CSVParser parse = CSVUtils.parse(file);
 
             for (CSVRecord csvRecord : parse.getRecords()) {
                 String schoolContact = csvRecord.get("School Contact");

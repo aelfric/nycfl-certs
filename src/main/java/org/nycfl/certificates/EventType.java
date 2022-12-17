@@ -1,5 +1,7 @@
 package org.nycfl.certificates;
 
+import org.nycfl.certificates.results.*;
+
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;

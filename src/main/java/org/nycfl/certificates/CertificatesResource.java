@@ -18,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
@@ -137,8 +136,7 @@ public class CertificatesResource {
                         Collectors.toMap(School::getDisplayName,
                                 Function.identity()));
         try {
-            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8,
-                    CSVFormat.DEFAULT.withFirstRecordAsHeader());
+            CSVParser parse = CSVUtils.parse(body.file);
             for (CSVRecord csvRecord : parse.getRecords()) {
                 School school = map.computeIfAbsent(
                         csvRecord.get("School"),
@@ -184,8 +182,7 @@ public class CertificatesResource {
                 tournamentService.getSchools(tournamentId).stream().collect(
                         Collectors.toMap(School::getName, Function.identity()));
         try {
-            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8,
-                    CSVFormat.DEFAULT.withFirstRecordAsHeader());
+            CSVParser parse = CSVUtils.parse(body.file);
             for (CSVRecord csvRecord : parse.getRecords()) {
                 School school = map.computeIfAbsent(
                         csvRecord.get("Short Name"),

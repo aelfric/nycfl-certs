@@ -1,4 +1,4 @@
-package org.nycfl.certificates;
+package org.nycfl.certificates.results;
 
 public interface ResultFormatter {
     String getPlacementString(Result result);

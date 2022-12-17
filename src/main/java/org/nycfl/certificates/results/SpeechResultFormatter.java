@@ -1,4 +1,7 @@
-package org.nycfl.certificates;
+package org.nycfl.certificates.results;
+
+import org.nycfl.certificates.Event;
+import org.nycfl.certificates.Ordinals;
 
 import java.util.Locale;
 

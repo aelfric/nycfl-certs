@@ -1,5 +1,7 @@
 package org.nycfl.certificates;
 
+import org.nycfl.certificates.results.Result;
+
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.util.Set;

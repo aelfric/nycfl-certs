@@ -1,5 +1,7 @@
 package org.nycfl.certificates;
 
+import org.nycfl.certificates.results.Result;
+
 import javax.json.bind.annotation.JsonbProperty;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
@@ -76,7 +78,7 @@ public class Event {
 
     @JsonbProperty("latestResult")
     public Optional<String> getLatestResult(){
-        return results.stream().map(r -> r.eliminationRound).min(
+        return results.stream().map(Result::getEliminationRound).min(
           Comparator.comparingInt(EliminationRound::ordinal)
         ).map(EliminationRound::getLabel);
     }
@@ -84,15 +86,15 @@ public class Event {
     public void addResults(List<Result> newResults) {
         Map<String, Result> resultsByCode = this.results.stream()
                 .collect(Collectors.toMap(
-                        r -> r.code,
+                    Result::getCode,
                         Function.identity()));
         for (Result newResult : newResults) {
-            if(resultsByCode.containsKey(newResult.code)){
-                Result updatedResult = resultsByCode.get(newResult.code);
-                updatedResult.eliminationRound = newResult.eliminationRound;
-                updatedResult.place = newResult.place;
+            if(resultsByCode.containsKey(newResult.getCode())){
+                Result updatedResult = resultsByCode.get(newResult.getCode());
+                updatedResult.setEliminationRound(newResult.getEliminationRound());
+                updatedResult.setPlace(newResult.getPlace());
                 this.results.replaceAll(oldResult -> {
-                            if (oldResult.code.equals(newResult.code)) {
+                            if (oldResult.getCode().equals(newResult.getCode())) {
                                 return newResult;
                             } else {
                                 return oldResult;
@@ -184,29 +186,29 @@ public class Event {
         results.clear();
     }
 
-    String formatResult(Result result) {
+    public String formatResult(Result result) {
         return switch (getCertificateType()) {
             case PLACEMENT, DEBATE_SPEAKER, CONGRESS_PO -> getEventType()
                 .formatPlacementString(result);
             case DEBATE_RECORD -> {
-                int wins = result.numWins != null ? result.numWins : 0;
+                int wins = result.getNumWins() != null ? result.getNumWins() : 0;
                 int total = numRounds != null ? numRounds : 0;
                 yield String.format("%d-%d",
                     wins,
                     total - wins);
             }
-            case QUALIFIER -> result.place < getPlacementCutoff() ?
-                "Qualifier" : result.place < getCertificateCutoff() ?
+            case QUALIFIER -> result.getPlace() < getPlacementCutoff() ?
+                "Qualifier" : result.getPlace() < getCertificateCutoff() ?
                 "Alternate" : "";
         };
     }
 
-    String getCertificateColor(Result result) {
+    public String getCertificateColor(Result result) {
         return switch (getCertificateType()) {
             case PLACEMENT, CONGRESS_PO -> getEventType().getCertificateColor(result);
             case DEBATE_SPEAKER -> "black";
             case DEBATE_RECORD -> {
-                int wins = result.numWins != null ? result.numWins : 0;
+                int wins = result.getNumWins() != null ? result.getNumWins() : 0;
                 int total = numRounds != null ? numRounds : 0;
                 if(wins == total){
                     yield "gold";
@@ -216,7 +218,7 @@ public class Event {
                     yield "red";
                 }
             }
-            case QUALIFIER -> result.place < placementCutoff ? "gold" :
+            case QUALIFIER -> result.getPlace() < placementCutoff ? "gold" :
                 "silver";
         };
     }
@@ -224,7 +226,7 @@ public class Event {
     long countCertificates() {
         return getResults()
             .stream()
-            .filter(result -> result.place < getCertificateCutoff())
+            .filter(result -> result.getPlace() < getCertificateCutoff())
             .count();
     }
 

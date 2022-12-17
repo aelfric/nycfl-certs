@@ -3,6 +3,7 @@ package org.nycfl.certificates.slides;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateExtension;
 import org.nycfl.certificates.*;
+import org.nycfl.certificates.results.Result;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;

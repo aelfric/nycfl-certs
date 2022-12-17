@@ -17,6 +17,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.nycfl.certificates.results.Result;
 
 import javax.inject.Inject;
 import javax.json.bind.Jsonb;
@@ -101,12 +102,12 @@ class CertificatesResourceTest {
         .getSingleResult();
 
     givenASuperUser()
-        .body("{\n" +
-            "              \"name\": \"NYCFL First Regis\",\n" +
-            "              \"host\": \"Regis High School\",\n" +
-            "              \"date\": \"2020-09-26\"\n" +
-            "            }" +
-            "")
+        .body("""
+            {
+                          "name": "NYCFL First Regis",
+                          "host": "Regis High School",
+                          "date": "2020-09-26"
+                        }""")
         .contentType(MediaType.APPLICATION_JSON)
         .when()
         .post("/tournaments")
@@ -129,15 +130,15 @@ class CertificatesResourceTest {
     transaction.commit();
 
     givenASuperUser()
-            .body("{\n" +
-                    "  \"name\": \"Byram Hills Invitational\",\n" +
-                    "  \"host\": \"Byram Hills " +
-                    "High School\",\n" +
-                    "  \"date\": \"2020-10-10\",\n" +
-                    "  \"logoUrl\": \"https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG\",\n" +
-                    "  \"certificateHeadline\": \"Byram Hills Invitational Tournament\",\n" +
-                    "  \"signature\": \"Someone Else\"\n" +
-                    "}")
+            .body("""
+                {
+                  "name": "Byram Hills Invitational",
+                  "host": "Byram Hills High School",
+                  "date": "2020-10-10",
+                  "logoUrl": "https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG",
+                  "certificateHeadline": "Byram Hills Invitational Tournament",
+                  "signature": "Someone Else"
+                }""")
             .contentType(MediaType.APPLICATION_JSON)
             .pathParam("id", tournament.getId())
             .when()
@@ -229,7 +230,7 @@ class CertificatesResourceTest {
 
     givenARegularUser()
         .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                                 "Varsity Oralnterpretation\\nDuo " +
+                                 "Varsity Oral Interpretation\\nDuo " +
             "Interpretation\"}", tournament.getId()))
         .contentType(MediaType.APPLICATION_JSON)
         .when()
@@ -246,7 +247,7 @@ class CertificatesResourceTest {
 
     given()
         .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                                 "Varsity Oralnterpretation\\nDuo " +
+                                 "Varsity Oral Interpretation\\nDuo " +
             "Interpretation\"}", tournament.getId()))
         .contentType(MediaType.APPLICATION_JSON)
         .when()
@@ -370,11 +371,13 @@ class CertificatesResourceTest {
             .getSingleResult();
 
     assertAll(
-            ()->assertThat(quarterFinalist.eliminationRound,
+            ()->assertThat(
+                quarterFinalist.getEliminationRound(),
                     is(EliminationRound.QUARTER_FINALIST)),
-            ()->assertThat(semiFinalist.eliminationRound,
+            ()->assertThat(
+                semiFinalist.getEliminationRound(),
                     is(EliminationRound.SEMIFINALIST)),
-            ()->assertThat(finalist.eliminationRound,
+            ()->assertThat(finalist.getEliminationRound(),
                     is(EliminationRound.FINALIST))
     );
   }
@@ -442,11 +445,13 @@ class CertificatesResourceTest {
             .getSingleResult();
 
     assertAll(
-            ()->assertThat(quarterFinalist.eliminationRound,
+            ()->assertThat(
+                quarterFinalist.getEliminationRound(),
                     is(EliminationRound.QUARTER_FINALIST)),
-            ()->assertThat(semiFinalist.eliminationRound,
+            ()->assertThat(
+                semiFinalist.getEliminationRound(),
                     is(EliminationRound.SEMIFINALIST)),
-            ()->assertThat(finalist.eliminationRound,
+            ()->assertThat(finalist.getEliminationRound(),
                     is(EliminationRound.FINALIST))
     );
   }
@@ -481,7 +486,7 @@ class CertificatesResourceTest {
             .setParameter(1, "Brookline FE")
             .getSingleResult();
 
-    assertThat(topSpeaks.place, is(1));
+    assertThat(topSpeaks.getPlace(), is(1));
   }
 
   @Test
@@ -640,11 +645,12 @@ class CertificatesResourceTest {
           HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Tournament tournament1 = testTournament();
-    Tournament tournament2 = jsonb.fromJson("{\n" +
-        "          \"name\": \"NYCFL Hugh McEvoy\",\n" +
-        "          \"host\": \"Stuyvesant High School\",\n" +
-        "          \"date\": \"2020-10-03\"\n" +
-        "        }", Tournament.class);
+    Tournament tournament2 = jsonb.fromJson("""
+        {
+                  "name": "NYCFL Hugh McEvoy",
+                  "host": "Stuyvesant High School",
+                  "date": "2020-10-03"
+                }""", Tournament.class);
     entityManager.persist(tournament1);
     entityManager.persist(tournament2);
     transaction.commit();
@@ -695,12 +701,12 @@ class CertificatesResourceTest {
   }
 
   private Tournament testTournament() {
-    return jsonb.fromJson("" +
-        "{\n" +
-        "          \"name\": \"NYCFL First Regis\",\n" +
-        "          \"host\": \"Regis High School\",\n" +
-        "          \"date\": \"2020-09-26\"\n" +
-        "        }", Tournament.class);
+    return jsonb.fromJson("""
+        {
+                  "name": "NYCFL First Regis",
+                  "host": "Regis High School",
+                  "date": "2020-09-26"
+                }""", Tournament.class);
   }
 
   @Test
@@ -857,11 +863,11 @@ class CertificatesResourceTest {
         .contentType(MediaType.APPLICATION_JSON)
         .post("/tournaments/{id}/events/{evtId}/results/{resultId}/rename")
         .then()
-        .statusCode(200);;
+        .statusCode(200);
 
     Result result = entityManager.find(Result.class, resultId);
 
-    assertThat(result.name, is("Johnny Newname"));
+    assertThat(result.getName(), is("Johnny Newname"));
   }
 
   @Test

@@ -1,7 +1,9 @@
-package org.nycfl.certificates;
+package org.nycfl.certificates.results;
 
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.nycfl.certificates.EliminationRound;
+import org.nycfl.certificates.School;
 
 import java.io.InputStream;
 import java.util.ArrayList;

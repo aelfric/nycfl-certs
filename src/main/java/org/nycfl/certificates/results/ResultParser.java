@@ -1,13 +1,14 @@
-package org.nycfl.certificates;
+package org.nycfl.certificates.results;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.nycfl.certificates.CSVUtils;
+import org.nycfl.certificates.EliminationRound;
+import org.nycfl.certificates.School;
 
 import javax.ws.rs.BadRequestException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +28,7 @@ public interface ResultParser {
 
     default CSVParser getParser(InputStream inputStream) {
         try {
-            return CSVParser.parse(inputStream,
-                StandardCharsets.UTF_8,
-                CSVFormat.DEFAULT.withFirstRecordAsHeader()
-                    .withAllowMissingColumnNames(true));
+            return CSVUtils.parse(inputStream);
         } catch (IOException ioException) {
             throw new BadRequestException("Cannot parse CSV");
         }

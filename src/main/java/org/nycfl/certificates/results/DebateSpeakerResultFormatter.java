@@ -1,6 +1,7 @@
-package org.nycfl.certificates;
+package org.nycfl.certificates.results;
 
 import io.quarkus.qute.TemplateExtension;
+import org.nycfl.certificates.Event;
 
 public class DebateSpeakerResultFormatter implements ResultFormatter{
     static final String[] NUMBER_ORDINALS = {
