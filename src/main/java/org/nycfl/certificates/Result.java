@@ -97,8 +97,7 @@ public class Result {
     @Override
     public boolean equals(Object that){
         if(this == that) return true;
-        if(that instanceof Result) {
-            Result other = (Result) that;
+        if(that instanceof Result other) {
             return this.id == other.id && this.id != 0;
         } else {
             return false;

@@ -41,7 +41,7 @@ public class PostingsBuilder implements BaseAnimatedSlideBuilder {
                       .stream()
                       .filter(r -> breakLevel == r.getEliminationRound())
                       .sorted(Comparator.comparing(Result::getCode))
-                      .collect(Collectors.toList());
+                      .toList();
 
             if(!highestElimResults.isEmpty()) {
                 final AtomicInteger counter = new AtomicInteger();

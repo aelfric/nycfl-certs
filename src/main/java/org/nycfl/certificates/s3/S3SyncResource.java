@@ -21,7 +21,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Path("/s3")
 @RolesAllowed({"basicuser", "superuser"})
@@ -65,7 +64,7 @@ public class S3SyncResource extends S3Resource {
             .stream()
             .sorted(Comparator.comparing(S3Object::lastModified).reversed())
             .map(o -> getPublicListing(o.key()))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private PublicListing getPublicListing(String objectName) {

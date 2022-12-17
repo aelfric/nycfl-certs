@@ -7,7 +7,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Path("/enums")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -20,7 +19,7 @@ public class EnumResource {
         return Arrays
             .stream(EventType.values())
             .map(LabeledEnumDTO::new)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @GET
@@ -29,7 +28,7 @@ public class EnumResource {
         return Arrays
             .stream(CertificateType.values())
             .map(LabeledEnumDTO::new)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @GET
@@ -38,7 +37,7 @@ public class EnumResource {
         return Arrays
             .stream(EliminationRound.values())
             .map(LabeledEnumDTO::new)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public static class LabeledEnumDTO{

@@ -4,7 +4,6 @@ import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class EventList {
     public final long tournamentId;
@@ -23,6 +22,6 @@ public class EventList {
                 .stream(events.split("\n"))
                 .sorted()
                 .map(Event::fromName)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

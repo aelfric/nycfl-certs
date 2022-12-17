@@ -8,7 +8,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.youtube.YouTube;
@@ -32,7 +32,7 @@ public class YoutubeResource {
       Collections.singletonList("https://www.googleapis.com/auth/youtube");
 
   private static final String APPLICATION_NAME = "NYCFL Certificates";
-  private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+  private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
   @ConfigProperty(name="google.credentials.path")
   String googleCredentialsPath;
@@ -163,7 +163,7 @@ public class YoutubeResource {
 
   private static List<LiveStreamResponse> getScheduledStreams(YouTube youtubeService) throws IOException {
     YouTube.LiveStreams.List request = youtubeService.liveStreams()
-        .list("snippet,cdn,status");
+        .list(List.of("snippet","cdn","status"));
     LiveStreamListResponse execute =
         request
             .setMine(true)
@@ -174,7 +174,8 @@ public class YoutubeResource {
         .stream()
         .collect(Collectors.toMap(LiveStream::getId, Function.identity()));
 
-    YouTube.LiveBroadcasts.List request2 = youtubeService.liveBroadcasts().list("snippet,status,contentDetails");
+    YouTube.LiveBroadcasts.List request2 = youtubeService.liveBroadcasts().list(List.of(
+        "snippet","status","contentDetails"));
     final LiveBroadcastListResponse broadcastListResponse =
         request2
             .setMine(true)
@@ -214,7 +215,8 @@ public class YoutubeResource {
     broadcast.setSnippet(snippet);
     broadcast.setStatus(status);
 
-    final YouTube.LiveBroadcasts.Insert broadcastInsert = youtubeService.liveBroadcasts().insert("snippet,status", broadcast);
+    final YouTube.LiveBroadcasts.Insert broadcastInsert =
+        youtubeService.liveBroadcasts().insert(List.of("snippet","status"), broadcast);
     final LiveBroadcast returnedBroadcast = broadcastInsert.execute();
 
     final LiveStreamSnippet streamSnippet = new LiveStreamSnippet();
@@ -230,23 +232,26 @@ public class YoutubeResource {
     liveStream.setSnippet(streamSnippet);
     liveStream.setCdn(cdnSettings);
 
-    final YouTube.LiveStreams.Insert liveStreamInsert = youtubeService.liveStreams().insert("snippet,cdn", liveStream);
+    final YouTube.LiveStreams.Insert liveStreamInsert =
+        youtubeService.liveStreams().insert(List.of(
+        "snippet","cdn"), liveStream);
     final LiveStream returnedStream = liveStreamInsert.execute();
 
-    final YouTube.LiveBroadcasts.Bind liveBroadcastBind = youtubeService.liveBroadcasts().bind(returnedBroadcast.getId(), "id,contentDetails");
+    final YouTube.LiveBroadcasts.Bind liveBroadcastBind = youtubeService.liveBroadcasts().bind(returnedBroadcast.getId(),
+        List.of("id","contentDetails"));
     liveBroadcastBind.setStreamId(returnedStream.getId());
 
     liveBroadcastBind.execute();
   }
 
-  public static void transition(BroadcastStatus broadcastStatus, String broadcastId, YouTube youtubeService) throws GeneralSecurityException, IOException {
+  public static void transition(BroadcastStatus broadcastStatus, String broadcastId, YouTube youtubeService) throws IOException {
     // Define and execute the API request
     YouTube.LiveBroadcasts.Transition request = youtubeService
         .liveBroadcasts()
         .transition(
             broadcastStatus.value,
             broadcastId,
-            "snippet,status"
+            List.of("snippet","status")
         );
     request.execute();
   }

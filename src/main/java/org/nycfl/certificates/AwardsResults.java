@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -32,7 +32,7 @@ public class AwardsResults {
                         return Stream.of(awardsResult);
                     }
                 }
-        ).collect(Collectors.toList());
+        ).toList();
     }
 
     public File toSpreadsheet(){

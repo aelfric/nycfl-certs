@@ -5,7 +5,6 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.nycfl.certificates.slides.PostingsBuilder;
 import org.nycfl.certificates.slides.SlideBuilder;
 
@@ -91,17 +90,23 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{tournamentId}/events/{eventId}/results")
-    public Tournament addElimResults(@MultipartForm MultipartBody body,
+    public Tournament addElimResults(@BeanParam MultipartBody body,
                                      @PathParam("eventId") int eventId,
                                      @PathParam("tournamentId") long tournamentId,
                                      @QueryParam("type") @DefaultValue(
                                              "FINALIST") EliminationRound eliminationRound) {
 
-        return tournamentService.addResults(
-                eventId,
-                tournamentId,
-                eliminationRound,
-                body.file);
+        Tournament tournament = tournamentService.addResults(
+            eventId,
+            tournamentId,
+            eliminationRound,
+            body.file);
+        try {
+            body.file.close();
+        } catch (IOException ignore){
+
+        }
+        return tournament;
     }
     @DELETE
     @RolesAllowed("superuser")
@@ -125,7 +130,7 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{id}/sweeps")
-    public Tournament addSweepsResults(@MultipartForm MultipartBody body,
+    public Tournament addSweepsResults(@BeanParam MultipartBody body,
                                        @PathParam("id") long tournamentId) {
         Map<String, School> map =
                 tournamentService.getSchools(tournamentId).stream().collect(
@@ -174,7 +179,7 @@ public class CertificatesResource {
     @Path("/tournaments/{id}/schools")
     public List<School> addSchools(
             @PathParam("id") long tournamentId,
-            @MultipartForm MultipartBody body) {
+            @BeanParam MultipartBody body) {
         Map<String, School> map =
                 tournamentService.getSchools(tournamentId).stream().collect(
                         Collectors.toMap(School::getName, Function.identity()));
@@ -443,7 +448,8 @@ public class CertificatesResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/contacts")
-    public String uploadContactInfo(@MultipartForm MultipartBody body, @PathParam("tournamentId") long tournamentId){
+    public String uploadContactInfo(@BeanParam MultipartBody body,
+                                    @PathParam("tournamentId") long tournamentId){
         return String.format("\"%d records updated\"",
           tournamentService.updateSchoolContacts(body.file));
     }
