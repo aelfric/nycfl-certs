@@ -5,28 +5,28 @@ import org.nycfl.certificates.Event;
 import org.nycfl.certificates.Ordinals;
 
 import java.util.Locale;
+import java.util.Map;
 
 public class DebateResultFormatter implements ResultFormatter{
+    Map<Integer, String> placeMap = Map.of(
+        1,"Champion",
+        2, "Finalist");
 
     @Override
     public String getPlacementString(Result result) {
         Event event = result.event;
+        if (result.place > event.getCertificateCutoff()) {
+            return "";
+        }
 
-        if (result.place <= event.getCertificateCutoff()) {
-            if (result.eliminationRound == EliminationRound.FINALIST) {
-                boolean useNumbers = event.getPlacementCutoff() > 1;
-                return result.place == 1 ?
-                    useNumbers ?
-                        Ordinals.ofInt(result.place) + " Place" :
-                        "Champion" :
-                    useNumbers ?
-                        Ordinals.ofInt(result.place) + " Place" :
-                        "Finalist";
+        if (result.eliminationRound == EliminationRound.FINALIST) {
+            if (event.getPlacementCutoff() > 1) {
+                return Ordinals.ofInt(result.place) + " Place";
             } else {
-                return result.eliminationRound.label;
+                return placeMap.get(result.place);
             }
         } else {
-            return "";
+            return result.eliminationRound.label;
         }
     }
 
