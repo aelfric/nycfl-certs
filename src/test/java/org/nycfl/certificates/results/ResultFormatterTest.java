@@ -43,6 +43,36 @@ class ResultFormatterTest {
 
   @ParameterizedTest
   @CsvSource({
+      "1,1,1,FINALIST,gold",
+      "2,2,1,FINALIST,silver",
+      "6,10,10,SEMIFINALIST,bronze",
+      "1,10,10,FINALIST,gold",
+      "6,10,10,QUARTER_FINALIST,red"
+  })
+  @DisplayName("Debate Results - Color")
+  void testDebateFormatterColor(
+      int place,
+      int certificateCutoff,
+      int placementCutoff,
+      EliminationRound eliminationRound,
+      String expected){
+    final ResultFormatter formatter = new DebateResultFormatter();
+
+    final Result result = createResult(
+        place,
+        certificateCutoff,
+        placementCutoff,
+        eliminationRound
+    );
+
+    assertThat(
+        formatter.getCertificateColor(result),
+        is(expected)
+    );
+  }
+
+  @ParameterizedTest
+  @CsvSource({
       "6,10,10,FINALIST,Sixth Place",
       "1,10,10,FINALIST,First Place",
       "6,5,5,FINALIST,''",
@@ -69,6 +99,38 @@ class ResultFormatterTest {
         is(expected)
     );
   }
+
+  @ParameterizedTest
+  @CsvSource({
+      "6,10,10,FINALIST,red finalist",
+      "1,10,10,FINALIST,gold finalist",
+      "2,10,10,FINALIST,silver finalist",
+      "3,10,10,FINALIST,bronze finalist",
+      "4,7,5,FINALIST,red finalist",
+      "6,7,5,FINALIST,black finalist",
+      "6,7,5,SEMIFINALIST,black semi-finalist"
+  })
+  @DisplayName("Speech Results - Color")
+  void testSpeechFormatterColor(
+      int place,
+      int certificateCutoff,
+      int placementCutoff,
+      EliminationRound eliminationRound,
+      String expected){
+    final ResultFormatter formatter = new SpeechResultFormatter();
+
+    final Result result = createResult(
+        place,
+        certificateCutoff,
+        placementCutoff,
+        eliminationRound);
+
+    assertThat(
+        formatter.getCertificateColor(result),
+        is(expected)
+    );
+  }
+
   @ParameterizedTest
   @CsvSource({
       "6,10,10,Sixth Place",
@@ -92,6 +154,34 @@ class ResultFormatterTest {
 
     assertThat(
         formatter.getPlacementString(result),
+        is(expected)
+    );
+
+  }@ParameterizedTest
+  @CsvSource({
+      "6,10,10,red",
+      "1,10,10,gold",
+      "2,10,10,silver",
+      "3,10,10,bronze",
+      "6,5,5,black",
+      "6,7,5,black"
+  })
+  @DisplayName("Debate Top Speaker Results - Color")
+  void testDebateSpeakersFormatterColor(
+      int place,
+      int certificateCutoff,
+      int placementCutoff,
+      String expected){
+    final ResultFormatter formatter = new DebateSpeakerResultFormatter();
+
+    final Result result = createResult(
+        place,
+        certificateCutoff,
+        placementCutoff,
+        EliminationRound.FINALIST);
+
+    assertThat(
+        formatter.getCertificateColor(result),
         is(expected)
     );
 
@@ -121,6 +211,32 @@ class ResultFormatterTest {
 
     assertThat(
         formatter.getPlacementString(result),
+        is(expected)
+    );
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "6,10,10,FINALIST,po finalist",
+      "6,7,10,SEMIFINALIST,po semi-finalist"
+  })
+  @DisplayName("Congress POs - Color")
+  void testCongressPOFormatterColor(
+      int place,
+      int certificateCutoff,
+      int placementCutoff,
+      EliminationRound eliminationRound,
+      String expected){
+    final ResultFormatter formatter = new CongressPOResultFormatter();
+
+    final Result result = createResult(
+        place,
+        certificateCutoff,
+        placementCutoff,
+        eliminationRound);
+
+    assertThat(
+        formatter.getCertificateColor(result),
         is(expected)
     );
   }
