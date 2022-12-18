@@ -286,7 +286,7 @@ public class CertificatesResource {
             CutoffRequest cutoffRequest
     ) {
         return tournamentService
-                .updatePlacementCutoff(eventId, cutoffRequest.cutoff);
+                .updatePlacementCutoff(eventId, cutoffRequest.cutoff());
     }
 
     @POST
@@ -298,7 +298,7 @@ public class CertificatesResource {
             CutoffRequest cutoffRequest
     ) {
         return tournamentService
-                .updateCertificateCutoff(eventId, cutoffRequest.cutoff);
+                .updateCertificateCutoff(eventId, cutoffRequest.cutoff());
     }
 
     @POST
@@ -310,7 +310,7 @@ public class CertificatesResource {
             CutoffRequest cutoffRequest
     ) {
         return tournamentService
-                .updateMedalCutoff(eventId, cutoffRequest.cutoff);
+                .updateMedalCutoff(eventId, cutoffRequest.cutoff());
     }
 
     @POST
@@ -322,7 +322,7 @@ public class CertificatesResource {
             CutoffRequest cutoffRequest
     ) {
         return tournamentService
-                .updateHalfQuals(eventId, cutoffRequest.cutoff);
+                .updateHalfQuals(eventId, cutoffRequest.cutoff());
     }
 
     @Inject

@@ -18,7 +18,7 @@ public class EnumResource {
     public List<LabeledEnumDTO> getTypes(){
         return Arrays
             .stream(EventType.values())
-            .map(LabeledEnumDTO::new)
+            .map(LabeledEnumDTO::fromLabeledEnum)
             .toList();
     }
 
@@ -27,7 +27,7 @@ public class EnumResource {
     public List<LabeledEnumDTO> getCertTypes(){
         return Arrays
             .stream(CertificateType.values())
-            .map(LabeledEnumDTO::new)
+            .map(LabeledEnumDTO::fromLabeledEnum)
             .toList();
     }
 
@@ -36,18 +36,13 @@ public class EnumResource {
     public List<LabeledEnumDTO> getRounds(){
         return Arrays
             .stream(EliminationRound.values())
-            .map(LabeledEnumDTO::new)
+            .map(LabeledEnumDTO::fromLabeledEnum)
             .toList();
     }
 
-    public static class LabeledEnumDTO{
-        public final String label;
-        public final String value;
-
-        @SuppressWarnings("CdiInjectionPointsInspection")
-        public LabeledEnumDTO(LabeledEnum labeledEnum) {
-            this.label = labeledEnum.getLabel();
-            this.value = labeledEnum.getValue();
-        }
+    public record LabeledEnumDTO(String label, String value){
+      static LabeledEnumDTO fromLabeledEnum(LabeledEnum e){
+        return new LabeledEnumDTO(e.getLabel(), e.getValue());
+      }
     }
 }

@@ -25,15 +25,17 @@ public class AggregateSweeps {
             List<SweepsResult> results) {
         this.resultsMap =
                 results.stream().collect(
-                        Collectors.groupingBy(r->r.school,
-                        Collectors.toMap(r->r.tournamentId,
+                        Collectors.groupingBy(
+                            SweepsResult::school,
+                        Collectors.toMap(
+                            SweepsResult::tournamentId,
                                 Function.identity())));
         totals = new HashMap<>();
         for (Map.Entry<String, Map<Long, SweepsResult>> schoolResultMap :
                 resultsMap
                 .entrySet()) {
             Map<Long, SweepsResult> value = schoolResultMap.getValue();
-            int total = value.values().stream().mapToInt(r->r.points).sum();
+            int total = value.values().stream().mapToInt(SweepsResult::points).sum();
             totals.put(schoolResultMap.getKey(), total);
         }
     }

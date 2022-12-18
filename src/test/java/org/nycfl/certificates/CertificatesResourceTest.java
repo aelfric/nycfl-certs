@@ -1131,11 +1131,20 @@ class CertificatesResourceTest {
             new ArrayList<MedalCount>() {
             }.getClass().getGenericSuperclass()
         );
-
+    final Tournament testTournament = entityManager.find(Tournament.class, tournament.getId());
+    final Map<String, Long> schoolMap = testTournament
+        .schools
+        .stream()
+        .collect(
+            Collectors.toMap(
+                School::getName,
+                School::getId
+            )
+        );
     assertThat(medalCounts, hasItems(
-        new MedalCount("Regis", 5, 0L),
-        new MedalCount("Bronx Science", 1, 0L),
-        new MedalCount("Convent of the Sacred Heart", 1, 0L)
+        new MedalCount("Regis", 5, schoolMap.get("Regis")),
+        new MedalCount("Bronx Science", 1, schoolMap.get("Bronx Science")),
+        new MedalCount("Convent of the Sacred Heart", 1, schoolMap.get("Convent of the Sacred Heart"))
     ));
   }
 }

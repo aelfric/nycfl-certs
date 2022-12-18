@@ -43,7 +43,7 @@ public class TournamentService {
     public Tournament addEvents(EventList eventList) {
         Tournament tournament = em.createQuery(
                 "SELECT t FROM Tournament t LEFT JOIN FETCH t.events WHERE t.id=?1",
-                Tournament.class).setParameter(1, eventList.tournamentId)
+                Tournament.class).setParameter(1, eventList.tournamentId())
             .getSingleResult();
         tournament.setEvents(eventList.getEvents());
         em.persist(tournament);

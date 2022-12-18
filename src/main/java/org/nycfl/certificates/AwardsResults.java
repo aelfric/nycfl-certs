@@ -18,7 +18,7 @@ import static java.nio.file.StandardOpenOption.CREATE;
 public class AwardsResults {
 
     final List<AwardsResult> results;
-    private String schoolName;
+    private final String schoolName;
 
     public AwardsResults(Collection<AwardsResult> c, String schoolName) {
         this.schoolName = schoolName;
