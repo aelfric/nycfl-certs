@@ -27,7 +27,16 @@ public class Ordinals {
         "Eighteenth",
         "Nineteenth",
         "Twentieth",
-        "Twenty-First"
+        "Twenty-First",
+        "Twenty-Second",
+        "Twenty-Third",
+        "Twenty-Fourth",
+        "Twenty-Fifth",
+        "Twenty-Sixth",
+        "Twenty-Seventh",
+        "Twenty-Eighth",
+        "Twenty-Ninth",
+        "Thirtieth",
     };
 
     public static String ofInt(int i){
