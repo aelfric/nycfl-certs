@@ -5,7 +5,6 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.nycfl.certificates.slides.PostingsBuilder;
 import org.nycfl.certificates.slides.SlideBuilder;
 
@@ -19,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,17 +89,23 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{tournamentId}/events/{eventId}/results")
-    public Tournament addElimResults(@MultipartForm MultipartBody body,
+    public Tournament addElimResults(@BeanParam MultipartBody body,
                                      @PathParam("eventId") int eventId,
                                      @PathParam("tournamentId") long tournamentId,
                                      @QueryParam("type") @DefaultValue(
                                              "FINALIST") EliminationRound eliminationRound) {
 
-        return tournamentService.addResults(
-                eventId,
-                tournamentId,
-                eliminationRound,
-                body.file);
+        Tournament tournament = tournamentService.addResults(
+            eventId,
+            tournamentId,
+            eliminationRound,
+            body.file);
+        try {
+            body.file.close();
+        } catch (IOException ignore){
+
+        }
+        return tournament;
     }
     @DELETE
     @RolesAllowed("superuser")
@@ -125,22 +129,21 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{id}/sweeps")
-    public Tournament addSweepsResults(@MultipartForm MultipartBody body,
+    public Tournament addSweepsResults(@BeanParam MultipartBody body,
                                        @PathParam("id") long tournamentId) {
         Map<String, School> map =
                 tournamentService.getSchools(tournamentId).stream().collect(
                         Collectors.toMap(School::getDisplayName,
                                 Function.identity()));
         try {
-            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8,
-                    CSVFormat.DEFAULT.withFirstRecordAsHeader());
-            for (CSVRecord record : parse.getRecords()) {
+            CSVParser parse = CSVUtils.parse(body.file);
+            for (CSVRecord csvRecord : parse.getRecords()) {
                 School school = map.computeIfAbsent(
-                        record.get("School"),
+                        csvRecord.get("School"),
                         School::fromName);
                 school.setSweepsPoints(
                         Integer.parseInt(
-                                record.get("Total")));
+                                csvRecord.get("Total")));
                 tournamentService.updateSchool(school, tournamentId);
             }
         } catch (IOException e) {
@@ -174,18 +177,17 @@ public class CertificatesResource {
     @Path("/tournaments/{id}/schools")
     public List<School> addSchools(
             @PathParam("id") long tournamentId,
-            @MultipartForm MultipartBody body) {
+            @BeanParam MultipartBody body) {
         Map<String, School> map =
                 tournamentService.getSchools(tournamentId).stream().collect(
                         Collectors.toMap(School::getName, Function.identity()));
         try {
-            CSVParser parse = CSVParser.parse(body.file, StandardCharsets.UTF_8,
-                    CSVFormat.DEFAULT.withFirstRecordAsHeader());
-            for (CSVRecord record : parse.getRecords()) {
+            CSVParser parse = CSVUtils.parse(body.file);
+            for (CSVRecord csvRecord : parse.getRecords()) {
                 School school = map.computeIfAbsent(
-                        record.get("Short Name"),
+                        csvRecord.get("Short Name"),
                         School::fromName);
-                school.setDisplayName(record.get("Full Name"));
+                school.setDisplayName(csvRecord.get("Full Name"));
                 tournamentService.updateSchool(school, tournamentId);
             }
         } catch (IOException e) {
@@ -215,6 +217,18 @@ public class CertificatesResource {
     ) {
         return tournamentService
                 .renameEvent(eventId, newName);
+    }
+
+    @POST
+    @RolesAllowed("superuser")
+    @Path("/tournaments/{id}/events/{evtId}/abbreviate")
+    public Tournament abbreviateEvent(
+            @PathParam("id") long tournamentId,
+            @PathParam("evtId") long eventId,
+            @QueryParam("abbreviation") String abbreviation
+    ) {
+        return tournamentService
+                .abbreviateEvent(eventId, abbreviation);
     }
 
     @POST
@@ -272,7 +286,7 @@ public class CertificatesResource {
             CutoffRequest cutoffRequest
     ) {
         return tournamentService
-                .updatePlacementCutoff(eventId, cutoffRequest.cutoff);
+                .updatePlacementCutoff(eventId, cutoffRequest.cutoff());
     }
 
     @POST
@@ -284,7 +298,7 @@ public class CertificatesResource {
             CutoffRequest cutoffRequest
     ) {
         return tournamentService
-                .updateCertificateCutoff(eventId, cutoffRequest.cutoff);
+                .updateCertificateCutoff(eventId, cutoffRequest.cutoff());
     }
 
     @POST
@@ -296,7 +310,7 @@ public class CertificatesResource {
             CutoffRequest cutoffRequest
     ) {
         return tournamentService
-                .updateMedalCutoff(eventId, cutoffRequest.cutoff);
+                .updateMedalCutoff(eventId, cutoffRequest.cutoff());
     }
 
     @POST
@@ -308,7 +322,7 @@ public class CertificatesResource {
             CutoffRequest cutoffRequest
     ) {
         return tournamentService
-                .updateHalfQuals(eventId, cutoffRequest.cutoff);
+                .updateHalfQuals(eventId, cutoffRequest.cutoff());
     }
 
     @Inject
@@ -431,7 +445,8 @@ public class CertificatesResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/contacts")
-    public String uploadContactInfo(@MultipartForm MultipartBody body, @PathParam("tournamentId") long tournamentId){
+    public String uploadContactInfo(@BeanParam MultipartBody body,
+                                    @PathParam("tournamentId") long tournamentId){
         return String.format("\"%d records updated\"",
           tournamentService.updateSchoolContacts(body.file));
     }

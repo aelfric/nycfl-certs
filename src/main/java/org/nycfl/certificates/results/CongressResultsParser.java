@@ -1,7 +1,9 @@
-package org.nycfl.certificates;
+package org.nycfl.certificates.results;
 
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.nycfl.certificates.EliminationRound;
+import org.nycfl.certificates.School;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -15,17 +17,17 @@ public class CongressResultsParser implements ResultParser {
                                         InputStream inputStream) {
         CSVParser parse = getParser(inputStream);
         List<Result> results = new ArrayList<>();
-        for (CSVRecord record : getRecords(parse)) {
+        for (CSVRecord csvRecord : getRecords(parse)) {
             Result result = new Result();
-            result.name = record.get("Code");
-            result.code = record.get("Code");
+            result.name = csvRecord.get("Code");
+            result.code = csvRecord.get("Code");
             result.place =
-                    Integer.parseInt(getOrAlternateColumn(record, "Ranking",
+                    Integer.parseInt(getOrAlternateColumn(csvRecord, "Ranking",
                         "Place")
                         .replace("T-", ""));
             result.eliminationRound = eliminationRound;
             result.school = schoolsMap.computeIfAbsent(
-                    record.get("School"),
+                    csvRecord.get("School"),
                     School::fromName);
             result.count = 1;
             results.add(result);

@@ -2,6 +2,7 @@ package org.nycfl.certificates.slides;
 
 import io.quarkus.qute.Template;
 import org.nycfl.certificates.*;
+import org.nycfl.certificates.results.Result;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -10,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class SlideBuilder extends BaseAnimatedSlideBuilder{
+public class SlideBuilder implements BaseAnimatedSlideBuilder{
 
   @Inject
   Template slide2;
@@ -22,8 +23,9 @@ public class SlideBuilder extends BaseAnimatedSlideBuilder{
     return this.buildSlidesPreview(tournament, slides);
   }
 
-  Map<String, String> buildSlides(Tournament tournament) {
-    Map<String, String> slides = new LinkedHashMap<>();
+  @Override
+  public Map<String, String> buildSlides(Tournament tournament) {
+    Map<String, String> slideMap = new LinkedHashMap<>();
     for (Event event : tournament.getEvents()) {
       if (event.getEventType() != EventType.DEBATE_SPEAKS) {
         Map<EliminationRound, List<Result>> collect =
@@ -48,7 +50,7 @@ public class SlideBuilder extends BaseAnimatedSlideBuilder{
           int roundIndex =
             EliminationRound.values().length - round.getKey().ordinal();
           for (List<Result> dividedResult : dividedResults) {
-            slides.put(String.format("%s_%s_%d_%d",
+            slideMap.put(String.format("%s_%s_%d_%d",
                 event.getEventType().name(),
                 event.getName(),
                 roundIndex,
@@ -64,6 +66,6 @@ public class SlideBuilder extends BaseAnimatedSlideBuilder{
         }
       }
     }
-    return slides;
+    return slideMap;
   }
 }

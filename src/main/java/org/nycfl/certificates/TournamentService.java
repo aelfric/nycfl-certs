@@ -1,8 +1,8 @@
 package org.nycfl.certificates;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.nycfl.certificates.results.Result;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -12,7 +12,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -31,22 +30,21 @@ public class TournamentService {
     }
 
     public List<TournamentStub> all() {
-        List<TournamentStub> tournaments = em.createQuery(
-                "SELECT new org.nycfl.certificates.TournamentStub(t.id, t.name) " +
-                    "FROM " +
-                    "Tournament t " +
-                    " ORDER BY t.tournamentDate desc ",
-                TournamentStub.class).getResultList();
-
-        return tournaments;
+        return em.createQuery(
+            """
+            SELECT new org.nycfl.certificates.TournamentStub(t.id, t.name)
+            FROM Tournament t
+            ORDER BY t.tournamentDate desc
+            """,
+            TournamentStub.class).getResultList();
     }
 
     @Transactional
     public Tournament addEvents(EventList eventList) {
         Tournament tournament = em.createQuery(
                 "SELECT t FROM Tournament t LEFT JOIN FETCH t.events WHERE t.id=?1",
-                Tournament.class).setParameter(1, eventList.tournamentId)
-                .getSingleResult();
+                Tournament.class).setParameter(1, eventList.tournamentId())
+            .getSingleResult();
         tournament.setEvents(eventList.getEvents());
         em.persist(tournament);
         return getTournament(tournament.getId());
@@ -54,36 +52,37 @@ public class TournamentService {
 
     @Transactional
     public Tournament addResults(
-            long eventId,
-            long tournamentId,
-            EliminationRound eliminationRound,
-            InputStream csvInputStream) {
+        long eventId,
+        long tournamentId,
+        EliminationRound eliminationRound,
+        InputStream csvInputStream) {
         Event event = em.createQuery(
                 "SELECT e FROM Event e LEFT JOIN FETCH e.tournament LEFT JOIN FETCH e.results WHERE e.id=?1",
                 Event.class)
-                .setParameter(1, eventId)
-                .getSingleResult();
+            .setParameter(1, eventId)
+            .getSingleResult();
 
         Function<School, String> getName = event.getSchoolMappingFunction();
         List<School> schools = getSchools(tournamentId);
         Map<String, School> schoolsMap = schools
-                .stream()
-                .collect(
-                        Collectors.toMap(getName,
-                                Function.identity()));
+            .stream()
+            .collect(
+                Collectors.toMap(getName,
+                    Function.identity()));
 
         event.parseResults(eliminationRound, csvInputStream, schoolsMap);
         addSchools(schoolsMap.values(), tournamentId);
         em.persist(event);
         return getTournament(event.getTournament().getId());
     }
+
     @Transactional
     public Tournament clearResults(long eventId) {
         Event event = em.createQuery(
                 "SELECT e FROM Event e LEFT JOIN FETCH e.tournament LEFT JOIN FETCH e.results WHERE e.id=?1",
                 Event.class)
-                .setParameter(1, eventId)
-                .getSingleResult();
+            .setParameter(1, eventId)
+            .getSingleResult();
         event.clearResults();
         em.persist(event);
         return getTournament(event.getTournament().getId());
@@ -91,14 +90,17 @@ public class TournamentService {
 
     public Tournament getTournament(Long tournamentId) {
         Tournament tournament = em.createQuery(
-                "SELECT DISTINCT t FROM Tournament t LEFT JOIN FETCH t.events e " +
-                        "WHERE t.id=?1",
+                "SELECT DISTINCT t FROM Tournament t LEFT JOIN FETCH t.events e WHERE t.id=?1",
                 Tournament.class).setParameter(1, tournamentId)
-                .getSingleResult();
+            .getSingleResult();
         em.createQuery(
-                "SELECT DISTINCT e FROM Event e LEFT JOIN " +
-                        "FETCH e.results WHERE e.tournament=?1",
-                Event.class).setParameter(1, tournament).getResultList();
+            """
+            SELECT DISTINCT e
+            FROM Event e 
+            LEFT JOIN FETCH e.results 
+            WHERE e.tournament=?1
+            """,
+            Event.class).setParameter(1, tournament).getResultList();
         return tournament;
     }
 
@@ -106,19 +108,22 @@ public class TournamentService {
     public void addSchools(Collection<School> schools, long tournamentId) {
         Tournament tournament = em.find(Tournament.class, tournamentId);
         tournament.addSchools(schools
-                .stream()
-                .filter(school -> school.getTournament()==null)
-                .collect(
-                Collectors.toList()));
+            .stream()
+            .filter(school -> school.getTournament() == null)
+            .toList());
         em.persist(tournament);
     }
 
     public List<School> getSchools(long tournamentId) {
-        return em.createQuery("SELECT DISTINCT s FROM School s LEFT JOIN FETCH s.emails WHERE" +
-          " s" +
-            ".tournament" +
-                ".id=?1", School.class).setParameter(1, tournamentId)
-                .getResultList();
+        return em.createQuery(
+                """
+                SELECT DISTINCT s
+                FROM School s
+                LEFT JOIN FETCH s.emails
+                WHERE s.tournament.id=?1
+                """,
+                School.class).setParameter(1, tournamentId)
+            .getResultList();
     }
 
     @Transactional
@@ -144,6 +149,7 @@ public class TournamentService {
         em.persist(event);
         return getTournament(event.getTournament().getId());
     }
+
     @Transactional
     public Tournament updateHalfQuals(long eventId, int cutoff) {
         Event event = em.find(Event.class, eventId);
@@ -153,21 +159,25 @@ public class TournamentService {
     }
 
     public List<MedalCount> getMedalCount(long tournamentId) {
-        return em.createQuery("SELECT new org.nycfl.certificates.MedalCount(" +
-          "r.school.name, sum(r.count), r.school.id) " +
-            "FROM Event e " +
-            "LEFT JOIN e.results r " +
-            "WHERE e.tournament.id = ?1 " +
-            "AND r.place < e.medalCutoff " +
-            "GROUP BY r.school " +
-            "ORDER BY r.school.name", MedalCount.class)
+        return em.createQuery(
+                """
+                SELECT new org.nycfl.certificates.MedalCount(
+                r.school.name, sum(r.count), r.school.id)
+                FROM Event e
+                LEFT JOIN e.results r
+                WHERE e.tournament.id = ?1
+                AND r.place < e.medalCutoff
+                GROUP BY r.school
+                ORDER BY r.school.name
+                """
+                , MedalCount.class)
             .setParameter(1, tournamentId)
             .getResultList();
     }
 
     @Transactional
     public void updateSchool(School school, long tournamentId) {
-        if(school.getId()==0) {
+        if (school.getId() == 0) {
             school.setTournament(em.find(Tournament.class, tournamentId));
             em.persist(school);
         } else {
@@ -182,25 +192,27 @@ public class TournamentService {
                 "FROM School s " +
                 "LEFT JOIN s.tournament t " +
                 "ORDER BY s.name", SweepsResult.class)
-                .getResultList());
+            .getResultList());
     }
+
     public List<SweepsResult> getSweeps(long tournamentId) {
-        return em.createQuery("SELECT new org.nycfl.certificates" +
-                ".SweepsResult" +
-                "(s.name, coalesce(s.sweepsPoints, 0),  t.name, t.id, s.id) " +
-                "FROM School s " +
-                "LEFT JOIN s.tournament t " +
-                "WHERE t.id = ?1" +
-                "ORDER BY s.name", SweepsResult.class)
-                .setParameter(1, tournamentId)
-                .getResultList();
+        return em.createQuery(
+                """
+                SELECT new org.nycfl.certificates.SweepsResult(s.name, coalesce(s.sweepsPoints, 0),  t.name, t.id, s.id)
+                FROM School s
+                LEFT JOIN s.tournament t
+                WHERE t.id = ?1
+                ORDER BY s.name
+                """, SweepsResult.class)
+            .setParameter(1, tournamentId)
+            .getResultList();
     }
 
     @Transactional
     public Tournament updateTournament(
-            long tournamentId,
-            Tournament updatedTournament) {
-        Tournament persistedTournament = getTournament(tournamentId );
+        long tournamentId,
+        Tournament updatedTournament) {
+        Tournament persistedTournament = getTournament(tournamentId);
         persistedTournament.merge(updatedTournament);
         em.persist(persistedTournament);
         return persistedTournament;
@@ -210,10 +222,10 @@ public class TournamentService {
     public Tournament updateEventType(long eventId, EventType eventType) {
         Event event = em.find(Event.class, eventId);
         event.setEventType(eventType);
-        if(eventType.hasSpeakerAwards()){
+        if (eventType.hasSpeakerAwards()) {
             Event speakerEvent = new Event();
             speakerEvent.setEventType(EventType.DEBATE_SPEAKS);
-            speakerEvent.setName(event.getName() +" Speaker Awards");
+            speakerEvent.setName(event.getName() + " Speaker Awards");
             speakerEvent.setCertificateType(CertificateType.DEBATE_SPEAKER);
             speakerEvent.setTournament(event.getTournament());
             em.persist(speakerEvent);
@@ -227,17 +239,15 @@ public class TournamentService {
         int
             updated =
             em.createQuery(
-                "DELETE FROM School s WHERE s.id=?1 and s.tournament.id = ?2" +
-                    " and size(s.results) = 0")
+                    "DELETE FROM School s WHERE s.id=?1 and s.tournament.id = ?2 and size(s.results) = 0")
                 .setParameter(1, schoolId)
                 .setParameter(2, tournamentId)
                 .executeUpdate();
-        if(updated != 1){
+        if (updated != 1) {
             throw new BadRequestException("Could not delete school");
         }
         return em
-            .createQuery("SELECT s FROM School s WHERE s.tournament.id =" +
-            " ?1", School.class)
+            .createQuery("SELECT s FROM School s WHERE s.tournament.id = ?1", School.class)
             .setParameter(1, tournamentId)
             .getResultList();
     }
@@ -275,29 +285,34 @@ public class TournamentService {
                                        long resultId,
                                        String newName) {
         Result result = em.find(Result.class, resultId);
-        if(result.getEvent().getId()==eventId) {
+        if (result.getEvent().getId() == eventId) {
             result.setName(newName);
             em.persist(result);
             Event event = em.find(Event.class, eventId);
             return getTournament(event.getTournament().getId());
         }
-        throw new NotFoundException(String.format("Bad Event Result ID Pair " +
-            "[%d,%d]", eventId, resultId));
+        throw new NotFoundException(
+            String.format(
+                "Bad Event Result ID Pair [%d,%d]",
+                eventId,
+                resultId));
     }
 
     @Transactional
     public Tournament switchSchool(long eventId,
-                                       long resultId,
-                                       long newSchoolId) {
+                                   long resultId,
+                                   long newSchoolId) {
         Result result = em.find(Result.class, resultId);
-        if(result.getEvent().getId()==eventId) {
+        if (result.getEvent().getId() == eventId) {
             School school = em.find(School.class, newSchoolId);
             result.setSchool(school);
             Event event = em.find(Event.class, eventId);
             return getTournament(event.getTournament().getId());
         }
-        throw new NotFoundException(String.format("Bad Event Result ID Pair " +
-          "[%d,%d]", eventId, resultId));
+        throw new NotFoundException(String.format(
+            "Bad Event Result ID Pair [%d,%d]",
+            eventId,
+            resultId));
     }
 
     @Transactional
@@ -309,14 +324,17 @@ public class TournamentService {
     }
 
     public List<AwardsResult> getAwardsBySchool(long tournamentId) {
-        return em.createQuery("SELECT DISTINCT " +
-            "new org.nycfl.certificates.AwardsResult(r, r.school" +
-            ".name, e.name, e.eventType, r.school.id) " +
-            "FROM Event e " +
-            "LEFT JOIN e.results r " +
-            "WHERE e.tournament.id = ?1 " +
-            "AND r.place < e.medalCutoff " +
-            "ORDER BY r.school.name", AwardsResult.class)
+        return em.createQuery(
+                """
+                SELECT DISTINCT
+                new org.nycfl.certificates.AwardsResult(r, r.school
+                .name, e.name, e.eventType, r.school.id)
+                FROM Event e
+                LEFT JOIN e.results r
+                WHERE e.tournament.id = ?1
+                AND r.place < e.medalCutoff
+                ORDER BY r.school.name
+                """, AwardsResult.class)
             .setParameter(1, tournamentId)
             .getResultList();
     }
@@ -324,26 +342,23 @@ public class TournamentService {
     @Transactional
     public int updateSchoolContacts(InputStream file) {
         int i = 0;
-       try {
-            CSVParser parse = CSVParser.parse(file,
-              StandardCharsets.UTF_8,
-              CSVFormat.DEFAULT.withFirstRecordAsHeader()
-                .withAllowMissingColumnNames(true));
+        try {
+            CSVParser parse = CSVUtils.parse(file);
 
-            for (CSVRecord record : parse.getRecords()) {
-                String schoolContact = record.get("School Contact");
-                String additionalContactsString = record.get("Additional Contact");
+            for (CSVRecord csvRecord : parse.getRecords()) {
+                String schoolContact = csvRecord.get("School Contact");
+                String additionalContactsString = csvRecord.get("Additional Contact");
                 String[] additionalContacts = additionalContactsString.split(";");
-                long id = Long.parseLong(record.get("ID"));
+                long id = Long.parseLong(csvRecord.get("ID"));
                 School school = em.getReference(School.class, id);
                 em
-                  .createQuery("DELETE FROM SchoolEmail where school.id=?1")
-                  .setParameter(1, id)
-                  .executeUpdate();
+                    .createQuery("DELETE FROM SchoolEmail where school.id=?1")
+                    .setParameter(1, id)
+                    .executeUpdate();
                 i++;
                 em.persist(SchoolEmail.fromPrimaryEmail(school, schoolContact));
                 for (String additionalContact : additionalContacts) {
-                    if(!additionalContact.isBlank()) {
+                    if (!additionalContact.isBlank()) {
                         em.persist(SchoolEmail.fromSecondaryEmail(school, additionalContact));
                         i++;
                     }
@@ -358,17 +373,28 @@ public class TournamentService {
     }
 
     public List<AwardsResult> getAwardsBySchool(long tournamentId, Long schoolId) {
-        return em.createQuery("SELECT DISTINCT " +
-          "new org.nycfl.certificates.AwardsResult(r, r.school" +
-          ".name, e.name, e.eventType, r.school.id) " +
-          "FROM Event e " +
-          "LEFT JOIN e.results r " +
-          "WHERE e.tournament.id = ?1 " +
-          "AND r.place < e.medalCutoff " +
-          "AND r.school.id = ?2" +
-          " ORDER BY r.school.name", AwardsResult.class)
-          .setParameter(1, tournamentId)
-          .setParameter(2, schoolId)
-          .getResultList();
+        return em.createQuery(
+                """
+                SELECT DISTINCT 
+                new org.nycfl.certificates.AwardsResult(r, r.school
+                .name, e.name, e.eventType, r.school.id)
+                FROM Event e 
+                LEFT JOIN e.results r 
+                WHERE e.tournament.id = ?1 
+                AND r.place < e.medalCutoff 
+                AND r.school.id = ?2
+                 ORDER BY r.school.name
+                """, AwardsResult.class)
+            .setParameter(1, tournamentId)
+            .setParameter(2, schoolId)
+            .getResultList();
+    }
+
+    @Transactional
+    public Tournament abbreviateEvent(long eventId, String abbreviation) {
+        Event event = em.find(Event.class, eventId);
+        event.setAbbreviation(abbreviation);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
     }
 }

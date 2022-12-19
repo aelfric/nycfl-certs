@@ -22,6 +22,17 @@ class EnumResourceTest {
     }
 
     @Test
+    void getCertificateTypes() {
+        given()
+            .get("certificate_types")
+            .then()
+            .body(
+                containsString("Top Speaker"),
+                containsString("DEBATE_SPEAKER")
+            );
+    }
+
+    @Test
     void getElimTypes() {
         given()
             .get("elim_types")

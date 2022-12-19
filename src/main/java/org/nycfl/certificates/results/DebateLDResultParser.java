@@ -1,7 +1,9 @@
-package org.nycfl.certificates;
+package org.nycfl.certificates.results;
 
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.nycfl.certificates.EliminationRound;
+import org.nycfl.certificates.School;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -15,16 +17,16 @@ public class DebateLDResultParser implements ResultParser {
                                         InputStream inputStream) {
         CSVParser parse = getParser(inputStream);
         List<Result> results = new ArrayList<>();
-        for (CSVRecord record : getRecords(parse)) {
+        for (CSVRecord csvRecord : getRecords(parse)) {
             Result result = new Result();
-            result.name = getOrAlternateColumn(record, "Name","Name 1");
+            result.name = getOrAlternateColumn(csvRecord, "Name","Name 1");
             result.count = 1;
-            result.code = record.get("Code");
-            result.place = Integer.parseInt(getOrAlternateColumn(record,
+            result.code = csvRecord.get("Code");
+            result.place = Integer.parseInt(getOrAlternateColumn(csvRecord,
                 "Place", "Ranking").replace("T-"
                 ,""));
             try {
-                result.numWins = Integer.valueOf(getOrAlternateColumn(record,
+                result.numWins = Integer.valueOf(getOrAlternateColumn(csvRecord,
                     "WinPm",
                     "WinPr", "Win"));
             } catch (IllegalArgumentException e){

@@ -1,5 +1,7 @@
 package org.nycfl.certificates;
 
+import org.nycfl.certificates.results.Result;
+
 import javax.json.bind.annotation.JsonbCreator;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +31,13 @@ public class AwardsResult {
     }
 
     @JsonbCreator
-    public AwardsResult(Result result,
-                        String schoolName,
-                        String eventName,
-                        EventType eventType,
-                        long schoolId) {
-        this.id = result.id;
+    public AwardsResult(
+        Result result,
+        String schoolName,
+        String eventName,
+        EventType eventType,
+        long schoolId) {
+        this.id = result.getId();
         this.studentName = result.getName();
         this.place = result.getPlace();
         this.eliminationRound = result.getEliminationRound();

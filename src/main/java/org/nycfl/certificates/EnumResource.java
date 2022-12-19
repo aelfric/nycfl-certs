@@ -7,7 +7,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Path("/enums")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -19,8 +18,8 @@ public class EnumResource {
     public List<LabeledEnumDTO> getTypes(){
         return Arrays
             .stream(EventType.values())
-            .map(LabeledEnumDTO::new)
-            .collect(Collectors.toList());
+            .map(LabeledEnumDTO::fromLabeledEnum)
+            .toList();
     }
 
     @GET
@@ -28,8 +27,8 @@ public class EnumResource {
     public List<LabeledEnumDTO> getCertTypes(){
         return Arrays
             .stream(CertificateType.values())
-            .map(LabeledEnumDTO::new)
-            .collect(Collectors.toList());
+            .map(LabeledEnumDTO::fromLabeledEnum)
+            .toList();
     }
 
     @GET
@@ -37,18 +36,13 @@ public class EnumResource {
     public List<LabeledEnumDTO> getRounds(){
         return Arrays
             .stream(EliminationRound.values())
-            .map(LabeledEnumDTO::new)
-            .collect(Collectors.toList());
+            .map(LabeledEnumDTO::fromLabeledEnum)
+            .toList();
     }
 
-    public static class LabeledEnumDTO{
-        public final String label;
-        public final String value;
-
-        @SuppressWarnings("CdiInjectionPointsInspection")
-        public LabeledEnumDTO(LabeledEnum labeledEnum) {
-            this.label = labeledEnum.getLabel();
-            this.value = labeledEnum.getValue();
-        }
+    public record LabeledEnumDTO(String label, String value){
+      static LabeledEnumDTO fromLabeledEnum(LabeledEnum e){
+        return new LabeledEnumDTO(e.getLabel(), e.getValue());
+      }
     }
 }

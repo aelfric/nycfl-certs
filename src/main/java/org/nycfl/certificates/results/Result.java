@@ -1,4 +1,8 @@
-package org.nycfl.certificates;
+package org.nycfl.certificates.results;
+
+import org.nycfl.certificates.EliminationRound;
+import org.nycfl.certificates.Event;
+import org.nycfl.certificates.School;
 
 import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
@@ -85,7 +89,7 @@ public class Result {
     }
 
     public String getHtmlName(){
-        return name == null ? "" : name.replaceAll("&", "&amp;");
+        return name == null ? "" : name.replace("&", "&amp;");
     }
 
     public void setSchool(School school) {
@@ -97,8 +101,7 @@ public class Result {
     @Override
     public boolean equals(Object that){
         if(this == that) return true;
-        if(that instanceof Result) {
-            Result other = (Result) that;
+        if(that instanceof Result other) {
             return this.id == other.id && this.id != 0;
         } else {
             return false;
@@ -108,5 +111,13 @@ public class Result {
     @Override
     public int hashCode() {
         return 7;
+    }
+
+    public void setEliminationRound(EliminationRound eliminationRound) {
+        this.eliminationRound = eliminationRound;
+    }
+
+    public void setPlace(int place) {
+        this.place = place;
     }
 }

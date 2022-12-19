@@ -5,8 +5,8 @@ import org.nycfl.certificates.Tournament;
 
 import java.util.Map;
 
-public abstract class BaseAnimatedSlideBuilder {
-  public String buildSlidesPreview(Tournament tournament, Template template) {
+interface BaseAnimatedSlideBuilder {
+  default String buildSlidesPreview(Tournament tournament, Template template) {
     String slideBackgroundUrl = tournament.getSlideBackgroundUrl();
     return template.render(
         Map.of(
@@ -28,5 +28,5 @@ public abstract class BaseAnimatedSlideBuilder {
     return slideBackgroundUrl == null ? defaultValue : slideBackgroundUrl;
   }
 
-  abstract Map<String, String> buildSlides(Tournament tournament);
+  Map<String, String> buildSlides(Tournament tournament);
 }

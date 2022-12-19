@@ -17,12 +17,14 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.nycfl.certificates.results.Result;
 
 import javax.inject.Inject;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 import javax.transaction.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -100,12 +102,12 @@ class CertificatesResourceTest {
         .getSingleResult();
 
     givenASuperUser()
-        .body("{\n" +
-            "              \"name\": \"NYCFL First Regis\",\n" +
-            "              \"host\": \"Regis High School\",\n" +
-            "              \"date\": \"2020-09-26\"\n" +
-            "            }" +
-            "")
+        .body("""
+            {
+                          "name": "NYCFL First Regis",
+                          "host": "Regis High School",
+                          "date": "2020-09-26"
+                        }""")
         .contentType(MediaType.APPLICATION_JSON)
         .when()
         .post("/tournaments")
@@ -128,15 +130,15 @@ class CertificatesResourceTest {
     transaction.commit();
 
     givenASuperUser()
-            .body("{\n" +
-                    "  \"name\": \"Byram Hills Invitational\",\n" +
-                    "  \"host\": \"Byram Hills " +
-                    "High School\",\n" +
-                    "  \"date\": \"2020-10-10\",\n" +
-                    "  \"logoUrl\": \"https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG\",\n" +
-                    "  \"certificateHeadline\": \"Byram Hills Invitational Tournament\",\n" +
-                    "  \"signature\": \"Someone Else\"\n" +
-                    "}")
+            .body("""
+                {
+                  "name": "Byram Hills Invitational",
+                  "host": "Byram Hills High School",
+                  "date": "2020-10-10",
+                  "logoUrl": "https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG",
+                  "certificateHeadline": "Byram Hills Invitational Tournament",
+                  "signature": "Someone Else"
+                }""")
             .contentType(MediaType.APPLICATION_JSON)
             .pathParam("id", tournament.getId())
             .when()
@@ -159,7 +161,7 @@ class CertificatesResourceTest {
 
     givenASuperUser()
         .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                                 "Varsity Oralnterpretation\\nDuo " +
+                                 "Varsity Oral Interpretation\\nDuo " +
             "Interpretation\"}", tournament.getId()))
         .contentType(MediaType.APPLICATION_JSON)
         .when()
@@ -175,6 +177,50 @@ class CertificatesResourceTest {
     assertThat(numEvents, CoreMatchers.is(2L));
 
   }
+
+  @Test
+  void testAbbreviateEvent() throws HeuristicRollbackException, RollbackException,
+      HeuristicMixedException, SystemException, NotSupportedException {
+    transaction.begin();
+    Tournament tournament = testTournament();
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    givenASuperUser()
+        .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
+                                 "Varsity Oral Interpretation\\nDuo " +
+            "Interpretation\"}", tournament.getId()))
+        .contentType(MediaType.APPLICATION_JSON)
+        .when()
+        .post("/events");
+
+    Long evtId = entityManager
+        .createQuery("SELECT e.id FROM Event e WHERE e.tournament.id=?1",
+            Long.class)
+        .setMaxResults(1)
+        .setParameter(1, tournament.getId())
+        .getSingleResult();
+
+
+    givenASuperUser()
+        .queryParam("abbreviation","JV OI")
+        .pathParam("id", tournament.getId())
+        .pathParam("evtId",  evtId)
+        .contentType(MediaType.APPLICATION_JSON)
+        .when()
+        .post("/tournaments/{id}/events/{evtId}/abbreviate")
+        .then()
+        .statusCode(200)
+        .body(CoreMatchers.containsString("JV OI"));
+
+    String abbreviation = entityManager
+        .createQuery("SELECT e.abbreviation FROM Event e WHERE e.id=?1", String.class)
+        .setParameter(1, evtId)
+        .getSingleResult();
+
+    assertThat(abbreviation, CoreMatchers.is("JV OI"));
+
+  }
   @Test
   void testRequiresSuperuser() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
     transaction.begin();
@@ -184,7 +230,7 @@ class CertificatesResourceTest {
 
     givenARegularUser()
         .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                                 "Varsity Oralnterpretation\\nDuo " +
+                                 "Varsity Oral Interpretation\\nDuo " +
             "Interpretation\"}", tournament.getId()))
         .contentType(MediaType.APPLICATION_JSON)
         .when()
@@ -201,7 +247,7 @@ class CertificatesResourceTest {
 
     given()
         .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                                 "Varsity Oralnterpretation\\nDuo " +
+                                 "Varsity Oral Interpretation\\nDuo " +
             "Interpretation\"}", tournament.getId()))
         .contentType(MediaType.APPLICATION_JSON)
         .when()
@@ -325,11 +371,13 @@ class CertificatesResourceTest {
             .getSingleResult();
 
     assertAll(
-            ()->assertThat(quarterFinalist.eliminationRound,
+            ()->assertThat(
+                quarterFinalist.getEliminationRound(),
                     is(EliminationRound.QUARTER_FINALIST)),
-            ()->assertThat(semiFinalist.eliminationRound,
+            ()->assertThat(
+                semiFinalist.getEliminationRound(),
                     is(EliminationRound.SEMIFINALIST)),
-            ()->assertThat(finalist.eliminationRound,
+            ()->assertThat(finalist.getEliminationRound(),
                     is(EliminationRound.FINALIST))
     );
   }
@@ -397,11 +445,13 @@ class CertificatesResourceTest {
             .getSingleResult();
 
     assertAll(
-            ()->assertThat(quarterFinalist.eliminationRound,
+            ()->assertThat(
+                quarterFinalist.getEliminationRound(),
                     is(EliminationRound.QUARTER_FINALIST)),
-            ()->assertThat(semiFinalist.eliminationRound,
+            ()->assertThat(
+                semiFinalist.getEliminationRound(),
                     is(EliminationRound.SEMIFINALIST)),
-            ()->assertThat(finalist.eliminationRound,
+            ()->assertThat(finalist.getEliminationRound(),
                     is(EliminationRound.FINALIST))
     );
   }
@@ -436,7 +486,7 @@ class CertificatesResourceTest {
             .setParameter(1, "Brookline FE")
             .getSingleResult();
 
-    assertThat(topSpeaks.place, is(1));
+    assertThat(topSpeaks.getPlace(), is(1));
   }
 
   @Test
@@ -495,14 +545,13 @@ class CertificatesResourceTest {
         .delete("/tournaments/{id}/schools/{sid}")
         .then().statusCode(200);
 
-    assertThrows(NoResultException.class, () ->
-        entityManager
-            .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
-                    ".tournament.id = ?2",
-                Long.class)
-            .setParameter(1, "Regis")
-            .setParameter(2, tournament.getId())
-            .getSingleResult());
+    TypedQuery<Long> query = entityManager
+        .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
+                ".tournament.id = ?2",
+            Long.class)
+        .setParameter(1, "Regis")
+        .setParameter(2, tournament.getId());
+    assertThrows(NoResultException.class, query::getSingleResult);
   }
   @Test
   void testCannotDeleteSchoolWithResults() throws SystemException,
@@ -596,11 +645,12 @@ class CertificatesResourceTest {
           HeuristicRollbackException, HeuristicMixedException, RollbackException {
     transaction.begin();
     Tournament tournament1 = testTournament();
-    Tournament tournament2 = jsonb.fromJson("{\n" +
-        "          \"name\": \"NYCFL Hugh McEvoy\",\n" +
-        "          \"host\": \"Stuyvesant High School\",\n" +
-        "          \"date\": \"2020-10-03\"\n" +
-        "        }", Tournament.class);
+    Tournament tournament2 = jsonb.fromJson("""
+        {
+                  "name": "NYCFL Hugh McEvoy",
+                  "host": "Stuyvesant High School",
+                  "date": "2020-10-03"
+                }""", Tournament.class);
     entityManager.persist(tournament1);
     entityManager.persist(tournament2);
     transaction.commit();
@@ -651,12 +701,12 @@ class CertificatesResourceTest {
   }
 
   private Tournament testTournament() {
-    return jsonb.fromJson("" +
-        "{\n" +
-        "          \"name\": \"NYCFL First Regis\",\n" +
-        "          \"host\": \"Regis High School\",\n" +
-        "          \"date\": \"2020-09-26\"\n" +
-        "        }", Tournament.class);
+    return jsonb.fromJson("""
+        {
+                  "name": "NYCFL First Regis",
+                  "host": "Regis High School",
+                  "date": "2020-09-26"
+                }""", Tournament.class);
   }
 
   @Test
@@ -813,11 +863,11 @@ class CertificatesResourceTest {
         .contentType(MediaType.APPLICATION_JSON)
         .post("/tournaments/{id}/events/{evtId}/results/{resultId}/rename")
         .then()
-        .statusCode(200);;
+        .statusCode(200);
 
     Result result = entityManager.find(Result.class, resultId);
 
-    assertThat(result.name, is("Johnny Newname"));
+    assertThat(result.getName(), is("Johnny Newname"));
   }
 
   @Test
@@ -1081,11 +1131,20 @@ class CertificatesResourceTest {
             new ArrayList<MedalCount>() {
             }.getClass().getGenericSuperclass()
         );
-
+    final Tournament testTournament = entityManager.find(Tournament.class, tournament.getId());
+    final Map<String, Long> schoolMap = testTournament
+        .schools
+        .stream()
+        .collect(
+            Collectors.toMap(
+                School::getName,
+                School::getId
+            )
+        );
     assertThat(medalCounts, hasItems(
-        new MedalCount("Regis", 5, 0L),
-        new MedalCount("Bronx Science", 1, 0L),
-        new MedalCount("Convent of the Sacred Heart", 1, 0L)
+        new MedalCount("Regis", 5, schoolMap.get("Regis")),
+        new MedalCount("Bronx Science", 1, schoolMap.get("Bronx Science")),
+        new MedalCount("Convent of the Sacred Heart", 1, schoolMap.get("Convent of the Sacred Heart"))
     ));
   }
 }

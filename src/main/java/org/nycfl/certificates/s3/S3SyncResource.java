@@ -1,8 +1,9 @@
-package org.nycfl.certificates;
+package org.nycfl.certificates.s3;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
+import org.nycfl.certificates.MultipartBody;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
@@ -20,7 +21,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Path("/s3")
 @RolesAllowed({"basicuser", "superuser"})
@@ -64,7 +64,7 @@ public class S3SyncResource extends S3Resource {
             .stream()
             .sorted(Comparator.comparing(S3Object::lastModified).reversed())
             .map(o -> getPublicListing(o.key()))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private PublicListing getPublicListing(String objectName) {
