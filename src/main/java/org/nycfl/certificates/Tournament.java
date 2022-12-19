@@ -200,6 +200,12 @@ public class Tournament {
         this.line2 = updatedTournament.line2;
     }
 
+    public static Tournament copy(Tournament source){
+        final Tournament tournament = new Tournament();
+        tournament.merge(source);
+        return tournament;
+    }
+
     public String getStyleOverrides() {
         return styleOverrides2;
     }

@@ -56,9 +56,17 @@ public class CertificatesResource {
     @POST
     @Path("/tournaments")
     @RolesAllowed("superuser")
-    public Tournament createTournament(Tournament tournament) {
+    public Tournament createTournament(Tournament tournament, @QueryParam("sourceId") long srcTournamentId) {
 
-        return tournamentService.createTournament(tournament);
+        if(srcTournamentId > 0){
+            return tournamentService.copyTournament(srcTournamentId);
+        } else {
+            if(tournament != null) {
+                return tournamentService.createTournament(tournament);
+            } else {
+                throw new BadRequestException("No tournament stub provided");
+            }
+        }
     }
 
     @POST

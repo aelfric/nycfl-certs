@@ -7,6 +7,7 @@ import org.nycfl.certificates.results.Result;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
@@ -89,19 +90,29 @@ public class TournamentService {
     }
 
     public Tournament getTournament(Long tournamentId) {
-        Tournament tournament = em.createQuery(
-                "SELECT DISTINCT t FROM Tournament t LEFT JOIN FETCH t.events e WHERE t.id=?1",
-                Tournament.class).setParameter(1, tournamentId)
-            .getSingleResult();
-        em.createQuery(
-            """
-            SELECT DISTINCT e
-            FROM Event e 
-            LEFT JOIN FETCH e.results 
-            WHERE e.tournament=?1
-            """,
-            Event.class).setParameter(1, tournament).getResultList();
-        return tournament;
+        try {
+            Tournament tournament = em.createQuery(
+                    "SELECT DISTINCT t FROM Tournament t LEFT JOIN FETCH t.events e WHERE t.id=?1",
+                    Tournament.class
+                )
+                .setParameter(1, tournamentId)
+                .getSingleResult();
+
+            em.createQuery(
+                    """
+                        SELECT DISTINCT e
+                        FROM Event e
+                        LEFT JOIN FETCH e.results
+                        WHERE e.tournament=?1
+                        """,
+                    Event.class
+                )
+                .setParameter(1, tournament)
+                .getResultList();
+            return tournament;
+        } catch (NoResultException nre) {
+            throw new NotFoundException("Tournament " + tournamentId + " does not exist");
+        }
     }
 
     @Transactional
@@ -396,5 +407,14 @@ public class TournamentService {
         event.setAbbreviation(abbreviation);
         em.persist(event);
         return getTournament(event.getTournament().getId());
+    }
+
+    @Transactional
+    public Tournament copyTournament(long srcTournamentId) {
+        final Tournament srcTournament = this.getTournament(srcTournamentId);
+        final Tournament newTournament = Tournament.copy(srcTournament);
+        newTournament.setName("Copy of " + newTournament.getName());
+        em.persist(newTournament);
+        return newTournament;
     }
 }
