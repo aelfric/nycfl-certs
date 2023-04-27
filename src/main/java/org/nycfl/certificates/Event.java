@@ -2,9 +2,9 @@ package org.nycfl.certificates;
 
 import org.nycfl.certificates.results.Result;
 
-import javax.json.bind.annotation.JsonbProperty;
-import javax.json.bind.annotation.JsonbTransient;
-import javax.persistence.*;
+import jakarta.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbTransient;
+import jakarta.persistence.*;
 import java.io.InputStream;
 import java.util.*;
 import java.util.function.Function;

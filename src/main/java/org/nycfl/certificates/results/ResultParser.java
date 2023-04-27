@@ -6,7 +6,7 @@ import org.nycfl.certificates.CSVUtils;
 import org.nycfl.certificates.EliminationRound;
 import org.nycfl.certificates.School;
 
-import javax.ws.rs.BadRequestException;
+import jakarta.ws.rs.BadRequestException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;

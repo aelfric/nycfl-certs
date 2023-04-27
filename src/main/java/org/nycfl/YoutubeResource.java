@@ -13,11 +13,11 @@ import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
+import jakarta.annotation.security.RolesAllowed;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.io.*;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;

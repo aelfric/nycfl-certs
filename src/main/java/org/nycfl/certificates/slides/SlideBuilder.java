@@ -4,8 +4,8 @@ import io.quarkus.qute.Template;
 import org.nycfl.certificates.*;
 import org.nycfl.certificates.results.Result;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;

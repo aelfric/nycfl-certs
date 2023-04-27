@@ -2,7 +2,7 @@ package org.nycfl.certificates;
 
 import org.nycfl.certificates.results.Result;
 
-import javax.json.bind.annotation.JsonbCreator;
+import jakarta.json.bind.annotation.JsonbCreator;
 import java.util.ArrayList;
 import java.util.List;
 

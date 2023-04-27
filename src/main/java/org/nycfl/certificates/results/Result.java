@@ -4,8 +4,8 @@ import org.nycfl.certificates.EliminationRound;
 import org.nycfl.certificates.Event;
 import org.nycfl.certificates.School;
 
-import javax.json.bind.annotation.JsonbTransient;
-import javax.persistence.*;
+import jakarta.json.bind.annotation.JsonbTransient;
+import jakarta.persistence.*;
 
 @Entity
 public class Result {

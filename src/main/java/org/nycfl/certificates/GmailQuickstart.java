@@ -31,16 +31,16 @@ import com.google.api.services.gmail.model.Draft;
 import com.google.api.services.gmail.model.Message;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
-import javax.enterprise.context.ApplicationScoped;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
+import jakarta.activation.DataHandler;
+import jakarta.activation.FileDataSource;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import java.io.*;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
@@ -164,10 +164,10 @@ public class GmailQuickstart {
 
         multipart.addBodyPart(mimeBodyPart);
         email.setContent(multipart);
-        email.addRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(
+        email.addRecipients(jakarta.mail.Message.RecipientType.TO, InternetAddress.parse(
           primaryContact));
         if (!secondaryContacts.isBlank()) {
-            email.addRecipients(javax.mail.Message.RecipientType.CC, InternetAddress.parse(
+            email.addRecipients(jakarta.mail.Message.RecipientType.CC, InternetAddress.parse(
               secondaryContacts));
         }
         return email;
