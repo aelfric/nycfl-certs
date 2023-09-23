@@ -1,24 +1,26 @@
 package org.nycfl.certificates.s3;
 
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import org.apache.http.client.utils.URIBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
-import org.nycfl.certificates.MultipartBody;
+import org.jboss.resteasy.reactive.RestForm;
+import org.jboss.resteasy.reactive.multipart.FileUpload;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.List;
 
@@ -36,18 +38,23 @@ public class S3SyncResource extends S3Resource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("superuser")
-    public Response uploadFile(@MultipartForm MultipartBody formData) {
+    public Response uploadFile(@RestForm("file") FileUpload file) {
 
-        if (formData.fileName == null || formData.fileName.isEmpty()) {
+        if (file == null || file.fileName().isEmpty()) {
             return Response.status(Status.BAD_REQUEST).build();
         }
 
-        PutObjectResponse putResponse = s3.putObject(
-            buildPublicPutRequest(formData),
-            RequestBody.fromFile(uploadToTemp(formData.file)));
-        if (putResponse != null) {
-            return Response.ok().status(Status.CREATED).build();
-        } else {
+        try (var is = Files.newInputStream(file.uploadedFile())) {
+            PutObjectResponse putResponse = s3.putObject(
+                buildPublicPutRequest(file.fileName()),
+                RequestBody.fromFile(uploadToTemp(is)));
+            if (putResponse != null) {
+                return Response.ok().status(Status.CREATED).build();
+            } else {
+                return Response.serverError().build();
+            }
+
+        } catch (IOException e) {
             return Response.serverError().build();
         }
     }
@@ -81,14 +88,7 @@ public class S3SyncResource extends S3Resource {
         }
     }
 
-    public static class PublicListing {
-        public final URL url;
-        public final String objectName;
-
-        public PublicListing(URL url, String objectName) {
-            this.url = url;
-            this.objectName = objectName;
-        }
+    public record PublicListing(URL url, String objectName) {
     }
 
 }
