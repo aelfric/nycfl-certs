@@ -42,9 +42,8 @@ public interface ResultParser {
     default String  getOrAlternateColumn(CSVRecord csvRecord,
                                         String... names) {
         for (String name : names) {
-            try {
+            if(csvRecord.isMapped(name)){
                 return csvRecord.get(name);
-            } catch (IllegalArgumentException ignored) {
             }
         }
         throw new IllegalArgumentException("Could not find any of [" +
@@ -54,9 +53,9 @@ public interface ResultParser {
     default String getOrDefault(CSVRecord csvRecord,
                                 String name,
                                 String defaultVal) {
-        try {
+        if(csvRecord.isMapped(name)){
             return csvRecord.get(name);
-        } catch (IllegalArgumentException e) {
+        } else {
             return defaultVal;
         }
     }

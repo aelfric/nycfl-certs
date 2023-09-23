@@ -46,11 +46,11 @@ public class LiveStreamResponse {
   }
 
   public static class Builder {
-    public String title;
-    public String startTime;
-    public String endTime;
-    public String streamKey;
-    public String status;
+    private String title;
+    private String startTime;
+    private String endTime;
+    private String streamKey;
+    private String status;
     private String streamStatus;
     private String embedHtml;
     private String broadcastId;

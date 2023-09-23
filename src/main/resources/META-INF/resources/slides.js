@@ -1,5 +1,5 @@
 (function (slides) {
-    let currSlide = location.hash ? Number(location.hash.substr(1)) : 0;
+    let currSlide = location.hash ? Number(location.hash.substring(1)) : 0;
 
     function switchSlide() {
         console.log({currSlide});
