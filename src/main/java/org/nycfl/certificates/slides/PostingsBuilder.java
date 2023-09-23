@@ -40,31 +40,50 @@ public class PostingsBuilder implements BaseAnimatedSlideBuilder {
                   event
                       .getResults()
                       .stream()
-                      .filter(r -> breakLevel == r.getEliminationRound())
+                      .filter(r -> shouldPost(breakLevel, r))
                       .sorted(Comparator.comparing(Result::getCode))
                       .toList();
 
             if(!highestElimResults.isEmpty()) {
                 final AtomicInteger counter = new AtomicInteger();
                 final AtomicInteger slideCounter = new AtomicInteger();
-              final int i = event.getEventType() == EventType.SPEECH || event.getEventType() == EventType.CONGRESS ? 28 : 8;
-              Collection<List<Result>> subSlides = highestElimResults
+              final int i = event.getEventType() == EventType.SPEECH || event.getEventType() == EventType.CONGRESS ? 30 : 10;
+              final Map<EliminationRound, List<Result>> groupedByRound = highestElimResults
                   .stream()
-                  .collect(
-                    Collectors
-                      .groupingBy(it -> counter.getAndIncrement() / i)
-                  )
-                  .values();
+                  .collect(Collectors.groupingBy(Result::getEliminationRound));
+
+              final List<EliminationRound> rounds = groupedByRound.keySet()
+                  .stream()
+                  .sorted(Comparator.comparing(EliminationRound::ordinal).reversed())
+                  .toList();
+              for (EliminationRound round : rounds) {
+                Collection<List<Result>> subSlides = groupedByRound.get(round)
+                    .stream()
+                    .collect(
+                        Collectors.groupingBy(it -> counter.getAndIncrement() / i)
+                    )
+                    .values();
+                counter.set(0);
                 for (List<Result> subSlide : subSlides) {
                   slides.put(
                       slideName(event, slideCounter),
-                      renderSlide(event, breakLevel, subSlide)
+                      renderSlide(event, round, subSlide)
                   );
                 }
+              }
             }
           }
       }
     return slides;
+  }
+
+  private static boolean shouldPost(EliminationRound breakLevel, Result r) {
+    if(breakLevel == r.getEliminationRound()){
+      return true;
+    } else {
+      return breakLevel == EliminationRound.DOUBLE_OCTOFINALIST && r.getEliminationRound() == EliminationRound.PLAY_IN_BEFORE;
+    }
+
   }
 
   private String slideName(Event event, AtomicInteger slideCounter) {
