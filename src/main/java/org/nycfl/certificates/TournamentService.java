@@ -1,16 +1,16 @@
 package org.nycfl.certificates;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.jboss.logging.Logger;
 import org.nycfl.certificates.results.Result;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.transaction.Transactional;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class TournamentService {
+    private static final Logger LOG = Logger.getLogger(TournamentService.class);
+
     @Inject
     EntityManager em;
 
@@ -316,7 +318,7 @@ public class TournamentService {
         Result result = em.find(Result.class, resultId);
         if (result.getEvent().getId() == eventId) {
             School school = em.find(School.class, newSchoolId);
-            result.setSchool(school);
+            result.changeSchool(school);
             Event event = em.find(Event.class, eventId);
             return getTournament(event.getTournament().getId());
         }
@@ -332,22 +334,6 @@ public class TournamentService {
         Long tournamentId = event.getTournament().getId();
         em.remove(event);
         return getTournament(tournamentId);
-    }
-
-    public List<AwardsResult> getAwardsBySchool(long tournamentId) {
-        return em.createQuery(
-                """
-                SELECT DISTINCT
-                new org.nycfl.certificates.AwardsResult(r, r.school
-                .name, e.name, e.eventType, r.school.id)
-                FROM Event e
-                LEFT JOIN e.results r
-                WHERE e.tournament.id = ?1
-                AND r.place < e.medalCutoff
-                ORDER BY r.school.name
-                """, AwardsResult.class)
-            .setParameter(1, tournamentId)
-            .getResultList();
     }
 
     @Transactional
@@ -377,28 +363,10 @@ public class TournamentService {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Could not update contacts", e);
         }
 
         return i;
-    }
-
-    public List<AwardsResult> getAwardsBySchool(long tournamentId, Long schoolId) {
-        return em.createQuery(
-                """
-                SELECT DISTINCT 
-                new org.nycfl.certificates.AwardsResult(r, r.school
-                .name, e.name, e.eventType, r.school.id)
-                FROM Event e 
-                LEFT JOIN e.results r 
-                WHERE e.tournament.id = ?1 
-                AND r.place < e.medalCutoff 
-                AND r.school.id = ?2
-                 ORDER BY r.school.name
-                """, AwardsResult.class)
-            .setParameter(1, tournamentId)
-            .setParameter(2, schoolId)
-            .getResultList();
     }
 
     @Transactional

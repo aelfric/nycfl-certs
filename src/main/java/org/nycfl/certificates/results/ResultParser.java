@@ -6,7 +6,7 @@ import org.nycfl.certificates.CSVUtils;
 import org.nycfl.certificates.EliminationRound;
 import org.nycfl.certificates.School;
 
-import javax.ws.rs.BadRequestException;
+import jakarta.ws.rs.BadRequestException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -19,11 +19,7 @@ public interface ResultParser {
                                  InputStream inputStream);
 
     default List<CSVRecord> getRecords(CSVParser parse) {
-        try {
-            return parse.getRecords();
-        } catch (IOException ioException) {
-            throw new BadRequestException("Could not get CSV Records");
-        }
+        return parse.getRecords();
     }
 
     default CSVParser getParser(InputStream inputStream) {
@@ -42,9 +38,8 @@ public interface ResultParser {
     default String  getOrAlternateColumn(CSVRecord csvRecord,
                                         String... names) {
         for (String name : names) {
-            try {
+            if(csvRecord.isMapped(name)){
                 return csvRecord.get(name);
-            } catch (IllegalArgumentException ignored) {
             }
         }
         throw new IllegalArgumentException("Could not find any of [" +
@@ -54,9 +49,9 @@ public interface ResultParser {
     default String getOrDefault(CSVRecord csvRecord,
                                 String name,
                                 String defaultVal) {
-        try {
+        if(csvRecord.isMapped(name)){
             return csvRecord.get(name);
-        } catch (IllegalArgumentException e) {
+        } else {
             return defaultVal;
         }
     }

@@ -1,7 +1,7 @@
 package org.nycfl.certificates;
 
-import javax.json.bind.annotation.JsonbDateFormat;
-import javax.persistence.*;
+import jakarta.json.bind.annotation.JsonbDateFormat;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class Tournament {
                fetch = FetchType.LAZY,
                orphanRemoval = true,
                cascade = CascadeType.ALL)
-    List<School> schools = new ArrayList<>();
+    final List<School> schools = new ArrayList<>();
 
     @Lob
     private String styleOverrides2;

@@ -1,7 +1,7 @@
 package org.nycfl.certificates;
 
-import javax.json.bind.annotation.JsonbCreator;
-import javax.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbCreator;
+import jakarta.json.bind.annotation.JsonbProperty;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
