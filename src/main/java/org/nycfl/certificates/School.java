@@ -1,9 +1,10 @@
 package org.nycfl.certificates;
 
-import org.nycfl.certificates.results.Result;
-
 import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.*;
+import org.nycfl.certificates.results.Result;
+
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -19,7 +20,7 @@ public class School {
     private Tournament tournament;
     private int sweepsPoints = 0;
     @OneToMany(mappedBy = "school")
-    Set<Result> results;
+    Set<Result> results = new HashSet<>();
 
     @OneToMany(mappedBy = "school", fetch = FetchType.EAGER)
     Set<SchoolEmail> emails;

@@ -305,7 +305,7 @@ public class TournamentService {
         Result result = em.find(Result.class, resultId);
         if (result.getEvent().getId() == eventId) {
             School school = em.find(School.class, newSchoolId);
-            result.setSchool(school);
+            result.changeSchool(school);
             Event event = em.find(Event.class, eventId);
             return getTournament(event.getTournament().getId());
         }

@@ -9,8 +9,6 @@ import io.restassured.config.ObjectMapperConfig;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperDeserializationContext;
 import io.restassured.mapper.ObjectMapperSerializationContext;
-import io.restassured.specification.RequestSpecification;
-import io.smallrye.jwt.build.Jwt;
 import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterAll;
@@ -39,6 +37,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.nycfl.certificates.TestUtils.givenARegularUser;
+import static org.nycfl.certificates.TestUtils.givenASuperUser;
 
 @QuarkusTest
 @TestHTTPEndpoint(CertificatesResource.class)
@@ -51,16 +51,6 @@ class CertificatesResourceTest {
     UserTransaction transaction;
 
     static Jsonb jsonb;
-
-    private String getToken(Set<String> roles) {
-        return Jwt.preferredUserName("frank")
-            .groups(roles)
-            .issuer("https://server.example.com")
-            .audience("https://service.example.com")
-            .jws()
-            .keyId("1")
-            .sign();
-    }
 
     @BeforeAll
     public static void giveMeAMapper() {
@@ -121,6 +111,42 @@ class CertificatesResourceTest {
 
         assertThat(numTourneysAfter, CoreMatchers.is(numTourneysBefore + 1));
     }
+    @Test
+    void getAllTournaments() {
+
+
+        givenASuperUser()
+            .body("""
+                {
+                              "name": "NYCFL First Regis",
+                              "host": "Regis High School",
+                              "date": "2020-09-26"
+                            }""")
+            .contentType(MediaType.APPLICATION_JSON)
+            .when()
+            .post("/tournaments");
+
+        givenASuperUser()
+            .body("""
+                {
+                              "name": "NYCFL Sr. Raimonde Memorial",
+                              "host": "Xavier High School",
+                              "date": "2020-10-26"
+                            }""")
+            .contentType(MediaType.APPLICATION_JSON)
+            .when()
+            .post("/tournaments");
+
+        givenASuperUser()
+            .contentType(MediaType.APPLICATION_JSON)
+            .when()
+            .get("/tournaments")
+            .then()
+            .statusCode(200)
+            .body("$.size()", equalTo(2));
+
+
+    }
 
     @Test
     void testUpdateTournament() throws HeuristicRollbackException,
@@ -167,13 +193,8 @@ class CertificatesResourceTest {
             .when()
             .get("/tournaments/{id}")
             .then()
-            .statusCode(200);
-
-        Tournament tournamentAfterTest = entityManager.find(Tournament.class,
-            tournament.getId());
-
-        assertThat(tournamentAfterTest.getName(), CoreMatchers.is("NYCFL First Regis"));
-
+            .statusCode(200)
+            .body("name", equalTo("NYCFL First Regis"));
     }
 
     @Test
@@ -184,9 +205,7 @@ class CertificatesResourceTest {
         transaction.commit();
 
         givenASuperUser()
-            .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                "Varsity Oral Interpretation\\nDuo " +
-                "Interpretation\"}", tournament.getId()))
+            .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior Varsity Oral Interpretation\\nDuo Interpretation\"}", tournament.getId()))
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/events")
@@ -719,18 +738,6 @@ class CertificatesResourceTest {
             is(39 + 13));
     }
 
-    private RequestSpecification givenASuperUser() {
-        return given()
-            .auth()
-            .oauth2(getToken(Collections.singleton("superuser")));
-    }
-
-    private RequestSpecification givenARegularUser() {
-        return given()
-            .auth()
-            .oauth2(getToken(Collections.singleton("basicuser")));
-    }
-
     private Tournament testTournament() {
         return jsonb.fromJson("""
             {
@@ -738,22 +745,6 @@ class CertificatesResourceTest {
                       "host": "Regis High School",
                       "date": "2020-09-26"
                     }""", Tournament.class);
-    }
-
-    @Test
-    void listAllTournaments() {
-        Long numTourneys = entityManager
-            .createQuery("SELECT COUNT(t.id) FROM Tournament t", Long.class)
-            .getSingleResult();
-
-        List<Tournament> tournaments = givenARegularUser()
-            .get("/tournaments")
-            .body()
-            .as(
-                new ArrayList<Tournament>() {
-                }.getClass().getGenericSuperclass());
-
-        assertThat(tournaments, hasSize(Math.toIntExact(numTourneys)));
     }
 
     @Test
@@ -882,9 +873,10 @@ class CertificatesResourceTest {
         Long
             resultId =
             entityManager
-                .createQuery("Select id FROM Result r WHERE r.name = 'Carina" +
-                    " " +
-                    "Dillard'", Long.class).getSingleResult();
+                .createQuery(
+                    "Select id FROM Result r WHERE r.name = 'Carina Dillard'",
+                    Long.class
+                ).getSingleResult();
 
         givenASuperUser()
             .pathParam("evtId", jvOI.getId())
@@ -899,6 +891,49 @@ class CertificatesResourceTest {
         Result result = entityManager.find(Result.class, resultId);
 
         assertThat(result.getName(), is("Johnny Newname"));
+    }
+
+    @Test
+    void renameResultCanFail() throws SystemException, NotSupportedException,
+        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        transaction.begin();
+        Tournament tournament = testTournament();
+        Event jvOI = new Event();
+        jvOI.setName("Junior Varsity Oral Interpretation");
+        jvOI.setTournament(tournament);
+        tournament.events = Collections.singletonList(
+            jvOI
+        );
+        entityManager.persist(tournament);
+        transaction.commit();
+
+        givenASuperUser()
+            .pathParam("eventId", jvOI.getId())
+            .pathParam("tournamentId", tournament.getId())
+            .multiPart(new File("src/test/resources/JV-OI.csv"))
+            .post("/tournaments/{tournamentId}/events/{eventId}/results");
+
+        Long
+            resultId =
+            entityManager
+                .createQuery(
+                    "Select id FROM Result r WHERE r.name = 'Carina Dillard'",
+                    Long.class
+                ).getSingleResult();
+
+        givenASuperUser()
+            .pathParam("evtId", 0)
+            .pathParam("id", tournament.getId())
+            .pathParam("resultId", resultId)
+            .queryParam("name", "Johnny Newname")
+            .contentType(MediaType.APPLICATION_JSON)
+            .post("/tournaments/{id}/events/{evtId}/results/{resultId}/rename")
+            .then()
+            .statusCode(404);
+
+        Result result = entityManager.find(Result.class, resultId);
+
+        assertThat(result.getName(), is("Carina Dillard"));
     }
 
     @Test
@@ -972,6 +1007,71 @@ class CertificatesResourceTest {
     }
 
     @Test
+    void setCertificateType() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        transaction.begin();
+        Tournament tournament = testTournament();
+        Event jvOI = new Event();
+        jvOI.setName("Junior Varsity Oral Interpretation");
+        jvOI.setTournament(tournament);
+        tournament.events = Collections.singletonList(
+            jvOI
+        );
+        entityManager.persist(tournament);
+        transaction.commit();
+
+        givenASuperUser()
+            .pathParam("id", tournament.getId())
+            .pathParam("evtId", jvOI.getId())
+            .queryParam("type", CertificateType.QUALIFIER)
+            .contentType(MediaType.APPLICATION_JSON)
+            .when()
+            .post("/tournaments/{id}/events/{evtId}/cert_type")
+            .then()
+            .statusCode(200);
+
+        Event jvOIAfter = entityManager.find(Event.class, jvOI.getId());
+        assertThat(jvOIAfter.getCertificateType(), CoreMatchers.is(CertificateType.QUALIFIER));
+
+    }
+
+    @Test
+    void setStateQualCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        transaction.begin();
+        Tournament tournament = testTournament();
+        Event jvOI = new Event();
+        jvOI.setName("Junior Varsity Oral Interpretation");
+        jvOI.setTournament(tournament);
+        tournament.events = Collections.singletonList(
+            jvOI
+        );
+        entityManager.persist(tournament);
+        transaction.commit();
+
+        givenASuperUser()
+            .pathParam("eventId", jvOI.getId())
+            .pathParam("tournamentId", tournament.getId())
+            .multiPart(new File("src/test/resources/JV-OI.csv"))
+            .when()
+            .post("/tournaments/{tournamentId}/events/{eventId}/results")
+            .then()
+            .statusCode(200);
+
+        givenASuperUser()
+            .pathParam("id", tournament.getId())
+            .pathParam("evtId", jvOI.getId())
+            .body("{\"cutoff\":\"3\"}")
+            .contentType(MediaType.APPLICATION_JSON)
+            .when()
+            .post("/tournaments/{id}/events/{evtId}/quals")
+            .then()
+            .statusCode(200);
+
+        Event jvOIAfter = entityManager.find(Event.class, jvOI.getId());
+        assertThat(jvOIAfter.getHalfQuals(), CoreMatchers.is(3));
+
+    }
+
+    @Test
     void changeEventType() throws SystemException, NotSupportedException,
         HeuristicRollbackException, HeuristicMixedException, RollbackException {
         transaction.begin();
@@ -1020,7 +1120,7 @@ class CertificatesResourceTest {
             .queryParam("type", EventType.DEBATE_LD.name())
             .contentType(MediaType.APPLICATION_JSON)
             .when()
-            .delete("/tournaments/{tournamentId}/events/{eventId}/type")
+            .delete("/tournaments/{tournamentId}/events/{eventId}")
             .then()
             .statusCode(200);
 
