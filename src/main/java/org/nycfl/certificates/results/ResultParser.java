@@ -19,11 +19,7 @@ public interface ResultParser {
                                  InputStream inputStream);
 
     default List<CSVRecord> getRecords(CSVParser parse) {
-        try {
-            return parse.getRecords();
-        } catch (IOException ioException) {
-            throw new BadRequestException("Could not get CSV Records");
-        }
+        return parse.getRecords();
     }
 
     default CSVParser getParser(InputStream inputStream) {

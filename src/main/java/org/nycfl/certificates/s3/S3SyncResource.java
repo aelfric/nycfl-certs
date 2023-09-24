@@ -6,8 +6,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
-import org.apache.http.client.utils.URIBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -18,7 +18,6 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.Comparator;
@@ -27,6 +26,7 @@ import java.util.List;
 @Path("/s3")
 @RolesAllowed({"basicuser", "superuser"})
 public class S3SyncResource extends S3Resource {
+    private static final Logger LOG = Logger.getLogger(S3SyncResource.class);
     @Inject
     S3Client s3;
 
@@ -76,14 +76,17 @@ public class S3SyncResource extends S3Resource {
 
     private PublicListing getPublicListing(String objectName) {
         try {
-            URIBuilder builder = new URIBuilder();
-            builder.setScheme("https");
-            builder.setHost(cloudfrontHost);
-            builder.setPath(objectName);
 
-            URL url = builder.build().toURL();
-            return new PublicListing(url, objectName);
-        } catch (MalformedURLException | URISyntaxException e) {
+            return new PublicListing(
+                new URL(
+                    "https",
+                    cloudfrontHost,
+                    "/" + objectName
+                ),
+                objectName
+            );
+        } catch (MalformedURLException e) {
+            LOG.error("Could not construct resource URL", e);
             throw new InternalServerErrorException("Could not construct resource URL", e);
         }
     }
