@@ -4,8 +4,8 @@ import org.nycfl.certificates.EliminationRound;
 import org.nycfl.certificates.Event;
 import org.nycfl.certificates.School;
 
-import javax.json.bind.annotation.JsonbTransient;
-import javax.persistence.*;
+import jakarta.json.bind.annotation.JsonbTransient;
+import jakarta.persistence.*;
 
 @Entity
 public class Result {
@@ -92,8 +92,13 @@ public class Result {
         return name == null ? "" : name.replace("&", "&amp;");
     }
 
-    public void setSchool(School school) {
+    public void changeSchool(School school) {
         this.school.getResults().remove(this);
+        this.school = school;
+        school.getResults().add(this);
+    }
+
+    public void setSchool(School school){
         this.school = school;
         school.getResults().add(this);
     }
@@ -119,5 +124,9 @@ public class Result {
 
     public void setPlace(int place) {
         this.place = place;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

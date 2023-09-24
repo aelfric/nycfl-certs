@@ -2,9 +2,9 @@ package org.nycfl.certificates;
 
 import org.nycfl.certificates.results.Result;
 
-import javax.json.bind.annotation.JsonbProperty;
-import javax.json.bind.annotation.JsonbTransient;
-import javax.persistence.*;
+import jakarta.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbTransient;
+import jakarta.persistence.*;
 import java.io.InputStream;
 import java.util.*;
 import java.util.function.Function;
@@ -29,7 +29,7 @@ public class Event {
                cascade = CascadeType.ALL,
                orphanRemoval = true)
     @OrderBy("place desc ")
-    private List<Result> results = new ArrayList<>();
+    private final List<Result> results = new ArrayList<>();
 
     @ManyToOne(optional = false)
     @JsonbTransient
@@ -186,6 +186,7 @@ public class Event {
         results.clear();
     }
 
+    @SuppressWarnings("java:S3358")
     public String formatResult(Result result) {
         return switch (getCertificateType()) {
             case PLACEMENT, DEBATE_SPEAKER, CONGRESS_PO -> getEventType()

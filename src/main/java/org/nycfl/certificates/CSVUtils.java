@@ -12,7 +12,7 @@ public class CSVUtils {
 
   }
 
-  private static final CSVFormat CSV_FORMAT = CSVFormat.Builder
+  public static final CSVFormat CSV_FORMAT = CSVFormat.Builder
       .create(CSVFormat.DEFAULT)
       .setHeader()
       .setSkipHeaderRecord(true)

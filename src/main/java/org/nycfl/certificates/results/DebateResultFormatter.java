@@ -8,7 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class DebateResultFormatter implements ResultFormatter{
-    Map<Integer, String> placeMap = Map.of(
+    static final Map<Integer, String> PLACE_MAP = Map.of(
         1,"Champion",
         2, "Finalist");
 
@@ -23,7 +23,7 @@ public class DebateResultFormatter implements ResultFormatter{
             if (event.getPlacementCutoff() > 1) {
                 return Ordinals.ofInt(result.place) + " Place";
             } else {
-                return placeMap.get(result.place);
+                return PLACE_MAP.get(result.place);
             }
         } else {
             return result.eliminationRound.label;

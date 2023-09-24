@@ -2,7 +2,6 @@ package org.nycfl.certificates.s3;
 
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.nycfl.certificates.MultipartBody;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
@@ -16,10 +15,10 @@ public abstract class S3Resource {
     @ConfigProperty(name = "bucket.name")
     String bucketName;
 
-    protected PutObjectRequest buildPublicPutRequest(MultipartBody formData) {
+    protected PutObjectRequest buildPublicPutRequest(String fileName) {
         return PutObjectRequest.builder()
                 .bucket(bucketName)
-                .key(formData.fileName)
+                .key(fileName)
                 .acl(ObjectCannedACL.PUBLIC_READ)
                 .build();
     }

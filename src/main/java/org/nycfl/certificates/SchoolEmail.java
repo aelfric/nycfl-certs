@@ -1,8 +1,8 @@
 package org.nycfl.certificates;
 
-import javax.json.bind.annotation.JsonbProperty;
-import javax.json.bind.annotation.JsonbTransient;
-import javax.persistence.*;
+import jakarta.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbTransient;
+import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
