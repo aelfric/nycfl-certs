@@ -20,7 +20,7 @@ public class School {
     private Tournament tournament;
     private int sweepsPoints = 0;
     @OneToMany(mappedBy = "school")
-    Set<Result> results = new HashSet<>();
+    final Set<Result> results = new HashSet<>();
 
     @OneToMany(mappedBy = "school", fetch = FetchType.EAGER)
     Set<SchoolEmail> emails;

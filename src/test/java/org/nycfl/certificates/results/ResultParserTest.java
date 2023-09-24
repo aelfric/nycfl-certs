@@ -5,25 +5,14 @@ import org.apache.commons.csv.CSVRecord;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.nycfl.certificates.CSVUtils;
-import org.nycfl.certificates.EliminationRound;
-import org.nycfl.certificates.School;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ResultParserTest {
-    ResultParser rp = new ResultParser() {
-
-        @Override
-        public List<Result> parseResultsCSV(Map<String, School> schoolsMap, EliminationRound eliminationRound, InputStream inputStream) {
-            return null;
-        }
-    };
+    final ResultParser rp = (schoolsMap, eliminationRound, inputStream) -> null;
 
     @Test
     void canHandleAlternateColumnNames() throws IOException {

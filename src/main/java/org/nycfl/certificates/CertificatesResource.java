@@ -3,19 +3,19 @@ package org.nycfl.certificates;
 import io.quarkus.qute.Template;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
-import org.jboss.resteasy.reactive.RestForm;
-import org.jboss.resteasy.reactive.multipart.FileUpload;
-import org.nycfl.certificates.slides.PostingsBuilder;
-import org.nycfl.certificates.slides.SlideBuilder;
-
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
+import org.jboss.logging.Logger;
+import org.jboss.resteasy.reactive.RestForm;
+import org.jboss.resteasy.reactive.multipart.FileUpload;
+import org.nycfl.certificates.slides.PostingsBuilder;
+import org.nycfl.certificates.slides.SlideBuilder;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -31,6 +31,10 @@ import java.util.stream.Collectors;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CertificatesResource {
+
+    private static final Logger LOG = Logger.getLogger(CertificatesResource.class);
+
+
     @Inject
     TournamentService tournamentService;
 
@@ -112,8 +116,7 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{tournamentId}/events/{eventId}/results")
-    public Tournament clearResults(@PathParam("eventId") int eventId,
-                                   @PathParam("tournamentId") long tournamentId) {
+    public Tournament clearResults(@PathParam("eventId") int eventId) {
         return tournamentService.clearResults(eventId);
     }
 
@@ -121,8 +124,7 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{tournamentId}/events/{eventId}")
-    public Tournament deleteEvent(@PathParam("eventId") int eventId,
-                                  @PathParam("tournamentId") long tournamentId) {
+    public Tournament deleteEvent(@PathParam("eventId") int eventId) {
 
         return tournamentService.deleteEvent(eventId);
     }
@@ -202,7 +204,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/type")
     public Tournament setEventType(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @QueryParam("type") EventType eventType
     ) {
@@ -214,7 +215,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/rename")
     public Tournament renameEvent(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @QueryParam("name") String newName
     ) {
@@ -226,7 +226,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/abbreviate")
     public Tournament abbreviateEvent(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @QueryParam("abbreviation") String abbreviation
     ) {
@@ -238,7 +237,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/results/{resultId}/rename")
     public Tournament renameCompetitor(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @PathParam("resultId") long resultId,
         @QueryParam("name") @DefaultValue("") String newName
@@ -251,7 +249,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/results/{resultId}/school")
     public Tournament switchCompetitorSchool(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @PathParam("resultId") long resultId,
         @QueryParam("schoolId") long newSchool
@@ -263,7 +260,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/rounds")
     public Tournament setEventType(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @QueryParam("count") int count
     ) {
@@ -275,7 +271,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/cert_type")
     public Tournament setCertificateType(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @QueryParam("type") CertificateType certificateType
     ) {
@@ -287,7 +282,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/placement")
     public Tournament setPlacementCutoff(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         CutoffRequest cutoffRequest
     ) {
@@ -299,7 +293,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/cutoff")
     public Tournament setCertificateCutoff(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         CutoffRequest cutoffRequest
     ) {
@@ -311,7 +304,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/medal")
     public Tournament setMedalCutoff(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         CutoffRequest cutoffRequest
     ) {
@@ -323,7 +315,6 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/quals")
     public Tournament setHalfQuals(
-        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         CutoffRequest cutoffRequest
     ) {
@@ -365,7 +356,7 @@ public class CertificatesResource {
                 }
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            LOG.error("Could not generate index file", ex);
         }
         return out.toString();
     }

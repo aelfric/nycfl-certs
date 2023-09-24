@@ -51,7 +51,7 @@ public class Tournament {
                fetch = FetchType.LAZY,
                orphanRemoval = true,
                cascade = CascadeType.ALL)
-    List<School> schools = new ArrayList<>();
+    final List<School> schools = new ArrayList<>();
 
     @Lob
     private String styleOverrides2;

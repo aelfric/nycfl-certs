@@ -29,7 +29,7 @@ public class Event {
                cascade = CascadeType.ALL,
                orphanRemoval = true)
     @OrderBy("place desc ")
-    private List<Result> results = new ArrayList<>();
+    private final List<Result> results = new ArrayList<>();
 
     @ManyToOne(optional = false)
     @JsonbTransient
@@ -186,6 +186,7 @@ public class Event {
         results.clear();
     }
 
+    @SuppressWarnings("java:S3358")
     public String formatResult(Result result) {
         return switch (getCertificateType()) {
             case PLACEMENT, DEBATE_SPEAKER, CONGRESS_PO -> getEventType()

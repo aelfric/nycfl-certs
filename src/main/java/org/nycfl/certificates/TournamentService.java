@@ -1,15 +1,16 @@
 package org.nycfl.certificates;
 
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.nycfl.certificates.results.Result;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.jboss.logging.Logger;
+import org.nycfl.certificates.results.Result;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -20,6 +21,8 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class TournamentService {
+    private static final Logger LOG = Logger.getLogger(TournamentService.class);
+
     @Inject
     EntityManager em;
 
@@ -96,8 +99,8 @@ public class TournamentService {
         em.createQuery(
             """
             SELECT DISTINCT e
-            FROM Event e 
-            LEFT JOIN FETCH e.results 
+            FROM Event e
+            LEFT JOIN FETCH e.results
             WHERE e.tournament=?1
             """,
             Event.class).setParameter(1, tournament).getResultList();
@@ -350,7 +353,7 @@ public class TournamentService {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Could not update contacts", e);
         }
 
         return i;
