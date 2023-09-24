@@ -323,22 +323,6 @@ public class TournamentService {
         return getTournament(tournamentId);
     }
 
-    public List<AwardsResult> getAwardsBySchool(long tournamentId) {
-        return em.createQuery(
-                """
-                SELECT DISTINCT
-                new org.nycfl.certificates.AwardsResult(r, r.school
-                .name, e.name, e.eventType, r.school.id)
-                FROM Event e
-                LEFT JOIN e.results r
-                WHERE e.tournament.id = ?1
-                AND r.place < e.medalCutoff
-                ORDER BY r.school.name
-                """, AwardsResult.class)
-            .setParameter(1, tournamentId)
-            .getResultList();
-    }
-
     @Transactional
     public int updateSchoolContacts(InputStream file) {
         int i = 0;
@@ -370,24 +354,6 @@ public class TournamentService {
         }
 
         return i;
-    }
-
-    public List<AwardsResult> getAwardsBySchool(long tournamentId, Long schoolId) {
-        return em.createQuery(
-                """
-                SELECT DISTINCT 
-                new org.nycfl.certificates.AwardsResult(r, r.school
-                .name, e.name, e.eventType, r.school.id)
-                FROM Event e 
-                LEFT JOIN e.results r 
-                WHERE e.tournament.id = ?1 
-                AND r.place < e.medalCutoff 
-                AND r.school.id = ?2
-                 ORDER BY r.school.name
-                """, AwardsResult.class)
-            .setParameter(1, tournamentId)
-            .setParameter(2, schoolId)
-            .getResultList();
     }
 
     @Transactional

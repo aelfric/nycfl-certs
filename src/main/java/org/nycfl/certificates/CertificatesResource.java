@@ -13,16 +13,13 @@ import org.nycfl.certificates.slides.PostingsBuilder;
 import org.nycfl.certificates.slides.SlideBuilder;
 
 import jakarta.inject.Inject;
-import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -410,43 +407,6 @@ public class CertificatesResource {
     @Path("/tournaments/{id}/medals")
     public List<MedalCount> getMedalCount(@PathParam("id") long tournamentId) {
         return tournamentService.getMedalCount(tournamentId);
-    }
-
-    @GET
-    @Path("/tournaments/{id}/awards_sheet")
-    public List<AwardsResult> getAwardsSheet(@PathParam("id") long tournamentId) {
-        return tournamentService.getAwardsBySchool(tournamentId);
-    }
-
-    @Inject
-    GmailQuickstart gmailQuickstart;
-
-    @Inject
-    Template emailText;
-
-    @POST
-    @Path("/tournaments/{id}/awards_sheet")
-    public String draftAwardsSheetEmails(@PathParam("id") long tournamentId) {
-        List<School> schools = tournamentService.getSchools(tournamentId);
-        int count = 0;
-        for (School school : schools) {
-            List<AwardsResult> awardsBySchool =
-                tournamentService.getAwardsBySchool(tournamentId, school.getId());
-            AwardsResults awardsResults = new AwardsResults(awardsBySchool, school.getName());
-            File entity = awardsResults.toSpreadsheet();
-            try {
-                count += gmailQuickstart.doDraft(entity, school.emails,
-                    emailText
-                        .data("school", school.getName())
-                        .render()
-                );
-            } catch (IOException | MessagingException | GeneralSecurityException e) {
-                throw new BadRequestException(e);
-            }
-        }
-
-
-        return String.format("\"Drafted %d emails\"", count);
     }
 
     @POST
