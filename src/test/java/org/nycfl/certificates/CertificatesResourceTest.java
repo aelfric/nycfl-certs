@@ -11,10 +11,7 @@ import io.restassured.mapper.ObjectMapperDeserializationContext;
 import io.restassured.mapper.ObjectMapperSerializationContext;
 import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.nycfl.certificates.results.Result;
 
 import jakarta.inject.Inject;
@@ -35,6 +32,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
+import static org.jboss.resteasy.reactive.RestResponse.StatusCode.BAD_REQUEST;
+import static org.jboss.resteasy.reactive.RestResponse.StatusCode.NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.nycfl.certificates.TestUtils.givenARegularUser;
@@ -197,12 +196,104 @@ class CertificatesResourceTest {
             .body("name", equalTo("NYCFL First Regis"));
     }
 
-    @Test
-    void testCreateEvents() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
-        transaction.begin();
-        Tournament tournament = testTournament();
-        entityManager.persist(tournament);
-        transaction.commit();
+  @Test
+  @DisplayName("Clone a tournament that has been customized")
+  void testCloneTournament() throws HeuristicRollbackException,
+          RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    transaction.begin();
+    Tournament tournament = testTournament();
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    givenASuperUser()
+            .body("""
+                {
+                  "name": "Byram Hills Invitational",
+                  "host": "Byram Hills High School",
+                  "date": "2020-10-10",
+                  "logoUrl": "https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG",
+                  "certificateHeadline": "Byram Hills Invitational Tournament",
+                  "signature": "Someone Else"
+                }""")
+            .contentType(MediaType.APPLICATION_JSON)
+            .pathParam("id", tournament.getId())
+            .when()
+            .post("/tournaments/{id}")
+            .then()
+            .statusCode(200);
+
+    givenASuperUser()
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("sourceId", tournament.getId())
+        .when()
+        .post("/tournaments")
+        .then()
+        .statusCode(200)
+        .body(
+            CoreMatchers.containsString("Copy of Byram Hills Invitational"),
+            CoreMatchers.containsString("Someone Else")
+        );
+  }
+  @Test
+  @DisplayName("Clone a tournament that has not been customized")
+  void testCloneTournament2() throws HeuristicRollbackException,
+          RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    transaction.begin();
+    Tournament tournament = testTournament();
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    givenASuperUser()
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("sourceId", tournament.getId())
+        .when()
+        .post("/tournaments")
+        .then()
+        .statusCode(200)
+        .body(
+            CoreMatchers.containsString("Copy of " + tournament.getName())
+        );
+  }
+  @Test
+  @DisplayName("Cannot clone a tournament with an invalid ID")
+  void testBadCloneTournament() throws HeuristicRollbackException,
+          RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    transaction.begin();
+    Tournament tournament = testTournament();
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    givenASuperUser()
+        .contentType(MediaType.APPLICATION_JSON)
+        .queryParam("sourceId", 999)
+        .when()
+        .post("/tournaments")
+        .then()
+        .statusCode(NOT_FOUND);
+  }
+
+  @Test
+  @DisplayName("Cannot call create tournament with no sourceID or payload")
+  void testBadCloneTournament2() throws HeuristicRollbackException,
+          RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    transaction.begin();
+    Tournament tournament = testTournament();
+    entityManager.persist(tournament);
+    transaction.commit();
+
+    givenASuperUser()
+        .contentType(MediaType.APPLICATION_JSON)
+        .when()
+        .post("/tournaments")
+        .then()
+        .statusCode(BAD_REQUEST);
+  }
+  @Test
+  void testCreateEvents() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    transaction.begin();
+    Tournament tournament = testTournament();
+    entityManager.persist(tournament);
+    transaction.commit();
 
         givenASuperUser()
             .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior Varsity Oral Interpretation\\nDuo Interpretation\"}", tournament.getId()))
