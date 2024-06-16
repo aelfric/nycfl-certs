@@ -3,7 +3,7 @@
         <img alt="The tournament logo" src="{tournament.logoUrl ?: "/nycfl-logo.svg"}" height="100px"/>
         <p class="nycfl">{tournament.certificateHeadline ?: "New York Catholic Forensic League"}</p>
         <p class="award_certificate">{result.placeString}</p>
-        {#tournament_details /}
+        {#tournament_details tournament=tournament /}
         <p class="name">{result.name}</p>
         <p class="before_text">from</p>
         <p class="school">{result.school.name}</p>

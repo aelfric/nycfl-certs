@@ -8,15 +8,15 @@
 {#if result.place < event.certificateCutoff }
 <div style="overflow: hidden; height: 8.5in; width: 11in; padding: 0.5in">
     {#if event.certificateType eq CertificateType:DEBATE_SPEAKER }
-    {#debate_speaker /}
+    {#debate_speaker result=result tournament=tournament event=event /}
     {#else if event.certificateType eq CertificateType:PLACEMENT }
-    {#placement /}
+    {#placement result=result tournament=tournament event=event /}
     {#else if event.certificateType eq CertificateType:DEBATE_RECORD }
-    {#record /}
+    {#record result=result tournament=tournament event=event /}
     {#else if event.certificateType eq CertificateType:QUALIFIER }
-    {#qualifier /}
+    {#qualifier result=result tournament=tournament event=event /}
     {#else if event.certificateType eq CertificateType:CONGRESS_PO }
-    {#po /}
+    {#po result=result tournament=tournament event=event /}
     {/if }
 </div>
 <div style="page-break-after: always; visibility: hidden"></div>
