@@ -12,13 +12,14 @@
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <quarkus-plugin.version>3.11.1</quarkus-plugin.version>
+    <quarkus-plugin.version>3.14.1</quarkus-plugin.version>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.11.1</quarkus.platform.version>
+    <quarkus.platform.version>3.14.1</quarkus.platform.version>
     <surefire-plugin.version>3.2.3</surefire-plugin.version>
-    <quarkus-amazon-services.version>2.5.1</quarkus-amazon-services.version>
-    <sha1></sha1>
+    <failsafe-plugin.version>3.5.0</failsafe-plugin.version>
+    <quarkus-amazon-services.version>2.16.2</quarkus-amazon-services.version>
+    <sha1/>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -183,7 +184,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>${surefire-plugin.version}</version>
+            <version>${failsafe-plugin.version}</version>
             <executions>
               <execution>
                 <goals>
