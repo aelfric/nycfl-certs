@@ -18,6 +18,8 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.Comparator;
@@ -76,16 +78,16 @@ public class S3SyncResource extends S3Resource {
 
     private PublicListing getPublicListing(String objectName) {
         try {
-
             return new PublicListing(
-                new URL(
-                    "https",
-                    cloudfrontHost,
-                    "/" + objectName
-                ),
+                    new URI(
+                            "https",
+                            cloudfrontHost,
+                            "/" + objectName,
+                            null
+                    ).toURL(),
                 objectName
             );
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | URISyntaxException e) {
             LOG.error("Could not construct resource URL", e);
             throw new InternalServerErrorException("Could not construct resource URL", e);
         }
