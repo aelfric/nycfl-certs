@@ -17,7 +17,7 @@ public class CSVUtils {
       .setHeader()
       .setSkipHeaderRecord(true)
       .setAllowMissingColumnNames(true)
-      .build();
+      .get();
 
   public static CSVParser parse(InputStream inputStream) throws IOException {
     return CSVParser.parse(inputStream, StandardCharsets.UTF_8, CSV_FORMAT);
