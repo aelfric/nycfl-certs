@@ -1,19 +1,19 @@
 @font-face {
     font-family: "Olde English";
-    src: url("/OldeEnglish/OldeEnglish.woff2") format('woff2')
+    src: url("/backend-assets/OldeEnglish/OldeEnglish.woff2") format('woff2')
 }
 @font-face {
     font-family: "League Script";
-    src: url("/league-script/LeagueScript.woff2") format('woff2')
+    src: url("/backend-assets/league-script/LeagueScript.woff2") format('woff2')
 }
 @font-face {
     font-family: "Alike Angular";
-    src: url("/AlikeAngular/AlikeAngular-Regular.woff2") format('woff2')
+    src: url("/backend-assets/AlikeAngular/AlikeAngular-Regular.woff2") format('woff2')
 }
 
 @font-face {
     font-family: "Oswald SemiBold";
-    src: url("/Oswald/static/Oswald-SemiBold.woff2") format('woff2')
+    src: url("/backend-assets/Oswald/static/Oswald-SemiBold.woff2") format('woff2')
 }
 
 body {
