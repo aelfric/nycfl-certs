@@ -1,7 +1,7 @@
 
 @font-face {
     font-family: "League Gothic";
-    src: url("/LeagueGothic/LeagueGothic-Regular.woff2") format('woff2')
+    src: url("/backend-assets/LeagueGothic/LeagueGothic-Regular.woff2") format('woff2')
 }
 
 html,
