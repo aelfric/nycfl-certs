@@ -13,6 +13,7 @@ updates:
       quarkus:
         patterns: 
           - "io.quarkus:*"
+          - "io.quarkus.platform:*"
     reviewers:
       - "aelfric"
   - package-ecosystem: "github-actions" # See documentation for possible values
