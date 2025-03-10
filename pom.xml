@@ -18,7 +18,7 @@
     <quarkus.platform.version>3.19.1</quarkus.platform.version>
     <surefire-plugin.version>3.5.2</surefire-plugin.version>
     <failsafe-plugin.version>3.5.2</failsafe-plugin.version>
-    <quarkus-amazon-services.version>3.2.0</quarkus-amazon-services.version>
+    <quarkus-amazon-services.version>3.3.0</quarkus-amazon-services.version>
     <sha1/>
   </properties>
   <dependencyManagement>
