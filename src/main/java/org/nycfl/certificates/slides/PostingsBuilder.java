@@ -47,7 +47,8 @@ public class PostingsBuilder implements BaseAnimatedSlideBuilder {
             if(!highestElimResults.isEmpty()) {
                 final AtomicInteger counter = new AtomicInteger();
                 final AtomicInteger slideCounter = new AtomicInteger();
-              final int i = event.getEventType() == EventType.SPEECH ? 30 : 10;
+//              final int i = event.getEventType() == EventType.SPEECH ? 30 : 10
+              final int i = 30;
               final Map<EliminationRound, List<Result>> groupedByRound = highestElimResults
                   .stream()
                   .collect(Collectors.groupingBy(Result::getEliminationRound));
