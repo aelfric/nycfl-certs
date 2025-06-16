@@ -12,10 +12,10 @@
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <quarkus-plugin.version>3.23.0</quarkus-plugin.version>
+    <quarkus-plugin.version>3.23.2</quarkus-plugin.version>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.23.0</quarkus.platform.version>
+    <quarkus.platform.version>3.23.2</quarkus.platform.version>
     <surefire-plugin.version>3.5.3</surefire-plugin.version>
     <failsafe-plugin.version>3.5.3</failsafe-plugin.version>
     <quarkus-amazon-services.version>3.7.1</quarkus-amazon-services.version>
