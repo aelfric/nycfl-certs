@@ -19,6 +19,7 @@ public class Event {
     private String name;
 
     private String abbreviation;
+    private int entriesPerPostingSlide;
 
     public List<Result> getResults() {
         return results;
@@ -237,5 +238,17 @@ public class Event {
 
     public void setAbbreviation(String abbreviation) {
         this.abbreviation = abbreviation;
+    }
+
+    public int getEntriesPerPostingSlide() {
+        if(entriesPerPostingSlide > 0) {
+            return entriesPerPostingSlide;
+        } else {
+            return eventType == EventType.SPEECH ? 30 : 10;
+        }
+    }
+
+    public void setEntriesPerPostingSlide(int entriesPerPostingSlide) {
+        this.entriesPerPostingSlide = entriesPerPostingSlide;
     }
 }

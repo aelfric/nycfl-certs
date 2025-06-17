@@ -7,8 +7,7 @@
   <properties>
     <compiler-plugin.version>3.14.0</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.release>24</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus-plugin.version>3.23.2</quarkus-plugin.version>
@@ -16,8 +15,9 @@
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>3.23.2</quarkus.platform.version>
     <surefire-plugin.version>3.5.3</surefire-plugin.version>
-    <failsafe-plugin.version>3.5.3</failsafe-plugin.version>
+    <failsafe-plugin.version>3.0.0</failsafe-plugin.version>
     <quarkus-amazon-services.version>3.8.0</quarkus-amazon-services.version>
+    <sha1/>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -111,6 +111,12 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jacoco</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.instancio</groupId>
+      <artifactId>instancio-junit</artifactId>
+      <version>5.4.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
