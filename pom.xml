@@ -5,6 +5,7 @@
   <artifactId>nycfl-certs</artifactId>
   <version>3.0.2-${sha1}-SNAPSHOT</version>
   <properties>
+    <sha1/>
     <compiler-plugin.version>3.14.0</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>21</maven.compiler.source>
@@ -34,6 +35,11 @@
         <version>${quarkus-amazon-services.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>annotations</artifactId>
+        <version>3.0.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
