@@ -2,83 +2,68 @@ package org.nycfl.certificates.results;
 
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.nycfl.certificates.CSVUtils;
 
-import java.io.IOException;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
 class ResultParserTest {
     final ResultParser rp = (schoolsMap, eliminationRound, inputStream) -> null;
 
     @Test
-    void canHandleAlternateColumnNames() throws IOException {
+    void canHandleAlternateColumnNames() throws Exception {
         try (final CSVParser parse = CSVParser.parse(
             """
                 col1,col2
                 "abc","def"
                 """, CSVUtils.CSV_FORMAT
         )) {
-            final CSVRecord strings = parse.getRecords().get(0);
+            final CSVRecord strings = parse.getRecords().getFirst();
 
-            assertThat(
-                rp.getOrAlternateColumn(strings, "col3", "col2"),
-                CoreMatchers.is("def")
-            );
+            assertThat(rp.getOrAlternateColumn(strings, "col3", "col2")).isEqualTo("def");
         }
     }
 
     @Test
-    void canGetNamedColumn() throws IOException {
+    void canGetNamedColumn() throws Exception {
         try (final CSVParser parse = CSVParser.parse(
             """
                 col1,col2
                 "abc","def"
                 """, CSVUtils.CSV_FORMAT
         )) {
-            final CSVRecord strings = parse.getRecords().get(0);
+            final CSVRecord strings = parse.getRecords().getFirst();
 
-            assertThat(
-                rp.getOrAlternateColumn(strings, "col1"),
-                CoreMatchers.is("abc")
-            );
+            assertThat(rp.getOrAlternateColumn(strings, "col1")).isEqualTo("abc");
         }
     }
 
     @Test
-    void failsIfColumnDoesNotExist() throws IOException {
+    void failsIfColumnDoesNotExist() throws Exception {
         try (final CSVParser parse = CSVParser.parse(
             """
                 col1,col2
                 "abc","def"
                 """, CSVUtils.CSV_FORMAT
         )) {
-            final CSVRecord strings = parse.getRecords().get(0);
+            final CSVRecord strings = parse.getRecords().getFirst();
 
-            assertThrows(
-                IllegalArgumentException.class,
-                () -> rp.getOrAlternateColumn(strings, "col4", "col5")
-            );
+            assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> rp.getOrAlternateColumn(strings, "col4", "col5"));
         }
     }
 
     @Test
-    void canProvideFallbackValues() throws IOException {
+    void canProvideFallbackValues() throws Exception {
         try (final CSVParser parse = CSVParser.parse(
             """
                 col1,col2
                 "abc","def"
                 """, CSVUtils.CSV_FORMAT
         )) {
-            final CSVRecord strings = parse.getRecords().get(0);
+            final CSVRecord strings = parse.getRecords().getFirst();
 
-            assertThat(
-                rp.getOrDefault(strings, "col3", "Default"),
-                CoreMatchers.is("Default")
-            );
+            assertThat(rp.getOrDefault(strings, "col3", "Default")).isEqualTo("Default");
         }
     }
 

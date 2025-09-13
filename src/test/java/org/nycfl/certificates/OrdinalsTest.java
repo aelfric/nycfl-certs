@@ -1,11 +1,10 @@
 package org.nycfl.certificates;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class OrdinalsTest {
 
@@ -20,7 +19,7 @@ class OrdinalsTest {
     })
     @DisplayName("Convert ints to ordinals")
     void test(int input, String expected){
-        assertThat(Ordinals.ofInt(input), CoreMatchers.is(expected));
+        assertThat(Ordinals.ofInt(input)).isEqualTo(expected);
 
     }
 

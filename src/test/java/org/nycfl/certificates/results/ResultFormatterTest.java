@@ -6,8 +6,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.nycfl.certificates.EliminationRound;
 import org.nycfl.certificates.Event;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ResultFormatterTest {
 
@@ -21,7 +20,7 @@ class ResultFormatterTest {
       "6,10,10,SEMIFINALIST,Semi-Finalist"
   })
   @DisplayName("Debate Results - Placement")
-  void testDebateFormatter(
+  void debateFormatter(
       int place,
       int certificateCutoff,
       int placementCutoff,
@@ -35,10 +34,7 @@ class ResultFormatterTest {
         placementCutoff,
         eliminationRound);
 
-    assertThat(
-        formatter.getPlacementString(result),
-        is(expected)
-    );
+      assertThat(formatter.getPlacementString(result)).isEqualTo(expected);
   }
 
   @ParameterizedTest
@@ -50,7 +46,7 @@ class ResultFormatterTest {
       "6,10,10,QUARTER_FINALIST,red"
   })
   @DisplayName("Debate Results - Color")
-  void testDebateFormatterColor(
+  void debateFormatterColor(
       int place,
       int certificateCutoff,
       int placementCutoff,
@@ -65,10 +61,7 @@ class ResultFormatterTest {
         eliminationRound
     );
 
-    assertThat(
-        formatter.getCertificateColor(result),
-        is(expected)
-    );
+      assertThat(formatter.getCertificateColor(result)).isEqualTo(expected);
   }
 
   @ParameterizedTest
@@ -80,7 +73,7 @@ class ResultFormatterTest {
       "6,7,5,SEMIFINALIST,Semi-Finalist"
   })
   @DisplayName("Speech Results - Placement")
-  void testSpeechFormatter(
+  void speechFormatter(
       int place,
       int certificateCutoff,
       int placementCutoff,
@@ -94,10 +87,7 @@ class ResultFormatterTest {
         placementCutoff,
         eliminationRound);
 
-    assertThat(
-        formatter.getPlacementString(result),
-        is(expected)
-    );
+      assertThat(formatter.getPlacementString(result)).isEqualTo(expected);
   }
 
   @ParameterizedTest
@@ -111,7 +101,7 @@ class ResultFormatterTest {
       "6,7,5,SEMIFINALIST,black semi-finalist"
   })
   @DisplayName("Speech Results - Color")
-  void testSpeechFormatterColor(
+  void speechFormatterColor(
       int place,
       int certificateCutoff,
       int placementCutoff,
@@ -125,10 +115,7 @@ class ResultFormatterTest {
         placementCutoff,
         eliminationRound);
 
-    assertThat(
-        formatter.getCertificateColor(result),
-        is(expected)
-    );
+      assertThat(formatter.getCertificateColor(result)).isEqualTo(expected);
   }
 
   @ParameterizedTest
@@ -139,7 +126,7 @@ class ResultFormatterTest {
       "6,7,5,''"
   })
   @DisplayName("Debate Top Speaker Results - Placement")
-  void testDebateSpeakersFormatter(
+  void debateSpeakersFormatter(
       int place,
       int certificateCutoff,
       int placementCutoff,
@@ -152,10 +139,7 @@ class ResultFormatterTest {
         placementCutoff,
         EliminationRound.FINALIST);
 
-    assertThat(
-        formatter.getPlacementString(result),
-        is(expected)
-    );
+      assertThat(formatter.getPlacementString(result)).isEqualTo(expected);
 
   }@ParameterizedTest
   @CsvSource({
@@ -167,7 +151,7 @@ class ResultFormatterTest {
       "6,7,5,black"
   })
   @DisplayName("Debate Top Speaker Results - Color")
-  void testDebateSpeakersFormatterColor(
+  void debateSpeakersFormatterColor(
       int place,
       int certificateCutoff,
       int placementCutoff,
@@ -180,10 +164,7 @@ class ResultFormatterTest {
         placementCutoff,
         EliminationRound.FINALIST);
 
-    assertThat(
-        formatter.getCertificateColor(result),
-        is(expected)
-    );
+    assertThat(formatter.getCertificateColor(result)).isEqualTo(expected);
 
   }
 
@@ -195,7 +176,7 @@ class ResultFormatterTest {
       "6,7,5,SEMIFINALIST,Presiding Officer - Semi-Finals"
   })
   @DisplayName("Congress POs - Placement")
-  void testCongressPOFormatter(
+  void congressPOFormatter(
       int place,
       int certificateCutoff,
       int placementCutoff,
@@ -209,10 +190,7 @@ class ResultFormatterTest {
         placementCutoff,
         eliminationRound);
 
-    assertThat(
-        formatter.getPlacementString(result),
-        is(expected)
-    );
+      assertThat(formatter.getPlacementString(result)).isEqualTo(expected);
   }
 
   @ParameterizedTest
@@ -221,7 +199,7 @@ class ResultFormatterTest {
       "6,7,10,SEMIFINALIST,po semi-finalist"
   })
   @DisplayName("Congress POs - Color")
-  void testCongressPOFormatterColor(
+  void congressPOFormatterColor(
       int place,
       int certificateCutoff,
       int placementCutoff,
@@ -235,10 +213,7 @@ class ResultFormatterTest {
         placementCutoff,
         eliminationRound);
 
-    assertThat(
-        formatter.getCertificateColor(result),
-        is(expected)
-    );
+      assertThat(formatter.getCertificateColor(result)).isEqualTo(expected);
   }
 
   private static Result createResult(

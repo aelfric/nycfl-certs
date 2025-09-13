@@ -1,0 +1,51 @@
+SCHOOL:
+  - SWEEPSPOINTS: 0
+    ID: 117
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Democracy Prep Harlem Prep"
+    NAME: "Democracy Prep Harlem Prep"
+  - SWEEPSPOINTS: 0
+    ID: 118
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Bronx Science"
+    NAME: "Bronx Science"
+  - SWEEPSPOINTS: 0
+    ID: 119
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Convent of the Sacred Heart"
+    NAME: "Convent of the Sacred Heart"
+  - SWEEPSPOINTS: 0
+    ID: 120
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Regis"
+    NAME: "Regis"
+  - SWEEPSPOINTS: 0
+    ID: 121
+    TOURNAMENT_ID: 51
+    DISPLAYNAME: "Democracy Prep Harlem Prep"
+    NAME: "Democracy Prep Harlem Prep"
+  - SWEEPSPOINTS: 0
+    ID: 122
+    TOURNAMENT_ID: 51
+    DISPLAYNAME: "Bronx Science"
+    NAME: "Bronx Science"
+  - SWEEPSPOINTS: 0
+    ID: 123
+    TOURNAMENT_ID: 51
+    DISPLAYNAME: "Convent of the Sacred Heart"
+    NAME: "Convent of the Sacred Heart"
+  - SWEEPSPOINTS: 0
+    ID: 124
+    TOURNAMENT_ID: 51
+    DISPLAYNAME: "Regis"
+    NAME: "Regis"
+
+TOURNAMENT:
+  - TOURNAMENTDATE: "2020-09-26"
+    ID: 1
+    HOST: "Regis High School"
+    NAME: "NYCFL First Regis"
+  - TOURNAMENTDATE: "2020-09-26"
+    ID: 51
+    HOST: "Xavier High School"
+    NAME: "NYCFL Sr. Raimonde Memorial"
