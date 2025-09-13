@@ -125,6 +125,19 @@
       <artifactId>quarkus-jacoco</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.github.database-rider</groupId>
+      <artifactId>rider-cdi</artifactId>
+      <version>1.38.1</version>
+      <scope>test</scope>
+      <classifier>jakarta</classifier>
+      <exclusions>
+        <exclusion>
+          <artifactId>stax-api</artifactId>
+          <groupId>stax</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

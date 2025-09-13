@@ -1,0 +1,132 @@
+SCHOOL:
+  - SWEEPSPOINTS: 0
+    ID: 117
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Democracy Prep Harlem Prep"
+    NAME: "Democracy Prep Harlem Prep"
+  - SWEEPSPOINTS: 0
+    ID: 118
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Bronx Science"
+    NAME: "Bronx Science"
+  - SWEEPSPOINTS: 0
+    ID: 119
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Convent of the Sacred Heart"
+    NAME: "Convent of the Sacred Heart"
+  - SWEEPSPOINTS: 0
+    ID: 120
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Regis High School"
+    NAME: "Regis"
+
+RESULT:
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 12
+    EVENT_ID: 24
+    ID: 131
+    SCHOOL_ID: 120
+    CODE: "503"
+    NAME: "Rafi Cousins"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 11
+    EVENT_ID: 24
+    ID: 132
+    SCHOOL_ID: 118
+    CODE: "514"
+    NAME: "Bernadette Hayward"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 10
+    EVENT_ID: 24
+    ID: 133
+    SCHOOL_ID: 118
+    CODE: "511"
+    NAME: "River Weaver"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 9
+    EVENT_ID: 24
+    ID: 134
+    SCHOOL_ID: 118
+    CODE: "512"
+    NAME: "Dale Beach"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 8
+    EVENT_ID: 24
+    ID: 135
+    SCHOOL_ID: 120
+    CODE: "501"
+    NAME: "Carrie-Ann Holt"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 7
+    EVENT_ID: 24
+    ID: 136
+    SCHOOL_ID: 119
+    CODE: "509"
+    NAME: "Shazia Cash"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 6
+    EVENT_ID: 24
+    ID: 137
+    SCHOOL_ID: 120
+    CODE: "504"
+    NAME: "Dawn Mill"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 5
+    EVENT_ID: 24
+    ID: 138
+    SCHOOL_ID: 119
+    CODE: "507"
+    NAME: Carina Dillard
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 4
+    EVENT_ID: 24
+    ID: 139
+    SCHOOL_ID: 117
+    CODE: "500"
+    NAME: "Tomos Duarte"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 3
+    EVENT_ID: 24
+    ID: 140
+    SCHOOL_ID: 120
+    CODE: "502"
+    NAME: "Bonita Bullock"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 2
+    EVENT_ID: 24
+    ID: 141
+    SCHOOL_ID: 118
+    CODE: "510"
+    NAME: "Adelle Manning"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 1
+    EVENT_ID: 24
+    ID: 142
+    SCHOOL_ID: 119
+    CODE: "508"
+    NAME: "Leticia Irving"
+    ELIMINATIONROUND: "FINALIST"
+

@@ -1,0 +1,181 @@
+SCHOOL:
+  - SWEEPSPOINTS: 0
+    ID: 1
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Democracy Prep Harlem Prep"
+    NAME: "Democracy Prep Harlem Prep"
+  - SWEEPSPOINTS: 0
+    ID: 2
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Bronx Science"
+    NAME: "Bronx Science"
+  - SWEEPSPOINTS: 0
+    ID: 3
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Convent of the Sacred Heart"
+    NAME: "Convent of the Sacred Heart"
+  - SWEEPSPOINTS: 0
+    ID: 4
+    TOURNAMENT_ID: 1
+    DISPLAYNAME: "Regis"
+    NAME: "Regis"
+
+TOURNAMENT:
+  - TOURNAMENTDATE: "2020-09-26"
+    ID: 1
+    HOST: "Regis High School"
+    NAME: "NYCFL First Regis"
+    SLIDEACCENTCOLOR: "#00356b"
+    SLIDEOVERLAYCOLOR: "#dddddd"
+    SLIDEPRIMARYCOLOR: "#222222"
+    SLIDESECONDARYACCENTCOLOR: "#4a4a4a"
+
+RESULT:
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 12
+    EVENT_ID: 1
+    ID: 1
+    SCHOOL_ID: 4
+    CODE: "503"
+    NAME: "Rafi Cousins"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 11
+    EVENT_ID: 1
+    ID: 2
+    SCHOOL_ID: 2
+    CODE: "514"
+    NAME: "Bernadette Hayward"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 10
+    EVENT_ID: 1
+    ID: 3
+    SCHOOL_ID: 2
+    CODE: "511"
+    NAME: "River Weaver"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 9
+    EVENT_ID: 1
+    ID: 4
+    SCHOOL_ID: 2
+    CODE: "512"
+    NAME: "Dale Beach"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 8
+    EVENT_ID: 1
+    ID: 5
+    SCHOOL_ID: 4
+    CODE: "501"
+    NAME: "Carrie-Ann Holt"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 7
+    EVENT_ID: 1
+    ID: 6
+    SCHOOL_ID: 3
+    CODE: "509"
+    NAME: "Shazia Cash"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 6
+    EVENT_ID: 1
+    ID: 7
+    SCHOOL_ID: 4
+    CODE: "504"
+    NAME: "Dawn Mill"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 5
+    EVENT_ID: 1
+    ID: 8
+    SCHOOL_ID: 3
+    CODE: "507"
+    NAME: "Carina Dillard"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 4
+    EVENT_ID: 1
+    ID: 9
+    SCHOOL_ID: 1
+    CODE: "500"
+    NAME: "Tomos Duarte"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 3
+    EVENT_ID: 1
+    ID: 10
+    SCHOOL_ID: 4
+    CODE: "502"
+    NAME: "Bonita Bullock"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 2
+    EVENT_ID: 1
+    ID: 11
+    SCHOOL_ID: 2
+    CODE: "510"
+    NAME: "Adelle Manning"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 1
+    PLACE: 1
+    EVENT_ID: 1
+    ID: 12
+    SCHOOL_ID: 3
+    CODE: "508"
+    NAME: "Leticia Irving"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 2
+    PLACE: 2
+    EVENT_ID: 2
+    ID: 13
+    SCHOOL_ID: 4
+    CODE: "600"
+    NAME: "Mackenzie Simmonds & Ishaaq Nguyen"
+    ELIMINATIONROUND: "FINALIST"
+  - NUM_WINS: 0
+    COUNT: 2
+    PLACE: 1
+    EVENT_ID: 2
+    ID: 14
+    SCHOOL_ID: 4
+    CODE: "601"
+    NAME: "Baxter Carlson & Ethel Turnbull"
+    ELIMINATIONROUND: "FINALIST"
+
+EVENT:
+  - HALF_QUALS: 0
+    NUM_ROUNDS: 0
+    CERTIFICATECUTOFF: 9
+    MEDALCUTOFF: 4
+    PLACEMENTCUTOFF: 6
+    ID: 1
+    TOURNAMENT_ID: 1
+    NAME: "Junior Varsity Oral Interpretation"
+    CERTIFICATETYPE: "PLACEMENT"
+    EVENTTYPE: "SPEECH"
+  - HALF_QUALS: 0
+    NUM_ROUNDS: 0
+    CERTIFICATECUTOFF: 3
+    MEDALCUTOFF: 4
+    PLACEMENTCUTOFF: 3
+    ID: 2
+    TOURNAMENT_ID: 1
+    NAME: "Duo Interpretation"
+    CERTIFICATETYPE: "PLACEMENT"
+    EVENTTYPE: "SPEECH"
