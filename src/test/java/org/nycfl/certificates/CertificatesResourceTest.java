@@ -9,11 +9,6 @@ import io.restassured.config.ObjectMapperConfig;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperDeserializationContext;
 import io.restassured.mapper.ObjectMapperSerializationContext;
-import org.apache.http.HttpStatus;
-import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.*;
-import org.nycfl.certificates.results.Result;
-
 import jakarta.inject.Inject;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
@@ -22,20 +17,25 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.*;
 import jakarta.ws.rs.core.MediaType;
+import org.apache.http.HttpStatus;
+import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.*;
+import org.nycfl.certificates.results.Result;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasSize;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 import static org.jboss.resteasy.reactive.RestResponse.StatusCode.BAD_REQUEST;
 import static org.jboss.resteasy.reactive.RestResponse.StatusCode.NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.nycfl.certificates.TestUtils.givenARegularUser;
 import static org.nycfl.certificates.TestUtils.givenASuperUser;
 
@@ -52,7 +52,7 @@ class CertificatesResourceTest {
     static Jsonb jsonb;
 
     @BeforeAll
-    public static void giveMeAMapper() {
+    static void giveMeAMapper() {
         jsonb = JsonbBuilder.create();
         ObjectMapper mapper = new ObjectMapper() {
             public Object deserialize(ObjectMapperDeserializationContext context) {
@@ -69,7 +69,7 @@ class CertificatesResourceTest {
     }
 
     @AfterAll
-    public static void releaseMapper() throws Exception {
+    static void releaseMapper() throws Exception {
         jsonb.close();
     }
 
@@ -108,8 +108,9 @@ class CertificatesResourceTest {
             .createQuery("SELECT COUNT(distinct t.id) FROM Tournament t", Long.class)
             .getSingleResult();
 
-        assertThat(numTourneysAfter, CoreMatchers.is(numTourneysBefore + 1));
+        assertThat(numTourneysAfter).isEqualTo(numTourneysBefore + 1);
     }
+
     @Test
     void getAllTournaments() {
 
@@ -136,20 +137,20 @@ class CertificatesResourceTest {
             .when()
             .post("/tournaments");
 
-        givenASuperUser()
+        assertThat(givenASuperUser()
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .get("/tournaments")
             .then()
             .statusCode(200)
-            .body("$.size()", equalTo(2));
-
-
+            .extract()
+            .body()
+            .as(Tournament[].class))
+            .hasSize(2);
     }
 
     @Test
-    void testUpdateTournament() throws HeuristicRollbackException,
-        RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    void updateTournament() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         entityManager.persist(tournament);
@@ -175,37 +176,40 @@ class CertificatesResourceTest {
         Tournament tournamentAfterTest = entityManager.find(Tournament.class,
             tournament.getId());
 
-        assertThat(tournamentAfterTest.getLogoUrl(), CoreMatchers.is("https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG"));
+        assertThat(tournamentAfterTest.getLogoUrl()).isEqualTo("https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG");
 
     }
+
     @Test
-    void testGetTournament() throws HeuristicRollbackException,
-        RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    void getTournament() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         entityManager.persist(tournament);
         transaction.commit();
 
-        givenASuperUser()
+        assertThat(givenASuperUser()
             .contentType(MediaType.APPLICATION_JSON)
             .pathParam("id", tournament.getId())
             .when()
             .get("/tournaments/{id}")
             .then()
             .statusCode(200)
-            .body("name", equalTo("NYCFL First Regis"));
+            .extract()
+            .body()
+            .as(Tournament.class)
+            .getName()
+        ).isEqualTo("NYCFL First Regis");
     }
 
-  @Test
-  @DisplayName("Clone a tournament that has been customized")
-  void testCloneTournament() throws HeuristicRollbackException,
-          RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
-    transaction.begin();
-    Tournament tournament = testTournament();
-    entityManager.persist(tournament);
-    transaction.commit();
+    @Test
+    @DisplayName("Clone a tournament that has been customized")
+    void cloneTournament() throws Exception {
+        transaction.begin();
+        Tournament tournament = testTournament();
+        entityManager.persist(tournament);
+        transaction.commit();
 
-    givenASuperUser()
+        givenASuperUser()
             .body("""
                 {
                   "name": "Byram Hills Invitational",
@@ -222,81 +226,81 @@ class CertificatesResourceTest {
             .then()
             .statusCode(200);
 
-    givenASuperUser()
-        .contentType(MediaType.APPLICATION_JSON)
-        .queryParam("sourceId", tournament.getId())
-        .when()
-        .post("/tournaments")
-        .then()
-        .statusCode(200)
-        .body(
-            CoreMatchers.containsString("Copy of Byram Hills Invitational"),
-            CoreMatchers.containsString("Someone Else")
-        );
-  }
-  @Test
-  @DisplayName("Clone a tournament that has not been customized")
-  void testCloneTournament2() throws HeuristicRollbackException,
-          RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
-    transaction.begin();
-    Tournament tournament = testTournament();
-    entityManager.persist(tournament);
-    transaction.commit();
+        givenASuperUser()
+            .contentType(MediaType.APPLICATION_JSON)
+            .queryParam("sourceId", tournament.getId())
+            .when()
+            .post("/tournaments")
+            .then()
+            .statusCode(200)
+            .body(
+                CoreMatchers.containsString("Copy of Byram Hills Invitational"),
+                CoreMatchers.containsString("Someone Else")
+            );
+    }
 
-    givenASuperUser()
-        .contentType(MediaType.APPLICATION_JSON)
-        .queryParam("sourceId", tournament.getId())
-        .when()
-        .post("/tournaments")
-        .then()
-        .statusCode(200)
-        .body(
-            CoreMatchers.containsString("Copy of " + tournament.getName())
-        );
-  }
-  @Test
-  @DisplayName("Cannot clone a tournament with an invalid ID")
-  void testBadCloneTournament() throws HeuristicRollbackException,
-          RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
-    transaction.begin();
-    Tournament tournament = testTournament();
-    entityManager.persist(tournament);
-    transaction.commit();
-
-    givenASuperUser()
-        .contentType(MediaType.APPLICATION_JSON)
-        .queryParam("sourceId", 999)
-        .when()
-        .post("/tournaments")
-        .then()
-        .statusCode(NOT_FOUND);
-  }
-
-  @Test
-  @DisplayName("Cannot call create tournament with no sourceID or payload")
-  void testBadCloneTournament2() throws HeuristicRollbackException,
-          RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
-    transaction.begin();
-    Tournament tournament = testTournament();
-    entityManager.persist(tournament);
-    transaction.commit();
-
-    givenASuperUser()
-        .contentType(MediaType.APPLICATION_JSON)
-        .when()
-        .post("/tournaments")
-        .then()
-        .statusCode(BAD_REQUEST);
-  }
-  @Test
-  void testCreateEvents() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
-    transaction.begin();
-    Tournament tournament = testTournament();
-    entityManager.persist(tournament);
-    transaction.commit();
+    @Test
+    @DisplayName("Clone a tournament that has not been customized")
+    void cloneTournament2() throws Exception {
+        transaction.begin();
+        Tournament tournament = testTournament();
+        entityManager.persist(tournament);
+        transaction.commit();
 
         givenASuperUser()
-            .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior Varsity Oral Interpretation\\nDuo Interpretation\"}", tournament.getId()))
+            .contentType(MediaType.APPLICATION_JSON)
+            .queryParam("sourceId", tournament.getId())
+            .when()
+            .post("/tournaments")
+            .then()
+            .statusCode(200)
+            .body(
+                CoreMatchers.containsString("Copy of " + tournament.getName())
+            );
+    }
+
+    @Test
+    @DisplayName("Cannot clone a tournament with an invalid ID")
+    void badCloneTournament() throws Exception {
+        transaction.begin();
+        Tournament tournament = testTournament();
+        entityManager.persist(tournament);
+        transaction.commit();
+
+        givenASuperUser()
+            .contentType(MediaType.APPLICATION_JSON)
+            .queryParam("sourceId", 999)
+            .when()
+            .post("/tournaments")
+            .then()
+            .statusCode(NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("Cannot call create tournament with no sourceID or payload")
+    void badCloneTournament2() throws Exception {
+        transaction.begin();
+        Tournament tournament = testTournament();
+        entityManager.persist(tournament);
+        transaction.commit();
+
+        givenASuperUser()
+            .contentType(MediaType.APPLICATION_JSON)
+            .when()
+            .post("/tournaments")
+            .then()
+            .statusCode(BAD_REQUEST);
+    }
+
+    @Test
+    void createEvents() throws Exception {
+        transaction.begin();
+        Tournament tournament = testTournament();
+        entityManager.persist(tournament);
+        transaction.commit();
+
+        givenASuperUser()
+            .body("{\"tournamentId\":\"%d\",\"events\":\"Junior Varsity Oral Interpretation\\nDuo Interpretation\"}".formatted(tournament.getId()))
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/events")
@@ -308,13 +312,12 @@ class CertificatesResourceTest {
             .setParameter(1, tournament.getId())
             .getSingleResult();
 
-        assertThat(numEvents, CoreMatchers.is(2L));
+        assertThat(numEvents).isEqualTo(2L);
 
     }
 
     @Test
-    void testAbbreviateEvent() throws HeuristicRollbackException, RollbackException,
-        HeuristicMixedException, SystemException, NotSupportedException {
+    void abbreviateEvent() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         entityManager.persist(tournament);
@@ -322,8 +325,8 @@ class CertificatesResourceTest {
 
         givenASuperUser()
             .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                "Varsity Oral Interpretation\\nDuo " +
-                "Interpretation\"}", tournament.getId()))
+                                "Varsity Oral Interpretation\\nDuo " +
+                                "Interpretation\"}", tournament.getId()))
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/events");
@@ -352,12 +355,12 @@ class CertificatesResourceTest {
             .setParameter(1, evtId)
             .getSingleResult();
 
-        assertThat(abbreviation, CoreMatchers.is("JV OI"));
+        assertThat(abbreviation).isEqualTo("JV OI");
 
     }
 
     @Test
-    void testRequiresSuperuser() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    void requiresSuperuser() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         entityManager.persist(tournament);
@@ -365,8 +368,8 @@ class CertificatesResourceTest {
 
         givenARegularUser()
             .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                "Varsity Oral Interpretation\\nDuo " +
-                "Interpretation\"}", tournament.getId()))
+                                "Varsity Oral Interpretation\\nDuo " +
+                                "Interpretation\"}", tournament.getId()))
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/events")
@@ -375,7 +378,7 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void testRequiresAuth() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException {
+    void requiresAuth() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         entityManager.persist(tournament);
@@ -383,8 +386,8 @@ class CertificatesResourceTest {
 
         given()
             .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                "Varsity Oral Interpretation\\nDuo " +
-                "Interpretation\"}", tournament.getId()))
+                                "Varsity Oral Interpretation\\nDuo " +
+                                "Interpretation\"}", tournament.getId()))
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/events")
@@ -393,7 +396,7 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void addSpeechResults() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void addSpeechResults() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -424,7 +427,7 @@ class CertificatesResourceTest {
             .setParameter(2, tournament.getId())
             .getSingleResult();
 
-        assertThat(numResults, CoreMatchers.is(12L));
+        assertThat(numResults).isEqualTo(12L);
 
         givenASuperUser()
             .pathParam("eventId", duo.getId())
@@ -441,12 +444,11 @@ class CertificatesResourceTest {
             .setParameter(2, tournament.getId())
             .getSingleResult();
 
-        assertThat(numResults, CoreMatchers.is(2L));
+        assertThat(numResults).isEqualTo(2L);
     }
 
     @Test
-    void addLDResults() throws SystemException, NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void addLDResults() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event lincolnDouglas = new Event();
@@ -508,20 +510,14 @@ class CertificatesResourceTest {
             .getSingleResult();
 
         assertAll(
-            () -> assertThat(
-                quarterFinalist.getEliminationRound(),
-                is(EliminationRound.QUARTER_FINALIST)),
-            () -> assertThat(
-                semiFinalist.getEliminationRound(),
-                is(EliminationRound.SEMIFINALIST)),
-            () -> assertThat(finalist.getEliminationRound(),
-                is(EliminationRound.FINALIST))
+            () -> assertThat(quarterFinalist.getEliminationRound()).isEqualTo(EliminationRound.QUARTER_FINALIST),
+            () -> assertThat(semiFinalist.getEliminationRound()).isEqualTo(EliminationRound.SEMIFINALIST),
+            () -> assertThat(finalist.getEliminationRound()).isEqualTo(EliminationRound.FINALIST)
         );
     }
 
     @Test
-    void addPFResults() throws SystemException, NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void addPFResults() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event lincolnDouglas = new Event();
@@ -583,20 +579,14 @@ class CertificatesResourceTest {
             .getSingleResult();
 
         assertAll(
-            () -> assertThat(
-                quarterFinalist.getEliminationRound(),
-                is(EliminationRound.QUARTER_FINALIST)),
-            () -> assertThat(
-                semiFinalist.getEliminationRound(),
-                is(EliminationRound.SEMIFINALIST)),
-            () -> assertThat(finalist.getEliminationRound(),
-                is(EliminationRound.FINALIST))
+            () -> assertThat(quarterFinalist.getEliminationRound()).isEqualTo(EliminationRound.QUARTER_FINALIST),
+            () -> assertThat(semiFinalist.getEliminationRound()).isEqualTo(EliminationRound.SEMIFINALIST),
+            () -> assertThat(finalist.getEliminationRound()).isEqualTo(EliminationRound.FINALIST)
         );
     }
 
     @Test
-    void addDebateSpeaks() throws SystemException, NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void addDebateSpeaks() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event lincolnDouglas = new Event();
@@ -624,11 +614,11 @@ class CertificatesResourceTest {
             .setParameter(1, "Brookline FE")
             .getSingleResult();
 
-        assertThat(topSpeaks.getPlace(), is(1));
+        assertThat(topSpeaks.getPlace()).isOne();
     }
 
     @Test
-    void testAddSweeps() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void addSweeps() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         entityManager.persist(tournament);
@@ -651,13 +641,11 @@ class CertificatesResourceTest {
             .setParameter(1, "Regis")
             .setParameter(2, tournament.getId())
             .getSingleResult();
-        assertThat(regisSweeps, CoreMatchers.is(89));
+        assertThat(regisSweeps).isEqualTo(89);
     }
 
     @Test
-    void testDeleteSchoolWithoutResults() throws SystemException,
-        NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void deleteSchoolWithoutResults() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         entityManager.persist(tournament);
@@ -671,7 +659,7 @@ class CertificatesResourceTest {
 
         Long regisId = entityManager
             .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
-                    ".tournament.id = ?2",
+                         ".tournament.id = ?2",
                 Long.class)
             .setParameter(1, "Regis")
             .setParameter(2, tournament.getId())
@@ -686,17 +674,15 @@ class CertificatesResourceTest {
 
         TypedQuery<Long> query = entityManager
             .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
-                    ".tournament.id = ?2",
+                         ".tournament.id = ?2",
                 Long.class)
             .setParameter(1, "Regis")
             .setParameter(2, tournament.getId());
-        assertThrows(NoResultException.class, query::getSingleResult);
+        assertThatExceptionOfType(NoResultException.class).isThrownBy(query::getSingleResult);
     }
 
     @Test
-    void testCannotDeleteSchoolWithResults() throws SystemException,
-        NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void cannotDeleteSchoolWithResults() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
 
@@ -735,7 +721,7 @@ class CertificatesResourceTest {
 
         Long regisId = entityManager
             .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
-                    ".tournament.id = ?2",
+                         ".tournament.id = ?2",
                 Long.class)
             .setParameter(1, "Regis")
             .setParameter(2, tournament.getId())
@@ -750,9 +736,7 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void testGetOneTournamentSweeps() throws SystemException,
-        NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void getOneTournamentSweeps() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         entityManager.persist(tournament);
@@ -769,21 +753,17 @@ class CertificatesResourceTest {
             .post("/tournaments/{id}/sweeps")
             .body();
 
-        List<SweepsResult> sweepsResults = givenARegularUser()
+        SweepsResult[] sweepsResults = givenARegularUser()
             .pathParam("id", tournament.getId())
             .get("/tournaments/{id}/sweeps")
             .body()
-            .as(new ArrayList<SweepsResult>() {
-                }.getClass().getGenericSuperclass()
-            );
+            .as(SweepsResult[].class);
 
-        assertThat(sweepsResults, hasSize(13));
+        assertThat(sweepsResults).hasSize(13);
     }
 
     @Test
-    void testGetTwoTournamentSweeps() throws SystemException,
-        NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void getTwoTournamentSweeps() throws Exception {
         transaction.begin();
         Tournament tournament1 = testTournament();
         Tournament tournament2 = jsonb.fromJson("""
@@ -822,11 +802,10 @@ class CertificatesResourceTest {
             .body()
             .as(AggregateSweeps.class);
 
-        assertThat(sweepsResults.totals.get("Regis"), is(82 + 89));
-        assertThat(sweepsResults.totals.get("Convent of the Sacred Heart, NYC"),
-            is(97 + 79));
-        assertThat(sweepsResults.totals.get("Democracy Prep Harlem Prep"),
-            is(39 + 13));
+        assertThat(sweepsResults.totals)
+            .containsEntry("Regis", 82 + 89)
+            .containsEntry("Convent of the Sacred Heart, NYC", 97 + 79)
+            .containsEntry("Democracy Prep Harlem Prep", 39 + 13);
     }
 
     private Tournament testTournament() {
@@ -839,7 +818,7 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void listSchools() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void listSchools() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -858,25 +837,18 @@ class CertificatesResourceTest {
             .when()
             .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
-        List<School> schools = givenARegularUser()
+        School[] schools = givenARegularUser()
             .pathParam("id", tournament.getId())
             .get("/tournaments/{id}/schools")
-            .body().as(
-                new ArrayList<School>() {
-                }.getClass().getGenericSuperclass());
-        assertThat(
-            schools.stream().map(School::getName).collect(Collectors.toList()),
-            CoreMatchers.hasItems(
-                "Convent of the Sacred Heart",
-                "Bronx Science",
-                "Regis",
-                "Democracy Prep Harlem Prep"
-            )
-        );
+            .body()
+            .as(School[].class);
+        assertThat(schools)
+            .extracting(School::getName)
+            .contains("Convent of the Sacred Heart", "Bronx Science", "Regis", "Democracy Prep Harlem Prep");
     }
 
     @Test
-    void addSchools() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void addSchools() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         entityManager.persist(tournament);
@@ -888,33 +860,16 @@ class CertificatesResourceTest {
             .post("/tournaments/{id}/schools")
             .body().print();
 
-        List<School> schools = jsonb.fromJson(
+        School[] schools = jsonb.fromJson(
             schoolsJson,
-            new ArrayList<School>() {
-            }.getClass().getGenericSuperclass());
-        assertThat(
-            schools.stream().map(School::getName).collect(Collectors.toList()),
-            CoreMatchers.hasItems(
-                "Byram Hills",
-                "Convent of the Sacred Heart, NYC",
-                "Democracy Prep Endurance",
-                "Democracy Prep Harlem",
-                "Democracy Prep Harlem Prep",
-                "Iona Prep",
-                "Monsignor Farrell",
-                "Pelham Memorial",
-                "Regis",
-                "Scarsdale",
-                "Stuyvesant",
-                "Bronx Science",
-                "Xavier"
-            )
-        );
+            School[].class);
+        assertThat(schools)
+            .extracting(School::getName)
+            .contains("Byram Hills", "Convent of the Sacred Heart, NYC", "Democracy Prep Endurance", "Democracy Prep Harlem", "Democracy Prep Harlem Prep", "Iona Prep", "Monsignor Farrell", "Pelham Memorial", "Regis", "Scarsdale", "Stuyvesant", "Bronx Science", "Xavier");
     }
 
     @Test
-    void clearResults() throws SystemException, NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void clearResults() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -938,12 +893,11 @@ class CertificatesResourceTest {
             .delete("/tournaments/{tournamentId}/events/{eventId}/results");
 
         Event jvOIAfter = entityManager.find(Event.class, jvOI.getId());
-        assertThat(jvOIAfter.getResults(), hasSize(0));
+        assertThat(jvOIAfter.getResults()).isEmpty();
     }
 
     @Test
-    void renameResult() throws SystemException, NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void renameResult() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -981,12 +935,11 @@ class CertificatesResourceTest {
 
         Result result = entityManager.find(Result.class, resultId);
 
-        assertThat(result.getName(), is("Johnny Newname"));
+        assertThat(result.getName()).isEqualTo("Johnny Newname");
     }
 
     @Test
-    void renameResultCanFail() throws SystemException, NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void renameResultCanFail() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -1024,11 +977,11 @@ class CertificatesResourceTest {
 
         Result result = entityManager.find(Result.class, resultId);
 
-        assertThat(result.getName(), is("Carina Dillard"));
+        assertThat(result.getName()).isEqualTo("Carina Dillard");
     }
 
     @Test
-    void setPlacementCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void setPlacementCutoff() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -1057,11 +1010,11 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         Event jvOIAfter = entityManager.find(Event.class, jvOI.getId());
-        assertThat(jvOIAfter.getPlacementCutoff(), CoreMatchers.is(3));
+        assertThat(jvOIAfter.getPlacementCutoff()).isEqualTo(3);
     }
 
     @Test
-    void setCertificateCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void setCertificateCutoff() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -1093,12 +1046,12 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         Event jvOIAfter = entityManager.find(Event.class, jvOI.getId());
-        assertThat(jvOIAfter.getCertificateCutoff(), CoreMatchers.is(3));
+        assertThat(jvOIAfter.getCertificateCutoff()).isEqualTo(3);
 
     }
 
     @Test
-    void setCertificateType() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void setCertificateType() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -1121,12 +1074,12 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         Event jvOIAfter = entityManager.find(Event.class, jvOI.getId());
-        assertThat(jvOIAfter.getCertificateType(), CoreMatchers.is(CertificateType.QUALIFIER));
+        assertThat(jvOIAfter.getCertificateType()).isEqualTo(CertificateType.QUALIFIER);
 
     }
 
     @Test
-    void setStateQualCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void setStateQualCutoff() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -1158,13 +1111,12 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         Event jvOIAfter = entityManager.find(Event.class, jvOI.getId());
-        assertThat(jvOIAfter.getHalfQuals(), CoreMatchers.is(3));
+        assertThat(jvOIAfter.getHalfQuals()).isEqualTo(3);
 
     }
 
     @Test
-    void changeEventType() throws SystemException, NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void changeEventType() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event lincolnDouglas = new Event();
@@ -1187,13 +1139,12 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         Event ldAfter = entityManager.find(Event.class, lincolnDouglas.getId());
-        assertThat(ldAfter.getEventType(), CoreMatchers.is(EventType.DEBATE_LD));
+        assertThat(ldAfter.getEventType()).isEqualTo(EventType.DEBATE_LD);
 
     }
 
     @Test
-    void deleteEvent() throws SystemException, NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void deleteEvent() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event lincolnDouglas = new Event();
@@ -1216,13 +1167,12 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         Event ldAfter = entityManager.find(Event.class, lincolnDouglas.getId());
-        assertThat(ldAfter, CoreMatchers.nullValue());
+        assertThat(ldAfter).isNull();
 
     }
 
     @Test
-    void createSpeakerAwards() throws SystemException, NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void createSpeakerAwards() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event lincolnDouglas = new Event();
@@ -1245,13 +1195,13 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         List<Event> ldAfter = entityManager.createQuery("SELECT e FROM Event e WHERE e" +
-            ".eventType='DEBATE_SPEAKS'", Event.class).getResultList();
-        assertThat(ldAfter, hasSize(1));
+                                                        ".eventType='DEBATE_SPEAKS'", Event.class).getResultList();
+        assertThat(ldAfter).hasSize(1);
 
     }
 
     @Test
-    void setMedalCutoff() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void setMedalCutoff() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -1283,12 +1233,12 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         Event jvOIAfter = entityManager.find(Event.class, jvOI.getId());
-        assertThat(jvOIAfter.getMedalCutoff(), CoreMatchers.is(3));
+        assertThat(jvOIAfter.getMedalCutoff()).isEqualTo(3);
 
     }
 
     @Test
-    void generateCertificates() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void generateCertificates() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -1330,17 +1280,18 @@ class CertificatesResourceTest {
             .asString();
 
 
-        assertThat(certificateHtml, containsString("Finalist"));
-        assertThat(certificateHtml, containsString("Fifth Place"));
-        assertThat(certificateHtml, containsString("First Place"));
-        assertThat(certificateHtml, containsString("Leticia Irving"));
-        assertThat(certificateHtml, not(containsString("River Weaver")));
-        assertThat(certificateHtml, MultiStringMatcher.containsStringNTimes("Junior Varsity Oral Interpretation", 8));
-        assertThat(certificateHtml, MultiStringMatcher.containsStringNTimes("Duo Interpretation", 2));
+        assertThat(certificateHtml)
+            .contains("Finalist")
+            .contains("Fifth Place")
+            .contains("First Place")
+            .contains("Leticia Irving")
+            .doesNotContain("River Weaver")
+            .containsPattern(Pattern.compile("(Junior Varsity Oral Interpretation.*?){8}", Pattern.MULTILINE | Pattern.DOTALL))
+            .containsPattern(Pattern.compile("(Duo Interpretation.*?){2}", Pattern.MULTILINE | Pattern.DOTALL));
     }
 
     @Test
-    void getMedalCount() throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    void getMedalCount() throws Exception {
         transaction.begin();
         Tournament tournament = testTournament();
         Event jvOI = new Event();
@@ -1377,14 +1328,11 @@ class CertificatesResourceTest {
             .when()
             .post("/tournaments/{tournamentId}/events/{eventId}/results");
 
-        List<MedalCount> medalCounts = givenARegularUser()
+        MedalCount[] medalCounts = givenARegularUser()
             .pathParam("id", tournament.getId())
             .get("/tournaments/{id}/medals")
             .body()
-            .as(
-                new ArrayList<MedalCount>() {
-                }.getClass().getGenericSuperclass()
-            );
+            .as(MedalCount[].class);
         final Tournament testTournament = entityManager.find(Tournament.class, tournament.getId());
         final Map<String, Long> schoolMap = testTournament
             .schools
@@ -1395,10 +1343,6 @@ class CertificatesResourceTest {
                     School::getId
                 )
             );
-        assertThat(medalCounts, hasItems(
-            new MedalCount("Regis", 5, schoolMap.get("Regis")),
-            new MedalCount("Bronx Science", 1, schoolMap.get("Bronx Science")),
-            new MedalCount("Convent of the Sacred Heart", 1, schoolMap.get("Convent of the Sacred Heart"))
-        ));
+        assertThat(medalCounts).contains(new MedalCount("Regis", 5, schoolMap.get("Regis")), new MedalCount("Bronx Science", 1, schoolMap.get("Bronx Science")), new MedalCount("Convent of the Sacred Heart", 1, schoolMap.get("Convent of the Sacred Heart")));
     }
 }

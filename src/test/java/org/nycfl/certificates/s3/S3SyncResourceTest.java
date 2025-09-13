@@ -17,7 +17,7 @@ class S3SyncResourceTest {
 
     @Test
     @DisplayName("can upload a file and list uploaded files")
-    void testUpload() {
+    void upload() {
         givenASuperUser()
             .multiPart(new File("src/test/resources/JV-OI.csv"))
             .when()
