@@ -11,10 +11,8 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
-import jakarta.transaction.*;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,20 +44,6 @@ import static org.nycfl.certificates.TestUtils.givenASuperUser;
 class CertificatesResourceTest {
     @Inject
     EntityManager entityManager;
-
-    @Inject
-    UserTransaction transaction;
-
-    @AfterEach
-    void cleanUp() throws SystemException, NotSupportedException,
-        HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        transaction.begin();
-        List<Tournament> tournaments = entityManager
-            .createQuery("SELECT t FROM Tournament t ", Tournament.class)
-            .getResultList();
-        tournaments.forEach(t -> entityManager.remove(t));
-        transaction.commit();
-    }
 
     @Test
     void createTournament() {
