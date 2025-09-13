@@ -4,23 +4,20 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.oidc.server.OidcWiremockTestResource;
-import io.restassured.RestAssured;
-import io.restassured.config.ObjectMapperConfig;
-import io.restassured.mapper.ObjectMapper;
-import io.restassured.mapper.ObjectMapperDeserializationContext;
-import io.restassured.mapper.ObjectMapperSerializationContext;
 import jakarta.inject.Inject;
 import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.*;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.http.HttpStatus;
-import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.nycfl.certificates.results.Result;
+import org.nycfl.certificates.util.RestAssuredJsonbExtension;
 
 import java.io.File;
 import java.util.Arrays;
@@ -42,36 +39,13 @@ import static org.nycfl.certificates.TestUtils.givenASuperUser;
 @QuarkusTest
 @TestHTTPEndpoint(CertificatesResource.class)
 @QuarkusTestResource(OidcWiremockTestResource.class)
+@ExtendWith(RestAssuredJsonbExtension.class)
 class CertificatesResourceTest {
     @Inject
     EntityManager entityManager;
 
     @Inject
     UserTransaction transaction;
-
-    static Jsonb jsonb;
-
-    @BeforeAll
-    static void giveMeAMapper() {
-        jsonb = JsonbBuilder.create();
-        ObjectMapper mapper = new ObjectMapper() {
-            public Object deserialize(ObjectMapperDeserializationContext context) {
-                return jsonb.fromJson(context.getDataToDeserialize().asString(), context.getType());
-            }
-
-            public Object serialize(ObjectMapperSerializationContext context) {
-                return jsonb.toJson(context.getObjectToSerialize());
-            }
-        };
-        RestAssured.config = RestAssured.config().objectMapperConfig(
-            ObjectMapperConfig.objectMapperConfig().defaultObjectMapper(mapper)
-        );
-    }
-
-    @AfterAll
-    static void releaseMapper() throws Exception {
-        jsonb.close();
-    }
 
     @AfterEach
     void cleanUp() throws SystemException, NotSupportedException,
@@ -93,11 +67,11 @@ class CertificatesResourceTest {
 
         givenASuperUser()
             .body("""
-                {
-                              "name": "NYCFL First Regis",
-                              "host": "Regis High School",
-                              "date": "2020-09-26"
-                            }""")
+                  {
+                                "name": "NYCFL First Regis",
+                                "host": "Regis High School",
+                                "date": "2020-09-26"
+                              }""")
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/tournaments")
@@ -117,22 +91,22 @@ class CertificatesResourceTest {
 
         givenASuperUser()
             .body("""
-                {
-                              "name": "NYCFL First Regis",
-                              "host": "Regis High School",
-                              "date": "2020-09-26"
-                            }""")
+                  {
+                                "name": "NYCFL First Regis",
+                                "host": "Regis High School",
+                                "date": "2020-09-26"
+                              }""")
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/tournaments");
 
         givenASuperUser()
             .body("""
-                {
-                              "name": "NYCFL Sr. Raimonde Memorial",
-                              "host": "Xavier High School",
-                              "date": "2020-10-26"
-                            }""")
+                  {
+                                "name": "NYCFL Sr. Raimonde Memorial",
+                                "host": "Xavier High School",
+                                "date": "2020-10-26"
+                              }""")
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/tournaments");
@@ -150,22 +124,22 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void updateTournament() throws Exception {
+    void updateTournament(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
         givenASuperUser()
             .body("""
-                {
-                  "name": "Byram Hills Invitational",
-                  "host": "Byram Hills High School",
-                  "date": "2020-10-10",
-                  "logoUrl": "https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG",
-                  "certificateHeadline": "Byram Hills Invitational Tournament",
-                  "signature": "Someone Else"
-                }""")
+                  {
+                    "name": "Byram Hills Invitational",
+                    "host": "Byram Hills High School",
+                    "date": "2020-10-10",
+                    "logoUrl": "https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG",
+                    "certificateHeadline": "Byram Hills Invitational Tournament",
+                    "signature": "Someone Else"
+                  }""")
             .contentType(MediaType.APPLICATION_JSON)
             .pathParam("id", tournament.getId())
             .when()
@@ -176,14 +150,15 @@ class CertificatesResourceTest {
         Tournament tournamentAfterTest = entityManager.find(Tournament.class,
             tournament.getId());
 
-        assertThat(tournamentAfterTest.getLogoUrl()).isEqualTo("https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG");
+        assertThat(tournamentAfterTest.getLogoUrl()).isEqualTo(
+            "https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG");
 
     }
 
     @Test
-    void getTournament() throws Exception {
+    void getTournament(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
@@ -203,22 +178,22 @@ class CertificatesResourceTest {
 
     @Test
     @DisplayName("Clone a tournament that has been customized")
-    void cloneTournament() throws Exception {
+    void cloneTournament(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
         givenASuperUser()
             .body("""
-                {
-                  "name": "Byram Hills Invitational",
-                  "host": "Byram Hills High School",
-                  "date": "2020-10-10",
-                  "logoUrl": "https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG",
-                  "certificateHeadline": "Byram Hills Invitational Tournament",
-                  "signature": "Someone Else"
-                }""")
+                  {
+                    "name": "Byram Hills Invitational",
+                    "host": "Byram Hills High School",
+                    "date": "2020-10-10",
+                    "logoUrl": "https://s3.amazonaws.com/tabroom-files/tourns/16385/ByramBobcat.JPG",
+                    "certificateHeadline": "Byram Hills Invitational Tournament",
+                    "signature": "Someone Else"
+                  }""")
             .contentType(MediaType.APPLICATION_JSON)
             .pathParam("id", tournament.getId())
             .when()
@@ -226,44 +201,44 @@ class CertificatesResourceTest {
             .then()
             .statusCode(200);
 
-        givenASuperUser()
+        assertThat(givenASuperUser()
             .contentType(MediaType.APPLICATION_JSON)
             .queryParam("sourceId", tournament.getId())
             .when()
             .post("/tournaments")
             .then()
             .statusCode(200)
-            .body(
-                CoreMatchers.containsString("Copy of Byram Hills Invitational"),
-                CoreMatchers.containsString("Someone Else")
-            );
+            .extract()
+            .body().asString())
+            .contains("Copy of Byram Hills Invitational")
+            .contains("Someone Else");
     }
 
     @Test
     @DisplayName("Clone a tournament that has not been customized")
-    void cloneTournament2() throws Exception {
+    void cloneTournament2(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
-        givenASuperUser()
+        assertThat(givenASuperUser()
             .contentType(MediaType.APPLICATION_JSON)
             .queryParam("sourceId", tournament.getId())
             .when()
             .post("/tournaments")
             .then()
             .statusCode(200)
-            .body(
-                CoreMatchers.containsString("Copy of " + tournament.getName())
-            );
+            .extract()
+            .body()
+            .asString()).contains("Copy of " + tournament.getName());
     }
 
     @Test
     @DisplayName("Cannot clone a tournament with an invalid ID")
-    void badCloneTournament() throws Exception {
+    void badCloneTournament(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
@@ -278,9 +253,9 @@ class CertificatesResourceTest {
 
     @Test
     @DisplayName("Cannot call create tournament with no sourceID or payload")
-    void badCloneTournament2() throws Exception {
+    void badCloneTournament2(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
@@ -293,14 +268,16 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void createEvents() throws Exception {
+    void createEvents(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
         givenASuperUser()
-            .body("{\"tournamentId\":\"%d\",\"events\":\"Junior Varsity Oral Interpretation\\nDuo Interpretation\"}".formatted(tournament.getId()))
+            .body(
+                "{\"tournamentId\":\"%d\",\"events\":\"Junior Varsity Oral Interpretation\\nDuo Interpretation\"}".formatted(
+                    tournament.getId()))
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/events")
@@ -308,7 +285,8 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         Long numEvents = entityManager
-            .createQuery("SELECT COUNT(distinct e.id) FROM Event e WHERE e.tournament.id=?1", Long.class)
+            .createQuery("SELECT COUNT(distinct e.id) FROM Event e WHERE e.tournament.id=?1",
+                Long.class)
             .setParameter(1, tournament.getId())
             .getSingleResult();
 
@@ -317,16 +295,16 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void abbreviateEvent() throws Exception {
+    void abbreviateEvent(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
         givenASuperUser()
             .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                                "Varsity Oral Interpretation\\nDuo " +
-                                "Interpretation\"}", tournament.getId()))
+                "Varsity Oral Interpretation\\nDuo " +
+                "Interpretation\"}", tournament.getId()))
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/events");
@@ -339,7 +317,7 @@ class CertificatesResourceTest {
             .getSingleResult();
 
 
-        givenASuperUser()
+        assertThat(givenASuperUser()
             .queryParam("abbreviation", "JV OI")
             .pathParam("id", tournament.getId())
             .pathParam("evtId", evtId)
@@ -348,7 +326,9 @@ class CertificatesResourceTest {
             .post("/tournaments/{id}/events/{evtId}/abbreviate")
             .then()
             .statusCode(200)
-            .body(CoreMatchers.containsString("JV OI"));
+            .extract()
+            .body()
+            .asString()).contains("JV OI");
 
         String abbreviation = entityManager
             .createQuery("SELECT e.abbreviation FROM Event e WHERE e.id=?1", String.class)
@@ -360,16 +340,16 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void requiresSuperuser() throws Exception {
+    void requiresSuperuser(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
         givenARegularUser()
             .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                                "Varsity Oral Interpretation\\nDuo " +
-                                "Interpretation\"}", tournament.getId()))
+                "Varsity Oral Interpretation\\nDuo " +
+                "Interpretation\"}", tournament.getId()))
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/events")
@@ -378,16 +358,16 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void requiresAuth() throws Exception {
+    void requiresAuth(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
         given()
             .body(String.format("{\"tournamentId\":\"%d\",\"events\":\"Junior " +
-                                "Varsity Oral Interpretation\\nDuo " +
-                                "Interpretation\"}", tournament.getId()))
+                "Varsity Oral Interpretation\\nDuo " +
+                "Interpretation\"}", tournament.getId()))
             .contentType(MediaType.APPLICATION_JSON)
             .when()
             .post("/events")
@@ -396,9 +376,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void addSpeechResults() throws Exception {
+    void addSpeechResults(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -422,7 +402,9 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         Long numResults = entityManager
-            .createQuery("SELECT COUNT(distinct r.id) FROM Result r WHERE r.event.id = ?1 and r.event.tournament.id=?2", Long.class)
+            .createQuery(
+                "SELECT COUNT(distinct r.id) FROM Result r WHERE r.event.id = ?1 and r.event.tournament.id=?2",
+                Long.class)
             .setParameter(1, jvOI.getId())
             .setParameter(2, tournament.getId())
             .getSingleResult();
@@ -439,7 +421,9 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         numResults = entityManager
-            .createQuery("SELECT COUNT(distinct r.id) FROM Result r WHERE r.event.id = ?1 and r.event.tournament.id=?2", Long.class)
+            .createQuery(
+                "SELECT COUNT(distinct r.id) FROM Result r WHERE r.event.id = ?1 and r.event.tournament.id=?2",
+                Long.class)
             .setParameter(1, duo.getId())
             .setParameter(2, tournament.getId())
             .getSingleResult();
@@ -448,9 +432,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void addLDResults() throws Exception {
+    void addLDResults(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event lincolnDouglas = new Event();
         lincolnDouglas.setName("Lincoln Douglas Debate");
         lincolnDouglas.setTournament(tournament);
@@ -517,9 +501,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void addPFResults() throws Exception {
+    void addPFResults(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event lincolnDouglas = new Event();
         lincolnDouglas.setName("Public Forum Debate");
         lincolnDouglas.setTournament(tournament);
@@ -586,9 +570,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void addDebateSpeaks() throws Exception {
+    void addDebateSpeaks(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event lincolnDouglas = new Event();
         lincolnDouglas.setName("Public Forum Debate Speaker Awards");
         lincolnDouglas.setTournament(tournament);
@@ -618,9 +602,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void addSweeps() throws Exception {
+    void addSweeps(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
@@ -636,7 +620,8 @@ class CertificatesResourceTest {
             .body();
 
         Integer regisSweeps = entityManager
-            .createQuery("select s.sweepsPoints FROM School s WHERE s.name = ?1 and s.tournament.id = ?2",
+            .createQuery(
+                "select s.sweepsPoints FROM School s WHERE s.name = ?1 and s.tournament.id = ?2",
                 Integer.class)
             .setParameter(1, "Regis")
             .setParameter(2, tournament.getId())
@@ -645,9 +630,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void deleteSchoolWithoutResults() throws Exception {
+    void deleteSchoolWithoutResults(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
@@ -659,7 +644,7 @@ class CertificatesResourceTest {
 
         Long regisId = entityManager
             .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
-                         ".tournament.id = ?2",
+                    ".tournament.id = ?2",
                 Long.class)
             .setParameter(1, "Regis")
             .setParameter(2, tournament.getId())
@@ -674,7 +659,7 @@ class CertificatesResourceTest {
 
         TypedQuery<Long> query = entityManager
             .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
-                         ".tournament.id = ?2",
+                    ".tournament.id = ?2",
                 Long.class)
             .setParameter(1, "Regis")
             .setParameter(2, tournament.getId());
@@ -682,9 +667,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void cannotDeleteSchoolWithResults() throws Exception {
+    void cannotDeleteSchoolWithResults(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
 
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
@@ -721,7 +706,7 @@ class CertificatesResourceTest {
 
         Long regisId = entityManager
             .createQuery("select s.id FROM School s WHERE s.name = ?1 and s" +
-                         ".tournament.id = ?2",
+                    ".tournament.id = ?2",
                 Long.class)
             .setParameter(1, "Regis")
             .setParameter(2, tournament.getId())
@@ -736,9 +721,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void getOneTournamentSweeps() throws Exception {
+    void getOneTournamentSweeps(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
@@ -763,15 +748,15 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void getTwoTournamentSweeps() throws Exception {
+    void getTwoTournamentSweeps(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament1 = testTournament();
+        Tournament tournament1 = testTournament(jsonb);
         Tournament tournament2 = jsonb.fromJson("""
-            {
-                      "name": "NYCFL Hugh McEvoy",
-                      "host": "Stuyvesant High School",
-                      "date": "2020-10-03"
-                    }""", Tournament.class);
+                                                {
+                                                          "name": "NYCFL Hugh McEvoy",
+                                                          "host": "Stuyvesant High School",
+                                                          "date": "2020-10-03"
+                                                        }""", Tournament.class);
         entityManager.persist(tournament1);
         entityManager.persist(tournament2);
         transaction.commit();
@@ -808,19 +793,19 @@ class CertificatesResourceTest {
             .containsEntry("Democracy Prep Harlem Prep", 39 + 13);
     }
 
-    private Tournament testTournament() {
+    private Tournament testTournament(Jsonb jsonb) {
         return jsonb.fromJson("""
-            {
-                      "name": "NYCFL First Regis",
-                      "host": "Regis High School",
-                      "date": "2020-09-26"
-                    }""", Tournament.class);
+                              {
+                                        "name": "NYCFL First Regis",
+                                        "host": "Regis High School",
+                                        "date": "2020-09-26"
+                                      }""", Tournament.class);
     }
 
     @Test
-    void listSchools() throws Exception {
+    void listSchools(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -844,13 +829,16 @@ class CertificatesResourceTest {
             .as(School[].class);
         assertThat(schools)
             .extracting(School::getName)
-            .contains("Convent of the Sacred Heart", "Bronx Science", "Regis", "Democracy Prep Harlem Prep");
+            .contains("Convent of the Sacred Heart",
+                "Bronx Science",
+                "Regis",
+                "Democracy Prep Harlem Prep");
     }
 
     @Test
-    void addSchools() throws Exception {
+    void addSchools(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         entityManager.persist(tournament);
         transaction.commit();
 
@@ -865,13 +853,25 @@ class CertificatesResourceTest {
             School[].class);
         assertThat(schools)
             .extracting(School::getName)
-            .contains("Byram Hills", "Convent of the Sacred Heart, NYC", "Democracy Prep Endurance", "Democracy Prep Harlem", "Democracy Prep Harlem Prep", "Iona Prep", "Monsignor Farrell", "Pelham Memorial", "Regis", "Scarsdale", "Stuyvesant", "Bronx Science", "Xavier");
+            .contains("Byram Hills",
+                "Convent of the Sacred Heart, NYC",
+                "Democracy Prep Endurance",
+                "Democracy Prep Harlem",
+                "Democracy Prep Harlem Prep",
+                "Iona Prep",
+                "Monsignor Farrell",
+                "Pelham Memorial",
+                "Regis",
+                "Scarsdale",
+                "Stuyvesant",
+                "Bronx Science",
+                "Xavier");
     }
 
     @Test
-    void clearResults() throws Exception {
+    void clearResults(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -897,9 +897,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void renameResult() throws Exception {
+    void renameResult(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -939,9 +939,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void renameResultCanFail() throws Exception {
+    void renameResultCanFail(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -981,9 +981,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void setPlacementCutoff() throws Exception {
+    void setPlacementCutoff(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -1014,9 +1014,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void setCertificateCutoff() throws Exception {
+    void setCertificateCutoff(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -1051,9 +1051,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void setCertificateType() throws Exception {
+    void setCertificateType(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -1079,9 +1079,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void setStateQualCutoff() throws Exception {
+    void setStateQualCutoff(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -1116,9 +1116,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void changeEventType() throws Exception {
+    void changeEventType(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event lincolnDouglas = new Event();
         lincolnDouglas.setName("Lincoln-Douglas Debate");
         lincolnDouglas.setTournament(tournament);
@@ -1144,9 +1144,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void deleteEvent() throws Exception {
+    void deleteEvent(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event lincolnDouglas = new Event();
         lincolnDouglas.setName("Lincoln-Douglas Debate");
         lincolnDouglas.setTournament(tournament);
@@ -1172,9 +1172,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void createSpeakerAwards() throws Exception {
+    void createSpeakerAwards(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event lincolnDouglas = new Event();
         lincolnDouglas.setName("Lincoln-Douglas Debate");
         lincolnDouglas.setTournament(tournament);
@@ -1195,15 +1195,15 @@ class CertificatesResourceTest {
             .statusCode(200);
 
         List<Event> ldAfter = entityManager.createQuery("SELECT e FROM Event e WHERE e" +
-                                                        ".eventType='DEBATE_SPEAKS'", Event.class).getResultList();
+            ".eventType='DEBATE_SPEAKS'", Event.class).getResultList();
         assertThat(ldAfter).hasSize(1);
 
     }
 
     @Test
-    void setMedalCutoff() throws Exception {
+    void setMedalCutoff(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -1238,9 +1238,9 @@ class CertificatesResourceTest {
     }
 
     @Test
-    void generateCertificates() throws Exception {
+    void generateCertificates(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -1286,14 +1286,16 @@ class CertificatesResourceTest {
             .contains("First Place")
             .contains("Leticia Irving")
             .doesNotContain("River Weaver")
-            .containsPattern(Pattern.compile("(Junior Varsity Oral Interpretation.*?){8}", Pattern.MULTILINE | Pattern.DOTALL))
-            .containsPattern(Pattern.compile("(Duo Interpretation.*?){2}", Pattern.MULTILINE | Pattern.DOTALL));
+            .containsPattern(Pattern.compile("(Junior Varsity Oral Interpretation.*?){8}",
+                Pattern.MULTILINE | Pattern.DOTALL))
+            .containsPattern(Pattern.compile("(Duo Interpretation.*?){2}",
+                Pattern.MULTILINE | Pattern.DOTALL));
     }
 
     @Test
-    void getMedalCount() throws Exception {
+    void getMedalCount(Jsonb jsonb) throws Exception {
         transaction.begin();
-        Tournament tournament = testTournament();
+        Tournament tournament = testTournament(jsonb);
         Event jvOI = new Event();
         jvOI.setName("Junior Varsity Oral Interpretation");
         jvOI.setTournament(tournament);
@@ -1333,7 +1335,9 @@ class CertificatesResourceTest {
             .get("/tournaments/{id}/medals")
             .body()
             .as(MedalCount[].class);
-        final Tournament testTournament = entityManager.find(Tournament.class, tournament.getId());
+        final Tournament
+            testTournament =
+            entityManager.find(Tournament.class, tournament.getId());
         final Map<String, Long> schoolMap = testTournament
             .schools
             .stream()
@@ -1343,6 +1347,10 @@ class CertificatesResourceTest {
                     School::getId
                 )
             );
-        assertThat(medalCounts).contains(new MedalCount("Regis", 5, schoolMap.get("Regis")), new MedalCount("Bronx Science", 1, schoolMap.get("Bronx Science")), new MedalCount("Convent of the Sacred Heart", 1, schoolMap.get("Convent of the Sacred Heart")));
+        assertThat(medalCounts).contains(new MedalCount("Regis", 5, schoolMap.get("Regis")),
+            new MedalCount("Bronx Science", 1, schoolMap.get("Bronx Science")),
+            new MedalCount("Convent of the Sacred Heart",
+                1,
+                schoolMap.get("Convent of the Sacred Heart")));
     }
 }
