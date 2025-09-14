@@ -613,7 +613,7 @@ class CertificatesResourceTest {
             .get("/tournaments/sweeps")
             .as(AggregateSweeps.class);
 
-        assertThat(sweepsResults.totals)
+        assertThat(sweepsResults.totals())
             .containsEntry("Regis", 82 + 89)
             .containsEntry("Convent of the Sacred Heart, NYC", 97 + 79)
             .containsEntry("Democracy Prep Harlem Prep", 39 + 13);

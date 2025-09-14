@@ -15,7 +15,7 @@ public class Tournament {
                cascade = CascadeType.ALL,
                orphanRemoval = true)
             @OrderBy("eventType asc, name asc")
-    List<Event> events = new ArrayList<>();
+    final List<Event> events = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

@@ -29,7 +29,7 @@ public class DebateLDResultParser implements ResultParser {
                 result.numWins = Integer.valueOf(getOrAlternateColumn(csvRecord,
                     "WinPm",
                     "WinPr", "Win"));
-            } catch (IllegalArgumentException e){
+            } catch (IllegalArgumentException _){
                 result.numWins = 0;
             }
             result.eliminationRound = eliminationRound;

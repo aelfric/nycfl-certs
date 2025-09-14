@@ -24,15 +24,12 @@ public class DebateSpeakerResultFormatter implements ResultFormatter{
         if(place>=event.getPlacementCutoff()){
             return "black";
         }
-        if(place==1){
-            return "gold";
-        } else if (place==2){
-            return "silver";
-        } else if (place == 3){
-            return "bronze";
-        } else {
-            return "red";
-        }
+        return switch (place) {
+            case 1 -> "gold";
+            case 2 -> "silver";
+            case 3 -> "bronze";
+            default -> "red";
+        };
     }
 
     @TemplateExtension(namespace = "Speaker", matchName = "cleanName")

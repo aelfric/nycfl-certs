@@ -25,7 +25,7 @@ public interface ResultParser {
     default CSVParser getParser(InputStream inputStream) {
         try {
             return CSVUtils.parse(inputStream);
-        } catch (IOException ioException) {
+        } catch (IOException _) {
             throw new BadRequestException("Cannot parse CSV");
         }
     }

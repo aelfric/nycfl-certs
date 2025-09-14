@@ -50,7 +50,7 @@ public class Ordinals {
     public static String ofInt(int i){
         try {
             return NUMBER_ORDINALS[i];
-        } catch (ArrayIndexOutOfBoundsException e){
+        } catch (ArrayIndexOutOfBoundsException _){
             return fallbackOrdinal(i);
         }
     }
