@@ -762,15 +762,6 @@ class CertificatesResourceTest {
     })
     void setCertificateCutoff() {
         givenASuperUser()
-            .pathParam("eventId", 24L)
-            .pathParam("tournamentId", 1L)
-            .multiPart(new File("src/test/resources/JV-OI.csv"))
-            .when()
-            .post("/tournaments/{tournamentId}/events/{eventId}/results")
-            .then()
-            .statusCode(200);
-
-        givenASuperUser()
             .pathParam("id", 1L)
             .pathParam("evtId", 24L)
             .body("""
@@ -783,6 +774,29 @@ class CertificatesResourceTest {
 
         Event jvOIAfter = entityManager.find(Event.class, 24L);
         assertThat(jvOIAfter.getCertificateCutoff()).isEqualTo(3);
+
+    }
+
+    @Test
+    @DataSet(cleanBefore = true, value = {
+        "one-tournament.yml",
+        "events.yml",
+        "results.yml"
+    })
+    void setEntriesPerSlideCutoff() {
+        givenASuperUser()
+            .pathParam("id", 1L)
+            .pathParam("evtId", 24L)
+            .body("""
+                  {"cutoff":"3"}""")
+            .contentType(MediaType.APPLICATION_JSON)
+            .when()
+            .post("/tournaments/{id}/events/{evtId}/slide_size")
+            .then()
+            .statusCode(200);
+
+        Event jvOIAfter = entityManager.find(Event.class, 24L);
+        assertThat(jvOIAfter.getEntriesPerPostingSlide()).isEqualTo(3);
 
     }
 

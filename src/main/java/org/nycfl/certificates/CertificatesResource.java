@@ -35,11 +35,20 @@ public class CertificatesResource {
     private static final Logger LOG = Logger.getLogger(CertificatesResource.class);
 
 
-    @Inject
-    TournamentService tournamentService;
+    private final TournamentService tournamentService;
+    private final Template certBorder;
+    private final Template certificate;
+    private final SlideBuilder slideBuilder;
+    private final PostingsBuilder postingsBuilder;
 
     @Inject
-    Template certBorder;
+    public CertificatesResource(TournamentService tournamentService, Template certBorder, Template certificate, SlideBuilder slideBuilder, PostingsBuilder postingsBuilder) {
+        this.tournamentService = tournamentService;
+        this.certBorder = certBorder;
+        this.certificate = certificate;
+        this.slideBuilder = slideBuilder;
+        this.postingsBuilder = postingsBuilder;
+    }
 
     @GET
     @Path("/background.svg")
@@ -56,7 +65,6 @@ public class CertificatesResource {
             .data("color3", "#" + color3)
             .render();
     }
-
 
     @POST
     @Path("/tournaments")
@@ -158,7 +166,7 @@ public class CertificatesResource {
                         csvRecord.get("Total")));
                 tournamentService.updateSchool(school, tournamentId);
             }
-        } catch (IOException e) {
+        } catch (IOException _) {
             throw new BadRequestException("");
         }
         return tournamentService.getTournament(tournamentId);
@@ -202,7 +210,7 @@ public class CertificatesResource {
                 school.setDisplayName(csvRecord.get("Full Name"));
                 tournamentService.updateSchool(school, tournamentId);
             }
-        } catch (IOException e) {
+        } catch (IOException _) {
             throw new BadRequestException("");
         }
         return new ArrayList<>(map.values());
@@ -321,6 +329,17 @@ public class CertificatesResource {
 
     @POST
     @RolesAllowed("superuser")
+    @Path("/tournaments/{id}/events/{evtId}/slide_size")
+    public Tournament setEntriesPerSlide(
+        @PathParam("evtId") long eventId,
+        CutoffRequest cutoffRequest
+    ) {
+        return tournamentService
+            .updateEntriesPerSlide(eventId, cutoffRequest.cutoff());
+    }
+
+    @POST
+    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/quals")
     public Tournament setHalfQuals(
         @PathParam("evtId") long eventId,
@@ -329,9 +348,6 @@ public class CertificatesResource {
         return tournamentService
             .updateHalfQuals(eventId, cutoffRequest.cutoff());
     }
-
-    @Inject
-    Template certificate;
 
     @GET
     @Produces(MediaType.TEXT_HTML)
@@ -368,12 +384,6 @@ public class CertificatesResource {
         }
         return out.toString();
     }
-
-    @Inject
-    SlideBuilder slideBuilder;
-
-    @Inject
-    PostingsBuilder postingsBuilder;
 
     @GET
     @Produces(MediaType.TEXT_HTML)
