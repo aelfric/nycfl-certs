@@ -1,5 +1,6 @@
 package org.nycfl.certificates;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.nycfl.certificates.results.Result;
 
 import jakarta.json.bind.annotation.JsonbProperty;
@@ -19,6 +20,7 @@ public class Event {
     private String name;
 
     private String abbreviation;
+    @ColumnDefault("30")
     private int entriesPerPostingSlide;
 
     public List<Result> getResults() {
