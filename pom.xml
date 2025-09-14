@@ -8,8 +8,7 @@
     <sha1/>
     <compiler-plugin.version>3.14.0</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.release>24</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus-plugin.version>3.26.3</quarkus-plugin.version>
@@ -126,6 +125,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.instancio</groupId>
+      <artifactId>instancio-junit</artifactId>
+      <version>5.4.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.github.database-rider</groupId>
       <artifactId>rider-cdi</artifactId>
       <version>1.38.1</version>
@@ -141,25 +146,6 @@
   </dependencies>
   <build>
     <plugins>
-        <plugin>
-            <groupId>org.openrewrite.maven</groupId>
-            <artifactId>rewrite-maven-plugin</artifactId>
-            <version>6.17.0</version>
-            <configuration>
-            </configuration>
-            <dependencies>
-                <dependency>
-                    <groupId>org.openrewrite.recipe</groupId>
-                    <artifactId>rewrite-migrate-java</artifactId>
-                    <version>3.16.0</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.openrewrite.recipe</groupId>
-                    <artifactId>rewrite-testing-frameworks</artifactId>
-                    <version>3.16.1</version>
-                </dependency>
-            </dependencies>
-        </plugin>
       <plugin>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>

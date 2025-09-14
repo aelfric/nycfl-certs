@@ -31,7 +31,7 @@ public class DebatePFResultParser implements ResultParser {
                     "WinPm",
                     "WinPr",
                     "Win"));
-            } catch (IllegalArgumentException e){
+            } catch (IllegalArgumentException _){
                 result.numWins = 0;
             }
             if (headerNames.contains("Name 2")) {

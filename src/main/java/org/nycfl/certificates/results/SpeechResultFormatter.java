@@ -28,14 +28,11 @@ public class SpeechResultFormatter implements ResultFormatter{
         if(place>=event.getPlacementCutoff()){
             return "black " + round;
         }
-        if(place==1){
-            return "gold "+round;
-        } else if (place==2){
-            return "silver " + round;
-        } else if (place == 3){
-            return "bronze " + round;
-        } else {
-            return "red " + round;
-        }
+        return switch (place) {
+            case 1 -> "gold " + round;
+            case 2 -> "silver " + round;
+            case 3 -> "bronze " + round;
+            default -> "red " + round;
+        };
     }
 }

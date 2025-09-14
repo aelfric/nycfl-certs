@@ -2,13 +2,16 @@ package org.nycfl.certificates;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import org.junit.jupiter.api.Test;
+import org.nycfl.certificates.slides.NoLocalstackOrKeycloak;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
 @QuarkusTest
+@TestProfile(NoLocalstackOrKeycloak.class)
 @TestHTTPEndpoint(EnumResource.class)
 class EnumResourceTest {
     @Test

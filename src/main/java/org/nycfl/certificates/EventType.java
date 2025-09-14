@@ -49,7 +49,6 @@ public enum EventType implements LabeledEnum {
         schoolMapperKeyFn;
     private final boolean hasSpeakerAwards;
 
-    @SuppressWarnings("CdiInjectionPointsInspection")
     EventType(String label,
               Supplier<ResultParser> parserSupplier,
               Supplier<ResultFormatter> formatterSupplier,

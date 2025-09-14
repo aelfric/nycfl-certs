@@ -24,8 +24,12 @@ import java.util.stream.Collectors;
 public class TournamentService {
     private static final Logger LOG = Logger.getLogger(TournamentService.class);
 
+    private final EntityManager em;
+
     @Inject
-    EntityManager em;
+    public TournamentService(EntityManager em) {
+        this.em = em;
+    }
 
     @Transactional
     public Tournament createTournament(Tournament tournament) {
@@ -113,7 +117,7 @@ public class TournamentService {
                 .setParameter(1, tournament)
                 .getResultList();
             return tournament;
-        } catch (NoResultException nre) {
+        } catch (NoResultException _) {
             throw new NotFoundException("Tournament " + tournamentId + " does not exist");
         }
     }
@@ -160,6 +164,14 @@ public class TournamentService {
     public Tournament updateMedalCutoff(long eventId, int cutoff) {
         Event event = em.find(Event.class, eventId);
         event.setMedalCutoff(cutoff);
+        em.persist(event);
+        return getTournament(event.getTournament().getId());
+    }
+
+    @Transactional
+    public Tournament updateEntriesPerSlide(long eventId, int cutoff) {
+        Event event = em.find(Event.class, eventId);
+        event.setEntriesPerPostingSlide(cutoff);
         em.persist(event);
         return getTournament(event.getTournament().getId());
     }

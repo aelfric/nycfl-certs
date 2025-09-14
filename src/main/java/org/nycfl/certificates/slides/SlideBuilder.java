@@ -13,11 +13,14 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class SlideBuilder implements BaseAnimatedSlideBuilder{
 
-  @Inject
-  Template slide2;
+  private final Template slide2;
+  private final Template slides;
 
   @Inject
-  Template slides;
+  public SlideBuilder(Template slide2, Template slides) {
+        this.slide2 = slide2;
+        this.slides = slides;
+  }
 
   public String buildSlidesPreview(Tournament tournament) {
     return this.buildSlidesPreview(tournament, slides);

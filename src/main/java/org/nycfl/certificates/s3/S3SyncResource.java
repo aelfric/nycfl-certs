@@ -29,11 +29,15 @@ import java.util.List;
 @RolesAllowed({"basicuser", "superuser"})
 public class S3SyncResource extends S3Resource {
     private static final Logger LOG = Logger.getLogger(S3SyncResource.class);
-    @Inject
-    S3Client s3;
+    private final S3Client s3;
 
     @ConfigProperty(name = "cloudfront.host")
     String cloudfrontHost;
+
+    @Inject
+    public S3SyncResource(S3Client s3) {
+        this.s3 = s3;
+    }
 
     @POST
     @Path("upload")
@@ -56,7 +60,7 @@ public class S3SyncResource extends S3Resource {
                 return Response.serverError().build();
             }
 
-        } catch (IOException e) {
+        } catch (IOException _) {
             return Response.serverError().build();
         }
     }
