@@ -426,8 +426,7 @@ public class CertificatesResource {
     public String uploadContactInfo(@RestForm("file") FileUpload body,
                                     @PathParam("id") long tournamentId) {
         try (var is = Files.newInputStream(body.uploadedFile())) {
-            return String.format(
-                "\"%d records updated\"",
+            return "\"%d records updated\"".formatted(
                 tournamentService.updateSchoolContacts(is)
             );
         } catch (IOException e) {

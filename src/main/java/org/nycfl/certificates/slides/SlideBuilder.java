@@ -45,7 +45,7 @@ public class SlideBuilder implements BaseAnimatedSlideBuilder{
             .stream()
             .filter(r -> r.getPlace() < event.getCertificateCutoff())
             .collect(
-              Collectors.groupingBy(it -> counter.getAndIncrement() / 9)
+              Collectors.groupingBy(_ -> counter.getAndIncrement() / 9)
             )
             .values();
           int i = 0;
@@ -53,7 +53,7 @@ public class SlideBuilder implements BaseAnimatedSlideBuilder{
           int roundIndex =
             EliminationRound.values().length - round.getKey().ordinal();
           for (List<Result> dividedResult : dividedResults) {
-            slideMap.put(String.format("%s_%s_%d_%d",
+            slideMap.put("%s_%s_%d_%d".formatted(
                 event.getEventType().name(),
                 event.getName(),
                 roundIndex,

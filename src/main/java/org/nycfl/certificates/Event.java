@@ -197,7 +197,7 @@ public class Event {
             case DEBATE_RECORD -> {
                 int wins = result.getNumWins() != null ? result.getNumWins() : 0;
                 int total = numRounds != null ? numRounds : 0;
-                yield String.format("%d-%d",
+                yield "%d-%d".formatted(
                     wins,
                     total - wins);
             }
