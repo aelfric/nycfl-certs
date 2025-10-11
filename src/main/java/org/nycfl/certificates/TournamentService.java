@@ -318,8 +318,7 @@ public class TournamentService {
             return getTournament(event.getTournament().getId());
         }
         throw new NotFoundException(
-            String.format(
-                "Bad Event Result ID Pair [%d,%d]",
+            "Bad Event Result ID Pair [%d,%d]".formatted(
                 eventId,
                 resultId));
     }
@@ -335,8 +334,7 @@ public class TournamentService {
             Event event = em.find(Event.class, eventId);
             return getTournament(event.getTournament().getId());
         }
-        throw new NotFoundException(String.format(
-            "Bad Event Result ID Pair [%d,%d]",
+        throw new NotFoundException("Bad Event Result ID Pair [%d,%d]".formatted(
             eventId,
             resultId));
     }

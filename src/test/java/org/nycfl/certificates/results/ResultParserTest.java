@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
 
 class ResultParserTest {
-    final ResultParser rp = (schoolsMap, eliminationRound, inputStream) -> null;
+    final ResultParser rp = (_, _, _) -> null;
 
     @Test
     void canHandleAlternateColumnNames() throws Exception {

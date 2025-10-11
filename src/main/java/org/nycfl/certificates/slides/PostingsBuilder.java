@@ -98,8 +98,7 @@ public class PostingsBuilder implements BaseAnimatedSlideBuilder {
     }
 
     private String slideName(Event event, AtomicInteger slideCounter) {
-        return String.format(
-            "%s_%s_%d",
+        return "%s_%s_%d".formatted(
             event.getEventType().name(),
             event.getName(),
             slideCounter.getAndIncrement());
