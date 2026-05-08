@@ -1,0 +1,202 @@
+LASTROUNDIMPORT:
+  - ID: 1
+
+TOURNAMENT:
+  - TOURNAMENTDATE: "2020-09-26"
+    ID: 1
+    HOST: "Regis High School"
+    NAME: "NYCFL First Regis"
+    SLIDEACCENTCOLOR: "#00356b"
+    SLIDEOVERLAYCOLOR: "#dddddd"
+    SLIDEPRIMARYCOLOR: "#222222"
+    SLIDESECONDARYACCENTCOLOR: "#4a4a4a"
+
+EVENTMAPPING:
+  - ID: 1
+    REPORT_ID: 1
+    EVENTRAW: "OO"
+  - ID: 2
+    REPORT_ID: 1
+    EVENTRAW: "HI"
+  - ID: 3
+    REPORT_ID: 1
+    EVENTRAW: "VX"
+  - ID: 4
+    REPORT_ID: 1
+    EVENTRAW: "LD-V"
+  - ID: 5
+    REPORT_ID: 1
+    EVENTRAW: "DEC"
+  - ID: 6
+    REPORT_ID: 1
+    EVENTRAW: "JVOI"
+  - ID: 7
+    REPORT_ID: 1
+    EVENTRAW: "DI"
+  - ID: 8
+    REPORT_ID: 1
+    EVENTRAW: "POI"
+  - ID: 9
+    REPORT_ID: 1
+    EVENTRAW: "JVX"
+  - ID: 10
+    REPORT_ID: 1
+    EVENTRAW: "SC"
+  - ID: 11
+    REPORT_ID: 1
+    EVENTRAW: "VOI"
+  - ID: 12
+    REPORT_ID: 1
+    EVENTRAW: "PF-N"
+  - ID: 13
+    REPORT_ID: 1
+    EVENTRAW: "PF-I"
+  - ID: 14
+    REPORT_ID: 1
+    EVENTRAW: "LD-I"
+  - ID: 15
+    REPORT_ID: 1
+    EVENTRAW: "PF-V"
+  - ID: 16
+    REPORT_ID: 1
+    EVENTRAW: "LD-N"
+  - ID: 17
+    REPORT_ID: 1
+    EVENTRAW: "DUO"
+
+ROUNDMAPPING:
+  - EVENTMAPPING_ID: 1
+    ID: 1
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 1
+    ID: 2
+    ROUNDRAW: "Final"
+  - EVENTMAPPING_ID: 2
+    ID: 3
+    ROUNDRAW: "Final"
+  - EVENTMAPPING_ID: 3
+    ID: 4
+    ROUNDRAW: "Quarter"
+  - EVENTMAPPING_ID: 4
+    ID: 5
+    ROUNDRAW: "Quarter"
+  - EVENTMAPPING_ID: 4
+    ID: 6
+    ROUNDRAW: "Octa"
+  - EVENTMAPPING_ID: 4
+    ID: 7
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 4
+    ID: 8
+    ROUNDRAW: "Final"
+  - EVENTMAPPING_ID: 5
+    ID: 9
+    ROUNDRAW: "Quarter"
+  - EVENTMAPPING_ID: 5
+    ID: 10
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 5
+    ID: 11
+    ROUNDRAW: "Final"
+  - EVENTMAPPING_ID: 6
+    ID: 12
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 6
+    ID: 13
+    ROUNDRAW: "Final"
+  - EVENTMAPPING_ID: 7
+    ID: 14
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 7
+    ID: 15
+    ROUNDRAW: "Final"
+  - EVENTMAPPING_ID: 8
+    ID: 16
+    ROUNDRAW: "Final"
+  - EVENTMAPPING_ID: 9
+    ID: 17
+    ROUNDRAW: "Quarter"
+  - EVENTMAPPING_ID: 9
+    ID: 18
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 10
+    ID: 19
+    ROUNDRAW: "Finals"
+  - EVENTMAPPING_ID: 10
+    ID: 20
+    ROUNDRAW: "Semis"
+  - EVENTMAPPING_ID: 11
+    ID: 21
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 12
+    ID: 22
+    ROUNDRAW: "Quarter"
+  - EVENTMAPPING_ID: 12
+    ID: 23
+    ROUNDRAW: "Dubs"
+  - EVENTMAPPING_ID: 12
+    ID: 24
+    ROUNDRAW: "Octa"
+  - EVENTMAPPING_ID: 12
+    ID: 25
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 13
+    ID: 26
+    ROUNDRAW: "Dub"
+  - EVENTMAPPING_ID: 13
+    ID: 27
+    ROUNDRAW: "Quarter"
+  - EVENTMAPPING_ID: 13
+    ID: 28
+    ROUNDRAW: "Octa"
+  - EVENTMAPPING_ID: 13
+    ID: 29
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 14
+    ID: 30
+    ROUNDRAW: "Quarter"
+  - EVENTMAPPING_ID: 14
+    ID: 31
+    ROUNDRAW: "Octa"
+  - EVENTMAPPING_ID: 14
+    ID: 32
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 14
+    ID: 33
+    ROUNDRAW: "Final"
+  - EVENTMAPPING_ID: 15
+    ID: 34
+    ROUNDRAW: "Dub"
+  - EVENTMAPPING_ID: 15
+    ID: 35
+    ROUNDRAW: "Quarter"
+  - EVENTMAPPING_ID: 15
+    ID: 36
+    ROUNDRAW: "Oct"
+  - EVENTMAPPING_ID: 15
+    ID: 37
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 16
+    ID: 38
+    ROUNDRAW: "Quarter"
+  - EVENTMAPPING_ID: 16
+    ID: 39
+    ROUNDRAW: "Octa"
+  - EVENTMAPPING_ID: 16
+    ID: 40
+    ROUNDRAW: "Semi"
+  - EVENTMAPPING_ID: 16
+    ID: 41
+    ROUNDRAW: "Final"
+  - EVENTMAPPING_ID: 17
+    ID: 42
+    ROUNDRAW: "Final"
+
+STAGEDRESULT:
+
+SCHOOL:
+
+RESULT:
+
+SCHOOLEMAIL:
+

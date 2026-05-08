@@ -3,6 +3,7 @@ package org.nycfl.certificates;
 import com.github.database.rider.cdi.api.DBRider;
 import com.github.database.rider.core.api.configuration.DBUnit;
 import com.github.database.rider.core.api.dataset.DataSet;
+import com.github.database.rider.core.api.exporter.ExportDataSet;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
@@ -74,6 +75,7 @@ class CertificatesResourceTest {
 
     @Test
     @DataSet(cleanBefore = true, value = "two-tournaments.yml")
+    @ExportDataSet
     void getAllTournaments() {
         assertThat(givenASuperUser()
             .contentType(MediaType.APPLICATION_JSON)
