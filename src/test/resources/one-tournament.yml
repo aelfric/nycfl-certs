@@ -3,4 +3,5 @@ TOURNAMENT:
     ID: 1
     HOST: "Regis High School"
     NAME: "NYCFL First Regis"
+    CIRCUITID: "nycfl"
 
