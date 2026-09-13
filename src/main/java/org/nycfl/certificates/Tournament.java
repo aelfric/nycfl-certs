@@ -249,4 +249,8 @@ public class Tournament {
     public String getCircuitId() {
         return circuitId;
     }
+
+    public void setCircuit(String circuit) {
+        this.circuitId = circuit;
+    }
 }

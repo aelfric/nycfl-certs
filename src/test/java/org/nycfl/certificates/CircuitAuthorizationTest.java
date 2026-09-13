@@ -10,8 +10,11 @@ import io.quarkus.test.oidc.server.OidcWiremockTestResource;
 import io.restassured.RestAssured;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -24,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
 
 @QuarkusTest
@@ -35,12 +39,13 @@ import static org.hamcrest.Matchers.containsStringIgnoringCase;
 @ExtendWith(RestAssuredJsonbExtension.class)
 @DataSet(cleanBefore = true, value = {"one-tournament.yml", "events.yml", "results.yml"})
 class CircuitAuthorizationTest {
-
+    @Inject
+    EntityManager entityManager;
 
     @MethodSource("protectedEndpoints")
     @ParameterizedTest
     @DisplayName("Superuser can manage any tournament")
-    void test1(EndpointSpec spec) {
+    void superUserManage(EndpointSpec spec) {
         spec.apply(
                 TestUtils.getToken(Collections.singleton("superuser"))
             )
@@ -50,7 +55,7 @@ class CircuitAuthorizationTest {
     @ParameterizedTest
     @MethodSource("protectedEndpoints")
     @DisplayName("Circuit manager can modify tournaments in their circuit")
-    void test2(EndpointSpec spec) {
+    void circuitManagerManage(EndpointSpec spec) {
         spec.apply(TestUtils.getToken(Set.of("basicuser", "manage-circuit-nycfl")))
             .statusCode(200);
     }
@@ -58,7 +63,7 @@ class CircuitAuthorizationTest {
     @ParameterizedTest
     @MethodSource("protectedEndpoints")
     @DisplayName("Circuit manager can manage multiple circuits")
-    void test6(EndpointSpec spec) {
+    void multipleCircuits(EndpointSpec spec) {
         spec.apply(TestUtils.getToken(Set.of("basicuser", "manage-circuit-nycfl", "manage-circuit-odl")))
             .statusCode(200);
     }
@@ -66,7 +71,7 @@ class CircuitAuthorizationTest {
     @ParameterizedTest
     @MethodSource("protectedEndpoints")
     @DisplayName("Circuit manager gets 403 for tournaments in other circuits")
-    void test3(EndpointSpec spec) {
+    void differentCircuit(EndpointSpec spec) {
         spec.apply(TestUtils.getToken(Set.of("basicuser", "manage-circuit-odl")))
             .statusCode(403)
             .body(containsStringIgnoringCase("you are not permitted to manage circuit nycfl"));
@@ -75,9 +80,43 @@ class CircuitAuthorizationTest {
     @ParameterizedTest
     @MethodSource("protectedEndpoints")
     @DisplayName("Regular basicuser still gets 403 (existing behavior)")
-    void test4(EndpointSpec spec) {
+    void basicUser(EndpointSpec spec) {
         spec.apply(TestUtils.getToken(Set.of("basicuser")))
             .statusCode(403);
+    }
+
+    @Test
+    @DisplayName("Superuser can assign a tournament to a circuit")
+    void superUserAssign() {
+        EndpointSpec spec = new EndpointSpec(
+            "PATCH",
+            "/tournaments/{id}",
+            Map.of("id",1),
+            Map.of("circuit","odl"),
+            null,
+            null
+        );
+        spec.apply(TestUtils.getToken(Set.of("superuser")))
+            .statusCode(200);
+        Tournament after = entityManager.find(Tournament.class, 1L);
+        assertThat(after.getCircuitId()).isEqualTo("odl");
+    }
+
+    @Test
+    @DisplayName("Basic user cannot assign a tournament to a circuit")
+    void basicUserAssign() {
+        EndpointSpec spec = new EndpointSpec(
+            "PATCH",
+            "/tournaments/{id}",
+            Map.of("id",1),
+            Map.of("circuit","odl"),
+            null,
+            null
+        );
+        spec.apply(TestUtils.getToken(Set.of("basicuser")))
+            .statusCode(403);
+        Tournament after = entityManager.find(Tournament.class, 1L);
+        assertThat(after.getCircuitId()).isEqualTo("nycfl");
     }
 
     private static Stream<EndpointSpec> protectedEndpoints() {

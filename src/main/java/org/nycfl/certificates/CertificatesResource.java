@@ -96,6 +96,17 @@ public class CertificatesResource {
         return tournamentService.updateTournament(tournamentId, tournament);
     }
 
+    @RolesAllowed("superuser")
+    @PATCH
+    @Path("/tournaments/{id}")
+    @Transactional
+    public Tournament assignTournament(
+        @PathParam("id") long tournamentId,
+        @QueryParam("circuit") String circuit
+    ) {
+        return tournamentService.assignTournamentToCircuit(tournamentId, circuit);
+    }
+
     @GET
     @Path("/tournaments/{id}")
     public Tournament getTournament(
