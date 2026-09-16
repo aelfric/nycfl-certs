@@ -1,12 +1,14 @@
 package org.nycfl.certificates;
 
 import io.quarkus.qute.Template;
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
@@ -40,14 +42,16 @@ public class CertificatesResource {
     private final Template certificate;
     private final SlideBuilder slideBuilder;
     private final PostingsBuilder postingsBuilder;
+    private final SecurityIdentity identity;
 
     @Inject
-    public CertificatesResource(TournamentService tournamentService, Template certBorder, Template certificate, SlideBuilder slideBuilder, PostingsBuilder postingsBuilder) {
+    public CertificatesResource(TournamentService tournamentService, Template certBorder, Template certificate, SlideBuilder slideBuilder, PostingsBuilder postingsBuilder, SecurityIdentity identity) {
         this.tournamentService = tournamentService;
         this.certBorder = certBorder;
         this.certificate = certificate;
         this.slideBuilder = slideBuilder;
         this.postingsBuilder = postingsBuilder;
+        this.identity = identity;
     }
 
     @GET
@@ -71,10 +75,10 @@ public class CertificatesResource {
     @RolesAllowed("superuser")
     public Tournament createTournament(Tournament tournament, @QueryParam("sourceId") long srcTournamentId) {
 
-        if(srcTournamentId > 0){
+        if (srcTournamentId > 0) {
             return tournamentService.copyTournament(srcTournamentId);
         } else {
-            if(tournament != null) {
+            if (tournament != null) {
                 return tournamentService.createTournament(tournament);
             } else {
                 throw new BadRequestException("No tournament stub provided");
@@ -85,11 +89,22 @@ public class CertificatesResource {
     @POST
     @Path("/tournaments/{id}")
     @Transactional
-    @RolesAllowed("superuser")
     public Tournament updateTournament(
         @PathParam("id") long tournamentId,
         Tournament tournament) {
+        requireCircuitAccess(tournamentId);
         return tournamentService.updateTournament(tournamentId, tournament);
+    }
+
+    @RolesAllowed("superuser")
+    @PUT
+    @Path("/tournaments/{id}")
+    @Transactional
+    public Tournament assignTournament(
+        @PathParam("id") long tournamentId,
+        @QueryParam("circuit") String circuit
+    ) {
+        return tournamentService.assignTournamentToCircuit(tournamentId, circuit);
     }
 
     @GET
@@ -100,14 +115,13 @@ public class CertificatesResource {
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/events")
     public Tournament createEvents(EventList eventList) {
+        requireCircuitAccess(eventList.tournamentId());
         return tournamentService.addEvents(eventList);
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{tournamentId}/events/{eventId}/results")
     public Tournament addElimResults(@RestForm("file") FileUpload body,
@@ -116,6 +130,7 @@ public class CertificatesResource {
                                      @QueryParam("type") @DefaultValue(
                                          "FINALIST") EliminationRound eliminationRound) {
 
+        requireCircuitAccess(tournamentId);
         try (var is = Files.newInputStream(body.uploadedFile())) {
             return tournamentService.addResults(
                 eventId,
@@ -129,28 +144,27 @@ public class CertificatesResource {
     }
 
     @DELETE
-    @RolesAllowed("superuser")
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{tournamentId}/events/{eventId}/results")
-    public Tournament clearResults(@PathParam("eventId") int eventId) {
+    public Tournament clearResults(@PathParam("tournamentId") long tournamentId, @PathParam("eventId") int eventId) {
+        requireCircuitAccess(tournamentId);
         return tournamentService.clearResults(eventId);
     }
 
     @DELETE
-    @RolesAllowed("superuser")
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{tournamentId}/events/{eventId}")
-    public Tournament deleteEvent(@PathParam("eventId") int eventId) {
-
+    public Tournament deleteEvent(@PathParam("tournamentId") long tournamentId, @PathParam("eventId") int eventId) {
+        requireCircuitAccess(tournamentId);
         return tournamentService.deleteEvent(eventId);
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{id}/sweeps")
     public Tournament addSweepsResults(@RestForm("file") FileUpload body,
                                        @PathParam("id") long tournamentId) {
+        requireCircuitAccess(tournamentId);
         Map<String, School> map =
             tournamentService.getSchools(tournamentId).stream().collect(
                 Collectors.toMap(School::getDisplayName,
@@ -192,12 +206,12 @@ public class CertificatesResource {
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Path("/tournaments/{id}/schools")
     public List<School> addSchools(
         @PathParam("id") long tournamentId,
         @RestForm("file") FileUpload body) {
+        requireCircuitAccess(tournamentId);
         Map<String, School> map =
             tournamentService.getSchools(tournamentId).stream().collect(
                 Collectors.toMap(School::getName, Function.identity()));
@@ -217,134 +231,146 @@ public class CertificatesResource {
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/type")
     public Tournament setEventType(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @QueryParam("type") EventType eventType
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .updateEventType(eventId, eventType);
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/rename")
     public Tournament renameEvent(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @QueryParam("name") String newName
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .renameEvent(eventId, newName);
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/abbreviate")
     public Tournament abbreviateEvent(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @QueryParam("abbreviation") String abbreviation
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .abbreviateEvent(eventId, abbreviation);
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/results/{resultId}/rename")
     public Tournament renameCompetitor(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @PathParam("resultId") long resultId,
         @QueryParam("name") @DefaultValue("") String newName
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .renameCompetitor(eventId, resultId, newName);
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/results/{resultId}/school")
     public Tournament switchCompetitorSchool(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @PathParam("resultId") long resultId,
         @QueryParam("schoolId") long newSchool
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService.switchSchool(eventId, resultId, newSchool);
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/rounds")
-    public Tournament setEventType(
+    public Tournament setNumRounds(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @QueryParam("count") int count
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .updateNumRounds(eventId, count);
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/cert_type")
     public Tournament setCertificateType(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         @QueryParam("type") CertificateType certificateType
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .updateCertificateType(eventId, certificateType);
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/placement")
     public Tournament setPlacementCutoff(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         CutoffRequest cutoffRequest
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .updatePlacementCutoff(eventId, cutoffRequest.cutoff());
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/cutoff")
     public Tournament setCertificateCutoff(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         CutoffRequest cutoffRequest
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .updateCertificateCutoff(eventId, cutoffRequest.cutoff());
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/medal")
     public Tournament setMedalCutoff(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         CutoffRequest cutoffRequest
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .updateMedalCutoff(eventId, cutoffRequest.cutoff());
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/slide_size")
     public Tournament setEntriesPerSlide(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         CutoffRequest cutoffRequest
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .updateEntriesPerSlide(eventId, cutoffRequest.cutoff());
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Path("/tournaments/{id}/events/{evtId}/quals")
     public Tournament setHalfQuals(
+        @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
         CutoffRequest cutoffRequest
     ) {
+        requireCircuitAccess(tournamentId);
         return tournamentService
             .updateHalfQuals(eventId, cutoffRequest.cutoff());
     }
@@ -419,12 +445,12 @@ public class CertificatesResource {
     }
 
     @POST
-    @RolesAllowed("superuser")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/contacts")
     public String uploadContactInfo(@RestForm("file") FileUpload body,
                                     @PathParam("id") long tournamentId) {
+        requireCircuitAccess(tournamentId);
         try (var is = Files.newInputStream(body.uploadedFile())) {
             return "\"%d records updated\"".formatted(
                 tournamentService.updateSchoolContacts(is)
@@ -435,11 +461,11 @@ public class CertificatesResource {
     }
 
     @GET
-    @RolesAllowed("superuser")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/tournaments/{id}/contacts")
     public List<School> getContactInfo(@PathParam("id") long tournamentId) {
+        requireCircuitAccess(tournamentId);
         return tournamentService.getSchools(tournamentId);
     }
 
@@ -453,5 +479,17 @@ public class CertificatesResource {
     @Path("/tournaments/{id}/sweeps")
     public List<SweepsResult> getSweeps(@PathParam("id") long tournamentId) {
         return tournamentService.getSweeps(tournamentId);
+    }
+
+    private void requireCircuitAccess(long tournamentId) {
+        Tournament t = tournamentService.getTournament(tournamentId);
+        if (!identity.hasRole("superuser") && !identity.hasRole("manage-circuit-" + t.getCircuitId())) {
+
+            throw new ForbiddenException(
+                Response.status(403, "FORBIDDEN")
+                    .entity("You are not permitted to manage circuit " + t.getCircuitId())
+                    .build()
+            );
+        }
     }
 }

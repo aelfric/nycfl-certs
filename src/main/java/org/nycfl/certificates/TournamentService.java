@@ -245,6 +245,14 @@ public class TournamentService {
     }
 
     @Transactional
+    public Tournament assignTournamentToCircuit(long tournamentId, String circuit) {
+        Tournament persistedTournament = getTournament(tournamentId);
+        persistedTournament.setCircuit(circuit);
+        em.persist(persistedTournament);
+        return persistedTournament;
+    }
+
+    @Transactional
     public Tournament updateEventType(long eventId, EventType eventType) {
         Event event = em.find(Event.class, eventId);
         event.setEventType(eventType);

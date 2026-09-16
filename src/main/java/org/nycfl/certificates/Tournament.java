@@ -31,6 +31,7 @@ public class Tournament {
     private String signatureTitle;
     private String line1;
     private String line2;
+    private String circuitId;
 
     @Column(columnDefinition = "VARCHAR(32) default '#00356b'")
     private String slideAccentColor;
@@ -243,5 +244,13 @@ public class Tournament {
 
     public void setSlideSecondaryAccentColor(String slideSecondaryAccentColor) {
         this.slideSecondaryAccentColor = slideSecondaryAccentColor;
+    }
+
+    public String getCircuitId() {
+        return circuitId;
+    }
+
+    public void setCircuit(String circuit) {
+        this.circuitId = circuit;
     }
 }
