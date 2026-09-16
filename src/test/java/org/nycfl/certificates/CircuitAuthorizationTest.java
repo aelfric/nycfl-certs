@@ -89,7 +89,7 @@ class CircuitAuthorizationTest {
     @DisplayName("Superuser can assign a tournament to a circuit")
     void superUserAssign() {
         EndpointSpec spec = new EndpointSpec(
-            "PATCH",
+            "PUT",
             "/tournaments/{id}",
             Map.of("id",1),
             Map.of("circuit","odl"),
@@ -106,7 +106,7 @@ class CircuitAuthorizationTest {
     @DisplayName("Basic user cannot assign a tournament to a circuit")
     void basicUserAssign() {
         EndpointSpec spec = new EndpointSpec(
-            "PATCH",
+            "PUT",
             "/tournaments/{id}",
             Map.of("id",1),
             Map.of("circuit","odl"),

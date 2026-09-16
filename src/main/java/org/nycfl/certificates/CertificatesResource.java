@@ -97,7 +97,7 @@ public class CertificatesResource {
     }
 
     @RolesAllowed("superuser")
-    @PATCH
+    @PUT
     @Path("/tournaments/{id}")
     @Transactional
     public Tournament assignTournament(
