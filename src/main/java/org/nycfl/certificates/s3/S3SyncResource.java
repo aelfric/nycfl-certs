@@ -13,6 +13,7 @@ import org.jboss.resteasy.reactive.multipart.FileUpload;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
@@ -67,29 +68,43 @@ public class S3SyncResource extends S3Resource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<PublicListing> listFiles() {
-        ListObjectsRequest
-            listRequest =
-            ListObjectsRequest.builder().bucket(bucketName).build();
+    public List<PublicListing> listFiles(@QueryParam("prefix") String prefix) {
+        ListObjectsRequest.Builder builder = ListObjectsRequest.builder().bucket(bucketName);
+        if(prefix != null){
+            builder.prefix(prefix);
+        }
+        ListObjectsRequest listRequest = builder.build();
         //HEAD S3 objects to get metadata
-        return s3.listObjects(listRequest)
-            .contents()
-            .stream()
-            .sorted(Comparator.comparing(S3Object::lastModified).reversed())
-            .map(o -> getPublicListing(o.key()))
-            .toList();
+        try {
+            return s3.listObjects(listRequest)
+                .contents()
+                .stream()
+                .sorted(Comparator.comparing(S3Object::lastModified).reversed())
+                .map(o -> getPublicListing(o.key()))
+                .toList();
+        } catch (NoSuchBucketException e) {
+            LOG.error("listFiles error", e);
+            return List.of();
+        }
     }
 
     private PublicListing getPublicListing(String objectName) {
+        String[] parts = objectName.split("/");
+        String displayName = objectName;
+        if(parts.length > 1){
+            displayName = parts[parts.length - 1];
+        }
+        displayName = displayName.substring(0, displayName.lastIndexOf("."));
         try {
             return new PublicListing(
-                    new URI(
-                            "https",
-                            cloudfrontHost,
-                            "/" + objectName,
-                            null
-                    ).toURL(),
-                objectName
+                new URI(
+                    "https",
+                    cloudfrontHost,
+                    "/" + objectName,
+                    null
+                ).toURL(),
+                objectName,
+                displayName
             );
         } catch (MalformedURLException | URISyntaxException e) {
             LOG.error("Could not construct resource URL", e);
@@ -97,7 +112,7 @@ public class S3SyncResource extends S3Resource {
         }
     }
 
-    public record PublicListing(URL url, String objectName) {
+    public record PublicListing(URL url, String objectName, String displayName) {
     }
 
 }
