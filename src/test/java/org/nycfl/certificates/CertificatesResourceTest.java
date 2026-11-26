@@ -112,6 +112,41 @@ class CertificatesResourceTest {
     }
 
     @Test
+    @DisplayName("Create tournament without a date is rejected")
+    void createTournamentMissingDate() {
+        givenASuperUser()
+            .body("""
+                  {"name": "No Date", "host": "Regis High School"}""")
+            .contentType(MediaType.APPLICATION_JSON)
+            .when()
+            .post("/tournaments")
+            .then()
+            .statusCode(BAD_REQUEST);
+    }
+
+    @Test
+    @DataSet(cleanBefore = true, value = "one-custom-tournament.yml")
+    @DisplayName("Update with a null optional field clears it")
+    void updateTournamentNullClearsField() {
+        givenASuperUser()
+            .body("""
+                  {
+                    "name": "Byram Hills Invitational",
+                    "host": "Byram Hills High School",
+                    "date": "2020-10-10",
+                    "signature": null
+                  }""")
+            .contentType(MediaType.APPLICATION_JSON)
+            .pathParam("id", 1)
+            .when()
+            .post("/tournaments/{id}")
+            .then()
+            .statusCode(200);
+
+        assertThat(entityManager.find(Tournament.class, 1L).getSignature()).isNull();
+    }
+
+    @Test
     @DataSet(cleanBefore = true, value = "one-tournament.yml")
     void getTournament() {
         assertThat(givenASuperUser()

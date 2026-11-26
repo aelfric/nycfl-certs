@@ -2,10 +2,12 @@ package org.nycfl.certificates;
 
 import io.quarkus.qute.Template;
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.Nullable;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -13,9 +15,13 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
+import org.nycfl.certificates.requests.CreateTournamentRequest;
+import org.nycfl.certificates.requests.CutoffRequest;
+import org.nycfl.certificates.requests.TournamentInput;
 import org.nycfl.certificates.slides.PostingsBuilder;
 import org.nycfl.certificates.slides.SlideBuilder;
 
@@ -73,13 +79,13 @@ public class CertificatesResource {
     @POST
     @Path("/tournaments")
     @RolesAllowed("superuser")
-    public Tournament createTournament(Tournament tournament, @QueryParam("sourceId") long srcTournamentId) {
+    public Tournament createTournament(@RequestBody(required = false) @Nullable @Valid CreateTournamentRequest tournament, @QueryParam("sourceId") long srcTournamentId) {
 
         if (srcTournamentId > 0) {
             return tournamentService.copyTournament(srcTournamentId);
         } else {
             if (tournament != null) {
-                return tournamentService.createTournament(tournament);
+                return tournamentService.createTournament(tournament.toTournament());
             } else {
                 throw new BadRequestException("No tournament stub provided");
             }
@@ -91,9 +97,9 @@ public class CertificatesResource {
     @Transactional
     public Tournament updateTournament(
         @PathParam("id") long tournamentId,
-        Tournament tournament) {
+        @Valid TournamentInput updateRequest) {
         requireCircuitAccess(tournamentId);
-        return tournamentService.updateTournament(tournamentId, tournament);
+        return tournamentService.updateTournament(tournamentId, updateRequest);
     }
 
     @RolesAllowed("superuser")
@@ -102,9 +108,9 @@ public class CertificatesResource {
     @Transactional
     public Tournament assignTournament(
         @PathParam("id") long tournamentId,
-        @QueryParam("circuit") String circuit
+        @QueryParam("circuitId") String circuitId
     ) {
-        return tournamentService.assignTournamentToCircuit(tournamentId, circuit);
+        return tournamentService.assignTournamentToCircuit(tournamentId, circuitId);
     }
 
     @GET
@@ -320,7 +326,7 @@ public class CertificatesResource {
     public Tournament setPlacementCutoff(
         @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
-        CutoffRequest cutoffRequest
+        @Valid CutoffRequest cutoffRequest
     ) {
         requireCircuitAccess(tournamentId);
         return tournamentService
@@ -332,7 +338,7 @@ public class CertificatesResource {
     public Tournament setCertificateCutoff(
         @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
-        CutoffRequest cutoffRequest
+        @Valid CutoffRequest cutoffRequest
     ) {
         requireCircuitAccess(tournamentId);
         return tournamentService
@@ -344,7 +350,7 @@ public class CertificatesResource {
     public Tournament setMedalCutoff(
         @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
-        CutoffRequest cutoffRequest
+        @Valid CutoffRequest cutoffRequest
     ) {
         requireCircuitAccess(tournamentId);
         return tournamentService
@@ -356,7 +362,7 @@ public class CertificatesResource {
     public Tournament setEntriesPerSlide(
         @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
-        CutoffRequest cutoffRequest
+        @Valid CutoffRequest cutoffRequest
     ) {
         requireCircuitAccess(tournamentId);
         return tournamentService
@@ -368,7 +374,7 @@ public class CertificatesResource {
     public Tournament setHalfQuals(
         @PathParam("id") long tournamentId,
         @PathParam("evtId") long eventId,
-        CutoffRequest cutoffRequest
+        @Valid CutoffRequest cutoffRequest
     ) {
         requireCircuitAccess(tournamentId);
         return tournamentService

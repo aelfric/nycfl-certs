@@ -1,5 +1,6 @@
 package org.nycfl.certificates;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.hibernate.annotations.ColumnDefault;
 import org.nycfl.certificates.results.Result;
 
@@ -153,6 +154,7 @@ public class Event {
         this.certificateType = certificateType;
     }
 
+    @Schema(nullable = true)
     public Integer getNumRounds() {
         return numRounds;
     }
@@ -181,6 +183,7 @@ public class Event {
         addResults(parsedResults);
     }
 
+    @Schema(hidden = true)
     Function<School, String> getSchoolMappingFunction() {
         return eventType.schoolMapper();
     }

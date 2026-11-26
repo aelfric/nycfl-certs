@@ -10,6 +10,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.jboss.logging.Logger;
+import org.nycfl.certificates.requests.TournamentInput;
 import org.nycfl.certificates.results.Result;
 
 import java.io.IOException;
@@ -237,17 +238,18 @@ public class TournamentService {
     @Transactional
     public Tournament updateTournament(
         long tournamentId,
-        Tournament updatedTournament) {
+        TournamentInput tournamentUpdateRequest
+    ) {
         Tournament persistedTournament = getTournament(tournamentId);
-        persistedTournament.merge(updatedTournament);
+        persistedTournament.merge(tournamentUpdateRequest);
         em.persist(persistedTournament);
         return persistedTournament;
     }
 
     @Transactional
-    public Tournament assignTournamentToCircuit(long tournamentId, String circuit) {
+    public Tournament assignTournamentToCircuit(long tournamentId, String circuitId) {
         Tournament persistedTournament = getTournament(tournamentId);
-        persistedTournament.setCircuit(circuit);
+        persistedTournament.setCircuitId(circuitId);
         em.persist(persistedTournament);
         return persistedTournament;
     }

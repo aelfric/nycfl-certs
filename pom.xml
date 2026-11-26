@@ -5,6 +5,7 @@
   <artifactId>nycfl-certs</artifactId>
   <version>3.0.2-${sha1}-SNAPSHOT</version>
   <properties>
+    <sha1/>
     <compiler-plugin.version>3.16.0</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.release>25</maven.compiler.release>
@@ -100,6 +101,10 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-openapi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-validator</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
