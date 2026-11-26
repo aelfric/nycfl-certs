@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
@@ -45,6 +46,9 @@ public class S3SyncResource extends S3Resource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("superuser")
+    @APIResponse(responseCode = "201", description = "File uploaded")
+    @APIResponse(responseCode = "400", description = "No file provided")
+    @APIResponse(responseCode = "500", description = "Upload to S3 failed")
     public Response uploadFile(@RestForm("file") FileUpload file) {
 
         if (file == null || file.fileName().isEmpty()) {

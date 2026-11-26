@@ -1,5 +1,6 @@
 package org.nycfl.certificates;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.hibernate.annotations.ColumnDefault;
 import org.nycfl.certificates.results.Result;
 
@@ -15,12 +16,15 @@ import java.util.stream.Collectors;
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Schema(required = true)
     private long id;
 
+    @Schema(required = true)
     private String name;
 
     private String abbreviation;
     @ColumnDefault("30")
+    @Schema(required = true)
     private int entriesPerPostingSlide;
 
     public List<Result> getResults() {
@@ -32,25 +36,32 @@ public class Event {
                cascade = CascadeType.ALL,
                orphanRemoval = true)
     @OrderBy("place desc ")
+    @Schema(required = true)
     private final List<Result> results = new ArrayList<>();
 
     @ManyToOne(optional = false)
     @JsonbTransient
     private Tournament tournament;
 
+    @Schema(required = true)
     private int placementCutoff;
+    @Schema(required = true)
     private int certificateCutoff;
+    @Schema(required = true)
     private int medalCutoff;
     @Column(name = "HALF_QUALS", columnDefinition = "int DEFAULT 0 NOT NULL")
+    @Schema(required = true)
     private int halfQuals;
 
     @Column(name = "NUM_ROUNDS")
     private Integer numRounds = 0;
 
     @Enumerated(EnumType.STRING)
+    @Schema(required = true)
     private EventType eventType = EventType.SPEECH;
 
     @Enumerated(EnumType.STRING)
+    @Schema(required = true)
     private CertificateType certificateType = CertificateType.PLACEMENT;
 
     public Long getId() {
@@ -153,6 +164,7 @@ public class Event {
         this.certificateType = certificateType;
     }
 
+    @Schema(nullable = true)
     public Integer getNumRounds() {
         return numRounds;
     }
@@ -181,6 +193,7 @@ public class Event {
         addResults(parsedResults);
     }
 
+    @Schema(hidden = true)
     Function<School, String> getSchoolMappingFunction() {
         return eventType.schoolMapper();
     }

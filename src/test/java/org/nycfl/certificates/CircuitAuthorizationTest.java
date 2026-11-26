@@ -92,7 +92,7 @@ class CircuitAuthorizationTest {
             "PUT",
             "/tournaments/{id}",
             Map.of("id",1),
-            Map.of("circuit","odl"),
+            Map.of("circuitId","odl"),
             null,
             null
         );
@@ -109,7 +109,7 @@ class CircuitAuthorizationTest {
             "PUT",
             "/tournaments/{id}",
             Map.of("id",1),
-            Map.of("circuit","odl"),
+            Map.of("circuitId","odl"),
             null,
             null
         );
@@ -126,7 +126,7 @@ class CircuitAuthorizationTest {
                 Map.of("id", 1),
                 Map.of(),
                 """
-                    {"name":"Updated", "date": "2020-09-26"}""",
+                    {"name":"Updated", "host": "Nowhere", "date": "2020-09-26"}""",
                 null),
             new EndpointSpec("POST",
                 "/events",

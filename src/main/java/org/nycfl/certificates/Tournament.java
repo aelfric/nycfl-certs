@@ -2,6 +2,9 @@ package org.nycfl.certificates;
 
 import jakarta.json.bind.annotation.JsonbDateFormat;
 import jakarta.persistence.*;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.nycfl.certificates.requests.TournamentInput;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -15,14 +18,18 @@ public class Tournament {
                cascade = CascadeType.ALL,
                orphanRemoval = true)
             @OrderBy("eventType asc, name asc")
+    @Schema(required = true)
     final List<Event> events = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Schema(required = true)
     private long id;
 
+    @Schema(required = true)
     private String name;
 
+    @Schema(required = true)
     private String host;
     private String logoUrl;
     private String slideBackgroundUrl;
@@ -45,6 +52,7 @@ public class Tournament {
     @Column(columnDefinition = "VARCHAR(32) default '#dddddd'")
         private String slideOverlayColor;
 
+    @Schema(name = "date", required = true)
     @JsonbDateFormat(value = "yyyy-MM-dd")
     private LocalDate tournamentDate;
 
@@ -55,6 +63,7 @@ public class Tournament {
     final List<School> schools = new ArrayList<>();
 
     @Lob
+    @Schema(name = "styleOverrides")
     private String styleOverrides2;
 
     public List<Event> getEvents() {
@@ -183,27 +192,27 @@ public class Tournament {
         this.slideBackgroundUrl = slideBackgroundUrl;
     }
 
-    public void merge(Tournament updatedTournament) {
-        this.host = updatedTournament.host;
-        this.tournamentDate = updatedTournament.tournamentDate;
-        this.name = updatedTournament.name;
-        this.logoUrl = updatedTournament.logoUrl;
-        this.slideBackgroundUrl = updatedTournament.slideBackgroundUrl;
-        this.slideAccentColor = updatedTournament.slideAccentColor;
-        this.slideSecondaryAccentColor = updatedTournament.slideSecondaryAccentColor;
-        this.slidePrimaryColor = updatedTournament.slidePrimaryColor;
-        this.slideOverlayColor = updatedTournament.slideOverlayColor;
-        this.signature = updatedTournament.signature;
-        this.signatureTitle = updatedTournament.signatureTitle;
-        this.certificateHeadline = updatedTournament.certificateHeadline;
-        this.styleOverrides2 = updatedTournament.styleOverrides2;
-        this.line1 = updatedTournament.line1;
-        this.line2 = updatedTournament.line2;
+    public void merge(TournamentInput tournamentUpdateRequest) {
+        this.host = tournamentUpdateRequest.host();
+        this.tournamentDate = tournamentUpdateRequest.date();
+        this.name = tournamentUpdateRequest.name();
+        this.logoUrl = tournamentUpdateRequest.logoUrl();
+        this.slideBackgroundUrl = tournamentUpdateRequest.slideBackgroundUrl();
+        this.slideAccentColor = tournamentUpdateRequest.slideAccentColor();
+        this.slideSecondaryAccentColor = tournamentUpdateRequest.slideSecondaryAccentColor();
+        this.slidePrimaryColor = tournamentUpdateRequest.slidePrimaryColor();
+        this.slideOverlayColor = tournamentUpdateRequest.slideOverlayColor();
+        this.signature = tournamentUpdateRequest.signature();
+        this.signatureTitle = tournamentUpdateRequest.signatureTitle();
+        this.certificateHeadline = tournamentUpdateRequest.certificateHeadline();
+        this.styleOverrides2 = tournamentUpdateRequest.styleOverrides();
+        this.line1 = tournamentUpdateRequest.line1();
+        this.line2 = tournamentUpdateRequest.line2();
     }
 
     public static Tournament copy(Tournament source){
         final Tournament tournament = new Tournament();
-        tournament.merge(source);
+        tournament.merge(TournamentInput.from(source));
         return tournament;
     }
 
@@ -250,7 +259,7 @@ public class Tournament {
         return circuitId;
     }
 
-    public void setCircuit(String circuit) {
-        this.circuitId = circuit;
+    public void setCircuitId(String circuitId) {
+        this.circuitId = circuitId;
     }
 }

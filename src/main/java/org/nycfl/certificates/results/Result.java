@@ -1,5 +1,7 @@
 package org.nycfl.certificates.results;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import org.nycfl.certificates.EliminationRound;
 import org.nycfl.certificates.Event;
 import org.nycfl.certificates.School;
@@ -11,8 +13,10 @@ import jakarta.persistence.*;
 public class Result {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Schema(required = true)
     long id;
     int count;
+    @Schema(required = true)
     int place;
     String code;
 
@@ -20,6 +24,7 @@ public class Result {
         this.name = name;
     }
 
+    @Schema(required = true)
     String name;
 
     public int getCount() {
@@ -50,6 +55,7 @@ public class Result {
     @ManyToOne(optional = false)
     Event event;
     @ManyToOne(optional = false)
+    @Schema(required = true)
     School school;
 
     @Column(name = "NUM_WINS")
@@ -68,6 +74,7 @@ public class Result {
     }
 
 
+    @Schema(required = true)
     public String getPlaceString(){
         return this.event.formatResult(this);
     }
