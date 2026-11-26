@@ -1,5 +1,7 @@
 package org.nycfl.certificates;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.*;
 import org.nycfl.certificates.results.Result;
@@ -11,7 +13,9 @@ import java.util.Set;
 public class School {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Schema(required = true)
     private long id;
+    @Schema(required = true)
     private String name;
     private String displayName;
     private String debateCode;
@@ -23,7 +27,8 @@ public class School {
     final Set<Result> results = new HashSet<>();
 
     @OneToMany(mappedBy = "school", fetch = FetchType.EAGER)
-    Set<SchoolEmail> emails;
+    @Schema(required = true)
+    Set<SchoolEmail> emails = new HashSet<>();
 
 
     public static School fromName(String name) {

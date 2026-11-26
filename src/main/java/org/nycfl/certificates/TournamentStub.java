@@ -1,4 +1,6 @@
 package org.nycfl.certificates;
 
-public record TournamentStub(long id, String name) {
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+public record TournamentStub(@Schema(required = true) long id, @Schema(required = true) String name) {
 }

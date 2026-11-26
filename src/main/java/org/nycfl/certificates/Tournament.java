@@ -18,14 +18,18 @@ public class Tournament {
                cascade = CascadeType.ALL,
                orphanRemoval = true)
             @OrderBy("eventType asc, name asc")
+    @Schema(required = true)
     final List<Event> events = new ArrayList<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Schema(required = true)
     private long id;
 
+    @Schema(required = true)
     private String name;
 
+    @Schema(required = true)
     private String host;
     private String logoUrl;
     private String slideBackgroundUrl;
@@ -48,7 +52,7 @@ public class Tournament {
     @Column(columnDefinition = "VARCHAR(32) default '#dddddd'")
         private String slideOverlayColor;
 
-    @Schema(name = "date")
+    @Schema(name = "date", required = true)
     @JsonbDateFormat(value = "yyyy-MM-dd")
     private LocalDate tournamentDate;
 

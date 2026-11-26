@@ -1,5 +1,7 @@
 package org.nycfl.certificates;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import jakarta.json.bind.annotation.JsonbProperty;
 import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.*;
@@ -12,11 +14,13 @@ public class SchoolEmail {
   long id;
 
   @JsonbProperty("email")
+  @Schema(required = true)
   public String getEmail() {
     return email;
   }
 
   @JsonbProperty("isPrimary")
+  @Schema(required = true)
   public boolean isPrimary() {
     return isPrimary;
   }
